@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands, tasks
 
 from data.signup_store import load_signups, save_signups
+from services.attendance.attendance_service import sync_attendance_from_comp
 from services.raid.raid_lifecycle_service import (
     is_signup_due_for_lifecycle,
     is_recurring_signup,
@@ -67,6 +68,31 @@ async def _delete_old_raid_messages(bot, raid_id: str, signup: dict) -> None:
     await _delete_message_if_exists(channel, signup.get("signed_reminder_message_id"))
 
 
+def _sync_attendance_snapshot_if_possible(raid_id: str, signup: dict) -> None:
+    """
+    Safety net:
+    If a comp exists, make sure attendance is synced one last time before
+    lifecycle cleanup removes the live signup entry.
+    """
+    last_comp_data = signup.get("last_comp_data")
+    comp_message_id = signup.get("comp_message_id")
+
+    if not last_comp_data or not comp_message_id:
+        return
+
+    try:
+        sync_attendance_from_comp(
+            raid_id=raid_id,
+            guild_id=signup.get("guild_id"),
+            channel_id=signup.get("channel_id"),
+            comp_message_id=comp_message_id,
+            comp_data=last_comp_data,
+            actor_user_id=None,
+        )
+    except Exception as e:
+        print(f"[Attendance Sync] Failed before lifecycle cleanup for raid {raid_id}: {e}")
+
+
 class RaidLifecycleCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -93,6 +119,7 @@ class RaidLifecycleCog(commands.Cog):
 
             # Non-recurring raid cleanup
             if not is_recurring_signup(signup):
+                _sync_attendance_snapshot_if_possible(str(raid_id), signup)
 
                 await _delete_old_raid_messages(self.bot, str(raid_id), signup)
 
@@ -130,6 +157,8 @@ class RaidLifecycleCog(commands.Cog):
 
             data[str(new_message_id)] = next_signup
             changed = True
+
+            _sync_attendance_snapshot_if_possible(str(raid_id), signup)
 
             await _delete_old_raid_messages(self.bot, str(raid_id), signup)
 

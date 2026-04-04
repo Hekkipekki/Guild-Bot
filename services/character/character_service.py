@@ -11,7 +11,7 @@ from data.character_store import (
 """
 Character Service
 
-Thin service layer that wraps the character_store.
+Thin service layer that wraps the character_store_dev.
 
 Responsibilities:
 • Enforce guild-scoped character storage

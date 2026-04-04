@@ -14,19 +14,38 @@ def _sort_by_timestamp(players: list[tuple[str, dict]]) -> list[tuple[str, dict]
     return sorted(players, key=lambda item: item[1].get("timestamp", 0))
 
 
-def _split_players(users: dict) -> tuple[list[tuple[str, dict]], list[tuple[str, dict]]]:
-    signed = []
-    benched = []
+def _empty_status_buckets() -> dict[str, list[tuple[str, dict]]]:
+    return {
+        "sign": [],
+        "bench": [],
+        "late": [],
+        "tentative": [],
+        "absence": [],
+    }
+
+
+def _split_players(users: dict) -> dict[str, list[tuple[str, dict]]]:
+    """
+    Split all signup users into status buckets.
+
+    Important:
+    - Only `sign` is used to build the actual raid comp.
+    - The other buckets are preserved so the posted comp snapshot
+      contains enough information for future attendance automation.
+    """
+    buckets = _empty_status_buckets()
 
     for user_id, entry in users.items():
         status = entry.get("status")
+        player = (str(user_id), entry)
 
-        if status == "sign":
-            signed.append((str(user_id), entry))
-        elif status == "bench":
-            benched.append((str(user_id), entry))
+        if status in buckets:
+            buckets[status].append(player)
 
-    return _sort_by_timestamp(signed), _sort_by_timestamp(benched)
+    for key in buckets:
+        buckets[key] = _sort_by_timestamp(buckets[key])
+
+    return buckets
 
 
 def _group_signed_players(players: list[tuple[str, dict]]) -> dict[str, list[tuple[str, dict]]]:
@@ -128,11 +147,16 @@ def _get_bench_choice_steps(
 def _build_comp_payload(
     signup: dict,
     raid_id: int | str,
-    signed_players: list[tuple[str, dict]],
-    existing_bench: list[tuple[str, dict]],
+    status_buckets: dict[str, list[tuple[str, dict]]],
     grouped_signed: dict[str, list[tuple[str, dict]]],
     comp: dict,
 ) -> dict:
+    signed_players = status_buckets["sign"]
+    existing_bench = status_buckets["bench"]
+    late_players = status_buckets["late"]
+    tentative_players = status_buckets["tentative"]
+    absence_players = status_buckets["absence"]
+
     bench_choice_steps = _get_bench_choice_steps(
         grouped_signed,
         comp["role_targets"],
@@ -160,12 +184,22 @@ def _build_comp_payload(
         "group_1": group_1,
         "group_2": group_2,
         "bench_players": bench_players,
+        "late_players": late_players,
+        "tentative_players": tentative_players,
+        "absence_players": absence_players,
         "selected_players": comp["selected"],
         "signed_players": signed_players,
         "mentions": [f"<@{user_id}>" for user_id, _ in comp["selected"]],
         "comp_label": comp["label"],
         "role_targets": comp["role_targets"],
         "bench_choice_steps": bench_choice_steps,
+        "status_buckets": {
+            "sign": signed_players,
+            "bench": bench_players,
+            "late": late_players,
+            "tentative": tentative_players,
+            "absence": absence_players,
+        },
     }
 
 
@@ -183,7 +217,8 @@ def analyze_roster_comp(raid_id: int | str) -> tuple[str, dict | None]:
         return "error", None
 
     users = signup.get("users", {})
-    signed_players, existing_bench = _split_players(users)
+    status_buckets = _split_players(users)
+    signed_players = status_buckets["sign"]
     grouped = _group_signed_players(signed_players)
 
     option_226 = _build_comp_option(
@@ -205,8 +240,7 @@ def analyze_roster_comp(raid_id: int | str) -> tuple[str, dict | None]:
             "comp_data": _build_comp_payload(
                 signup,
                 raid_id,
-                signed_players,
-                existing_bench,
+                status_buckets,
                 grouped,
                 option_226,
             )
@@ -217,8 +251,7 @@ def analyze_roster_comp(raid_id: int | str) -> tuple[str, dict | None]:
             "comp_data": _build_comp_payload(
                 signup,
                 raid_id,
-                signed_players,
-                existing_bench,
+                status_buckets,
                 grouped,
                 option_235,
             )
@@ -232,16 +265,14 @@ def analyze_roster_comp(raid_id: int | str) -> tuple[str, dict | None]:
             "option_226": _build_comp_payload(
                 signup,
                 raid_id,
-                signed_players,
-                existing_bench,
+                status_buckets,
                 grouped,
                 option_226,
             ),
             "option_235": _build_comp_payload(
                 signup,
                 raid_id,
-                signed_players,
-                existing_bench,
+                status_buckets,
                 grouped,
                 option_235,
             ),
@@ -251,8 +282,7 @@ def analyze_roster_comp(raid_id: int | str) -> tuple[str, dict | None]:
         "comp_data": _build_comp_payload(
             signup,
             raid_id,
-            signed_players,
-            existing_bench,
+            status_buckets,
             grouped,
             option_226,
         )

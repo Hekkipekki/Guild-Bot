@@ -2,6 +2,7 @@ import discord
 
 from data.signup_store import load_signups, save_signups, find_message_signup
 from logic.embed.comp_embed import build_comp_embed
+from services.attendance.attendance_service import sync_attendance_from_comp
 
 
 def _apply_signup_metadata_to_comp_data(signup: dict, comp_data: dict) -> dict:
@@ -11,6 +12,24 @@ def _apply_signup_metadata_to_comp_data(signup: dict, comp_data: dict) -> dict:
     updated["leader"] = signup.get("leader", updated.get("leader", ""))
     updated["start_ts"] = signup.get("start_ts", updated.get("start_ts"))
     return updated
+
+
+def _persist_comp_data(signup: dict, comp_message_id: int | None, comp_data: dict) -> None:
+    signup["comp_message_id"] = comp_message_id
+    signup["last_comp_data"] = comp_data
+    signup["attendance_snapshot_created"] = True
+    signup["attendance_record_id"] = str(comp_data["raid_id"])
+
+
+def _sync_attendance(signup: dict, comp_message_id: int | None, comp_data: dict) -> None:
+    sync_attendance_from_comp(
+        raid_id=comp_data["raid_id"],
+        guild_id=signup.get("guild_id"),
+        channel_id=signup.get("channel_id"),
+        comp_message_id=comp_message_id,
+        comp_data=comp_data,
+        actor_user_id=None,
+    )
 
 
 async def post_comp_message(channel, comp_data: dict) -> tuple[bool, str]:
@@ -28,13 +47,13 @@ async def post_comp_message(channel, comp_data: dict) -> tuple[bool, str]:
     message_id = signup.get("comp_message_id")
 
     try:
-        # EDIT existing comp message
         if message_id:
             try:
                 msg = await channel.fetch_message(message_id)
                 await msg.edit(content=mentions, embed=embed)
 
-                signup["last_comp_data"] = comp_data
+                _persist_comp_data(signup, msg.id, comp_data)
+                _sync_attendance(signup, msg.id, comp_data)
                 save_signups(data)
 
                 return True, "Comp updated."
@@ -42,14 +61,13 @@ async def post_comp_message(channel, comp_data: dict) -> tuple[bool, str]:
                 signup["comp_message_id"] = None
                 save_signups(data)
 
-        # CREATE new comp message
         msg = await channel.send(
             content=mentions,
             embed=embed,
         )
 
-        signup["comp_message_id"] = msg.id
-        signup["last_comp_data"] = comp_data
+        _persist_comp_data(signup, msg.id, comp_data)
+        _sync_attendance(signup, msg.id, comp_data)
         save_signups(data)
 
         return True, "Comp posted."
@@ -79,7 +97,8 @@ async def refresh_existing_comp_message(channel, raid_id: int | str) -> tuple[bo
         msg = await channel.fetch_message(comp_message_id)
         await msg.edit(content=mentions, embed=embed)
 
-        signup["last_comp_data"] = updated_comp_data
+        _persist_comp_data(signup, msg.id, updated_comp_data)
+        _sync_attendance(signup, msg.id, updated_comp_data)
         save_signups(data)
 
         return True, "Comp metadata refreshed."

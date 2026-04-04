@@ -27,6 +27,7 @@ EXTENSIONS = [
     "cogs.guild_admin",
     "cogs.raid_builder",
     "cogs.raid_lifecycle",
+    "cogs.attendance",
 ]
 
 
@@ -64,7 +65,6 @@ async def _sync_application_commands() -> None:
         if test_guild_id:
             guild_obj = discord.Object(id=test_guild_id)
 
-            # Clear old guild-only test commands that may still exist
             bot.tree.clear_commands(guild=guild_obj)
             cleared = await bot.tree.sync(guild=guild_obj)
             print(
@@ -72,7 +72,6 @@ async def _sync_application_commands() -> None:
                 f"Remaining guild commands: {len(cleared)}"
             )
 
-        # Sync current global commands
         synced = await bot.tree.sync()
         print(f"Globally synced {len(synced)} slash command(s).")
 
@@ -130,7 +129,6 @@ async def on_guild_join(guild: discord.Guild):
 
     me = guild.me
 
-    # Try system channel first
     channel = guild.system_channel
     if channel and me and channel.permissions_for(me).send_messages:
         try:
@@ -139,7 +137,6 @@ async def on_guild_join(guild: discord.Guild):
         except Exception as e:
             print(f"[Guild Join] Failed to send onboarding in system channel for {guild.name}: {e}")
 
-    # Fallback: first available text channel
     for channel in guild.text_channels:
         if me and channel.permissions_for(me).send_messages:
             try:
@@ -155,6 +152,12 @@ async def on_ready():
     await _sync_application_commands()
     await _sync_guild_names()
     await _ensure_weakauras_panels()
+
+    try:
+        await bot.change_presence(activity=discord.Game("DEV BUILD"))
+    except Exception as e:
+        print(f"Failed to set presence: {e}")
+
     print(f"Logged in as {bot.user}")
 
 

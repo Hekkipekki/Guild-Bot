@@ -7,21 +7,21 @@ from views.raidpack_views import RaidPackView
 WA_PANEL_TEXT = """# Must Have Addons & WA's
 - [Method Raid Tools](https://www.curseforge.com/wow/addons/method-raid-tools)
 - [Gargul](https://www.curseforge.com/wow/addons/gargul)
-- <:fojji_blue:1481817581995294760> [Fojjicore](https://www.curseforge.com/wow/addons/fojjicore)
-- <:fojji_blue:1481817581995294760> [Fojji - Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `cheddar123`
-- <:fojji_blue:1481817581995294760> [Raid Anchors WA](https://wago.io/FojjiRaidAnchors-MoP)
+- <:fojji:1482050733258838087> [Fojjicore](https://www.curseforge.com/wow/addons/fojjicore)
+- <:fojji:1482050733258838087> [Fojji - Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `cheddar123`
+- <:fojji:1482050733258838087> [Raid Anchors WA](https://wago.io/FojjiRaidAnchors-MoP)
 
 **Raid Weakauras (Check at bottom)**
 
 ### RAIDLEADER ONLY
-- <:fojji_blue:1481817581995294760> [Fojji - [T15][Raid Leader] Throne of Thunder](https://wago.io/Fojji-ToT-RL) > `macaron123`
+- <:fojji:1482050733258838087> [Fojji - [T15][Raid Leader] Throne of Thunder](https://wago.io/Fojji-ToT-RL) > `macaron123`
 
 # Optional WeakAuras
-- <:fojji_blue:1481817581995294760> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP) > `nutella123`
-- <:fojji_blue:1481817581995294760> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP-PF) > `paprika123`
-- <:fojji_blue:1481817581995294760> [Fojji - Gear Checker](https://wago.io/Fojji-GearChecker) > `cucina123`
-- <:fojji_blue:1481817581995294760> [Fojji Trinket/Proc Tracker](https://wago.io/FojjiTrinkets-MoP)
-- <:fojji_blue:1481817581995294760> [Fojji - Raid Ability Timeline](https://wago.io/FojjiRaidAbilityTimeline) > `turnip123`
+- <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP) > `nutella123`
+- <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP-PF) > `paprika123`
+- <:fojji:1482050733258838087> [Fojji - Gear Checker](https://wago.io/Fojji-GearChecker) > `cucina123`
+- <:fojji:1482050733258838087> [Fojji Trinket/Proc Tracker](https://wago.io/FojjiTrinkets-MoP)
+- <:fojji:1482050733258838087> [Fojji - Raid Ability Timeline](https://wago.io/FojjiRaidAbilityTimeline) > `turnip123`
 
 **Click the buttons below to download the Raid Pack WAs**
 Click *"Dismiss this message"* if it shows an old version, then re-click the button.

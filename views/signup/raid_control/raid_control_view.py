@@ -101,7 +101,7 @@ class RaidSettingsButton(discord.ui.Button):
             view = self.view
 
             await interaction.response.edit_message(
-                content="Raid settings",
+                content="Raid settings panel",
                 view=RaidSettingsView(view.raid_id),
             )
 
@@ -109,6 +109,35 @@ class RaidSettingsButton(discord.ui.Button):
             await _send_raid_control_error(
                 interaction,
                 f"Raid Settings failed: {type(e).__name__}: {e}",
+            )
+
+
+class AttendanceButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label="Attendance",
+            style=discord.ButtonStyle.primary,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        try:
+            from views.signup.raid_control.attendance_view import (
+                AttendanceView,
+                build_attendance_panel_content,
+            )
+
+            view = self.view
+
+            await interaction.response.edit_message(
+                content=build_attendance_panel_content(view.raid_id),
+                view=AttendanceView(view.raid_id),
+            )
+
+        except Exception as e:
+            await _send_raid_control_error(
+                interaction,
+                f"Attendance panel failed: {type(e).__name__}: {e}",
             )
 
 
@@ -230,6 +259,7 @@ class RaidControlView(discord.ui.View):
         # Row 2
         self.add_item(ChangeSpecRaidControlButton())
         self.add_item(RaidSettingsButton())
+        self.add_item(AttendanceButton())
         self.add_item(BuildCompButton())
         self.add_item(CloseRaidControlButton())
 
