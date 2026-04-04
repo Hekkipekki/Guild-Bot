@@ -250,13 +250,9 @@ class RaidControlView(discord.ui.View):
         self.selected_user_id = None
         self.selected_action = None
 
-        # Row 0
         self.add_item(RaidControlPlayerSelect(raid_id))
-
-        # Row 1
         self.add_item(RaidControlActionSelect())
 
-        # Row 2
         self.add_item(ChangeSpecRaidControlButton())
         self.add_item(RaidSettingsButton())
         self.add_item(AttendanceButton())

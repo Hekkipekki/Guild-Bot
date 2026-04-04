@@ -1,13 +1,11 @@
 import asyncio
 import discord
-from discord import File
 
-from services.attendance.attendance_image_service import (
-    render_attendance_report_image,
+from services.attendance.attendance_report_service import (
+    get_guild_attendance_records,
 )
 from services.attendance.attendance_service import (
     get_attendance_record,
-    summarize_attendance_record,
     set_manual_attendance_status,
     reset_player_to_auto_status,
 )
@@ -27,6 +25,7 @@ STATUS_LABELS = {
     "absent": "Absent",
     "not_selected": "No Sign",
     "no_sign": "No Sign",
+    "unknown": "Unknown",
 }
 
 STATUS_ORDER = [
@@ -67,61 +66,58 @@ def _get_player_display_name(player: dict) -> str:
     return player.get("name") or player.get("display_name") or "Unknown"
 
 
-def _build_summary_text(record: dict | None) -> str:
-    if not record:
-        return "No attendance record found for this raid."
+def _get_status_label(status: str | None) -> str:
+    return STATUS_LABELS.get(status or "unknown", "Unknown")
 
-    summary = summarize_attendance_record(record)
+
+def _format_raid_label(record: dict) -> str:
+    title = (record.get("title") or "Raid").strip()
+    start_ts = record.get("start_ts")
+
+    if start_ts:
+        return f"{title} • <t:{int(start_ts)}:d>"[:100]
+
+    return title[:100]
+
+
+def _build_panel_content(
+    *,
+    selected_raid_id: str,
+    selected_user_id: str | None = None,
+    selected_action: str | None = None,
+) -> str:
+    record = get_attendance_record(selected_raid_id)
+
+    if not record:
+        return "No attendance record found."
 
     title = record.get("title") or "Raid"
-    finalized = bool(record.get("finalized"))
-    finalized_text = "Yes" if finalized else "No"
+    finalized = "Yes" if record.get("finalized") else "No"
+    start_ts = record.get("start_ts")
 
-    lines = [
-        f"**Attendance Panel**",
-        f"**Raid:** {title}",
-        f"**Official Snapshot:** {finalized_text}",
-        "",
-        f"Attending: **{summary.get('attending', 0)}**",
-        f"Benched: **{summary.get('benched', 0)}**",
-        f"Late: **{summary.get('late', 0)}**",
-        f"Tentative: **{summary.get('tentative', 0)}**",
-        f"Absent: **{summary.get('absent', 0)}**",
-        f"No Sign: **{summary.get('no_sign', 0) + summary.get('not_selected', 0)}**",
-    ]
+    raid_line = f"**Raid:** {title}"
+    if start_ts:
+        raid_line += f"\n**Date:** <t:{int(start_ts)}:F>"
 
-    return "\n".join(lines)
+    selected_player_text = "None selected"
+    if selected_user_id:
+        player = record.get("players", {}).get(str(selected_user_id))
+        if player:
+            selected_player_text = (
+                f"{_get_player_display_name(player)} "
+                f"({_get_status_label(player.get('attendance_status'))})"
+            )
 
-
-def _build_selection_text(
-    record: dict | None,
-    selected_user_id: str | None,
-    selected_action: str | None,
-) -> str:
-    if not record:
-        return ""
-
-    players = record.get("players", {})
-    selected_player = players.get(str(selected_user_id)) if selected_user_id else None
-
-    player_text = "None selected"
-    if selected_player:
-        player_name = _get_player_display_name(selected_player)
-        current_status = selected_player.get("attendance_status", "unknown")
-        auto_status = selected_player.get("auto_status", "unknown")
-        source = selected_player.get("status_source", "auto")
-
-        player_text = (
-            f"{player_name} "
-            f"(current: {current_status}, auto: {auto_status}, source: {source})"
-        )
-
-    action_text = STATUS_LABELS.get(selected_action, "None selected")
+    selected_action_text = (
+        _get_status_label(selected_action) if selected_action else "None selected"
+    )
 
     return (
-        "\n\n"
-        f"**Selected Player:** {player_text}\n"
-        f"**Selected Action:** {action_text}"
+        "**Attendance Edit**\n"
+        f"{raid_line}\n"
+        f"**Official Snapshot:** {finalized}\n\n"
+        f"**Selected Player:** {selected_player_text}\n"
+        f"**Selected Action:** {selected_action_text}"
     )
 
 
@@ -131,20 +127,100 @@ def build_attendance_panel_content(
     selected_user_id: str | None = None,
     selected_action: str | None = None,
 ) -> str:
-    record = get_attendance_record(raid_id)
-    summary_text = _build_summary_text(record)
-    selection_text = _build_selection_text(record, selected_user_id, selected_action)
-    return summary_text + selection_text
+    return _build_panel_content(
+        selected_raid_id=str(raid_id),
+        selected_user_id=selected_user_id,
+        selected_action=selected_action,
+    )
+
+def _build_raid_options(
+    current_raid_id: str,
+    *,
+    selected_raid_id: str | None = None,
+) -> list[discord.SelectOption]:
+    current_record = get_attendance_record(current_raid_id)
+
+    if not current_record:
+        return [
+            discord.SelectOption(
+                label="No attendance records found",
+                value="__none__",
+                description="No attendance data is available.",
+            )
+        ]
+
+    guild_id = current_record.get("guild_id")
+    if not guild_id:
+        return [
+            discord.SelectOption(
+                label="No guild attendance records found",
+                value="__none__",
+                description="Missing guild_id on attendance record.",
+            )
+        ]
+
+    records = get_guild_attendance_records(guild_id, finalized_only=False) or []
+
+    # newest first
+    records = sorted(
+        records,
+        key=lambda r: int(r.get("start_ts") or 0),
+        reverse=True,
+    )
+
+    seen: set[str] = set()
+    options: list[discord.SelectOption] = []
+
+    for record in records:
+        raid_id = str(record.get("raid_id") or "")
+        if not raid_id or raid_id in seen:
+            continue
+
+        seen.add(raid_id)
+
+        title = (record.get("title") or "Raid").strip()
+        start_ts = record.get("start_ts")
+        desc = "Select this raid to edit attendance"
+        if start_ts:
+            desc = f"Date: <t:{int(start_ts)}:d>"
+
+        options.append(
+            discord.SelectOption(
+                label=_format_raid_label(record),
+                value=raid_id,
+                description=desc[:100],
+                default=raid_id == str(selected_raid_id or current_raid_id),
+            )
+        )
+
+        if len(options) >= 25:
+            break
+
+    if not options:
+        options.append(
+            discord.SelectOption(
+                label="No attendance records found",
+                value="__none__",
+                description="No attendance data is available.",
+            )
+        )
+
+    return options
 
 
-def _build_player_options(raid_id: str) -> list[discord.SelectOption]:
-    record = get_attendance_record(raid_id)
+def _build_player_options(
+    selected_raid_id: str,
+    *,
+    selected_user_id: str | None = None,
+) -> list[discord.SelectOption]:
+    record = get_attendance_record(selected_raid_id)
+
     if not record:
         return [
             discord.SelectOption(
                 label="No attendance record found",
                 value="__none__",
-                description="Post a comp first to create attendance.",
+                description="This raid has no attendance record.",
             )
         ]
 
@@ -152,11 +228,12 @@ def _build_player_options(raid_id: str) -> list[discord.SelectOption]:
     sortable = []
 
     for user_id, player in players.items():
+        status = player.get("attendance_status")
+        status_index = STATUS_ORDER.index(status) if status in STATUS_ORDER else 999
+
         sortable.append(
             (
-                STATUS_ORDER.index(player.get("attendance_status"))
-                if player.get("attendance_status") in STATUS_ORDER
-                else 999,
+                status_index,
                 _get_player_display_name(player).lower(),
                 str(user_id),
                 player,
@@ -168,39 +245,69 @@ def _build_player_options(raid_id: str) -> list[discord.SelectOption]:
     options: list[discord.SelectOption] = []
     for _, __, user_id, player in sortable[:25]:
         name = _get_player_display_name(player)
+        status = _get_status_label(player.get("attendance_status"))
         wow_class = player.get("class") or "Unknown"
-        spec = player.get("spec") or "Unknown"
-        attendance_status = player.get("attendance_status") or "Unknown"
 
         options.append(
             discord.SelectOption(
                 label=name[:100],
                 value=str(user_id),
-                description=f"{wow_class} • {spec} • {attendance_status}"[:100],
+                description=f"{wow_class} • {status}"[:100],
+                default=str(user_id) == str(selected_user_id),
             )
         )
 
     if not options:
         options.append(
             discord.SelectOption(
-                label="No attendance players",
+                label="No players found",
                 value="__none__",
-                description="There are no attendance players for this raid.",
+                description="This raid has no attendance players.",
             )
         )
 
     return options
 
 
-class AttendancePlayerSelect(discord.ui.Select):
-    def __init__(self, raid_id: str):
-        self.raid_id = raid_id
+def _build_action_options(
+    selected_action: str | None = None,
+) -> list[discord.SelectOption]:
+    statuses = [
+        "attending",
+        "benched",
+        "late",
+        "tentative",
+        "absent",
+        "no_sign",
+    ]
+
+    return [
+        discord.SelectOption(
+            label=_get_status_label(status),
+            value=status,
+            default=status == selected_action,
+        )
+        for status in statuses
+    ]
+
+
+class AttendanceRaidSelect(discord.ui.Select):
+    def __init__(
+        self,
+        current_raid_id: str,
+        *,
+        selected_raid_id: str | None = None,
+    ):
+        self.current_raid_id = str(current_raid_id)
 
         super().__init__(
-            placeholder="Select attendance player...",
+            placeholder="Select raid...",
             min_values=1,
             max_values=1,
-            options=_build_player_options(raid_id),
+            options=_build_raid_options(
+                self.current_raid_id,
+                selected_raid_id=selected_raid_id,
+            ),
             row=0,
         )
 
@@ -217,35 +324,81 @@ class AttendancePlayerSelect(discord.ui.Select):
             return
 
         view = self.view
-        view.selected_user_id = self.values[0]
+        selected_raid_id = str(self.values[0])
 
         await interaction.response.edit_message(
-            content=build_attendance_panel_content(
-                view.raid_id,
+            content=_build_panel_content(
+                selected_raid_id=selected_raid_id,
+                selected_user_id=None,
+                selected_action=None,
+            ),
+            view=AttendanceView(
+                current_raid_id=view.current_raid_id,
+                selected_raid_id=selected_raid_id,
+                selected_user_id=None,
+                selected_action=None,
+            ),
+        )
+
+
+class AttendancePlayerSelect(discord.ui.Select):
+    def __init__(
+        self,
+        selected_raid_id: str,
+        *,
+        selected_user_id: str | None = None,
+    ):
+        self.selected_raid_id = str(selected_raid_id)
+
+        super().__init__(
+            placeholder="Select player...",
+            min_values=1,
+            max_values=1,
+            options=_build_player_options(
+                self.selected_raid_id,
+                selected_user_id=selected_user_id,
+            ),
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        if not can_manage_raid_tools(interaction):
+            await _send_attendance_error(
+                interaction,
+                "You do not have access to attendance controls.",
+            )
+            return
+
+        if self.values[0] == "__none__":
+            await interaction.response.defer()
+            return
+
+        view = self.view
+        view.selected_user_id = str(self.values[0])
+
+        await interaction.response.edit_message(
+            content=_build_panel_content(
+                selected_raid_id=view.selected_raid_id,
                 selected_user_id=view.selected_user_id,
                 selected_action=view.selected_action,
             ),
-            view=view,
+            view=AttendanceView(
+                current_raid_id=view.current_raid_id,
+                selected_raid_id=view.selected_raid_id,
+                selected_user_id=view.selected_user_id,
+                selected_action=view.selected_action,
+            ),
         )
 
 
 class AttendanceActionSelect(discord.ui.Select):
-    def __init__(self):
-        options = [
-            discord.SelectOption(label="Attending", value="attending"),
-            discord.SelectOption(label="Benched", value="benched"),
-            discord.SelectOption(label="Late", value="late"),
-            discord.SelectOption(label="Tentative", value="tentative"),
-            discord.SelectOption(label="Absent", value="absent"),
-            discord.SelectOption(label="No Sign", value="no_sign"),
-        ]
-
+    def __init__(self, *, selected_action: str | None = None):
         super().__init__(
             placeholder="Select attendance status...",
             min_values=1,
             max_values=1,
-            options=options,
-            row=1,
+            options=_build_action_options(selected_action),
+            row=2,
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -260,12 +413,17 @@ class AttendanceActionSelect(discord.ui.Select):
         view.selected_action = self.values[0]
 
         await interaction.response.edit_message(
-            content=build_attendance_panel_content(
-                view.raid_id,
+            content=_build_panel_content(
+                selected_raid_id=view.selected_raid_id,
                 selected_user_id=view.selected_user_id,
                 selected_action=view.selected_action,
             ),
-            view=view,
+            view=AttendanceView(
+                current_raid_id=view.current_raid_id,
+                selected_raid_id=view.selected_raid_id,
+                selected_user_id=view.selected_user_id,
+                selected_action=view.selected_action,
+            ),
         )
 
 
@@ -274,7 +432,7 @@ class ApplyAttendanceActionButton(discord.ui.Button):
         super().__init__(
             label="Apply",
             style=discord.ButtonStyle.success,
-            row=2,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -286,24 +444,16 @@ class ApplyAttendanceActionButton(discord.ui.Button):
             return
 
         view = self.view
-        record = get_attendance_record(view.raid_id)
-
-        if not record:
-            await _send_attendance_error(
-                interaction,
-                "No attendance record found for this raid.",
-            )
-            return
 
         if not view.selected_user_id or not view.selected_action:
             await _send_attendance_error(
                 interaction,
-                "Select both a player and an attendance status first.",
+                "Select a raid, player, and attendance status first.",
             )
             return
 
         ok, message = set_manual_attendance_status(
-            raid_id=view.raid_id,
+            raid_id=view.selected_raid_id,
             user_id=view.selected_user_id,
             attendance_status=view.selected_action,
             edited_by_user_id=interaction.user.id,
@@ -313,15 +463,18 @@ class ApplyAttendanceActionButton(discord.ui.Button):
             await _send_attendance_error(interaction, message)
             return
 
-        view.selected_action = None
-
         await interaction.response.edit_message(
-            content=build_attendance_panel_content(
-                view.raid_id,
+            content=_build_panel_content(
+                selected_raid_id=view.selected_raid_id,
                 selected_user_id=view.selected_user_id,
-                selected_action=view.selected_action,
+                selected_action=None,
             ),
-            view=AttendanceView(view.raid_id, selected_user_id=view.selected_user_id),
+            view=AttendanceView(
+                current_raid_id=view.current_raid_id,
+                selected_raid_id=view.selected_raid_id,
+                selected_user_id=view.selected_user_id,
+                selected_action=None,
+            ),
         )
 
 
@@ -330,7 +483,7 @@ class ResetAttendancePlayerButton(discord.ui.Button):
         super().__init__(
             label="Reset to Auto",
             style=discord.ButtonStyle.secondary,
-            row=2,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -351,7 +504,7 @@ class ResetAttendancePlayerButton(discord.ui.Button):
             return
 
         ok, message = reset_player_to_auto_status(
-            raid_id=view.raid_id,
+            raid_id=view.selected_raid_id,
             user_id=view.selected_user_id,
             edited_by_user_id=interaction.user.id,
         )
@@ -361,54 +514,18 @@ class ResetAttendancePlayerButton(discord.ui.Button):
             return
 
         await interaction.response.edit_message(
-            content=build_attendance_panel_content(
-                view.raid_id,
+            content=_build_panel_content(
+                selected_raid_id=view.selected_raid_id,
                 selected_user_id=view.selected_user_id,
                 selected_action=None,
             ),
-            view=AttendanceView(view.raid_id, selected_user_id=view.selected_user_id),
+            view=AttendanceView(
+                current_raid_id=view.current_raid_id,
+                selected_raid_id=view.selected_raid_id,
+                selected_user_id=view.selected_user_id,
+                selected_action=None,
+            ),
         )
-
-
-class ShowAttendanceReportButton(discord.ui.Button):
-    def __init__(self):
-        super().__init__(
-            label="Show Report",
-            style=discord.ButtonStyle.primary,
-            row=3,
-        )
-
-    async def callback(self, interaction: discord.Interaction):
-        guild = interaction.guild
-        if guild is None:
-            await _send_attendance_error(
-                interaction,
-                "This can only be used inside a server.",
-            )
-            return
-
-        await interaction.response.defer(ephemeral=True, thinking=True)
-
-        try:
-            buffer = render_attendance_report_image(
-                guild_id=guild.id,
-                finalized_only=True,
-                limit_raids=12,
-                title=f"{guild.name} Attendance",
-            )
-
-            file = File(fp=buffer, filename="attendance_report.png")
-
-            await interaction.followup.send(
-                file=file,
-                ephemeral=True,
-            )
-
-        except Exception as e:
-            await interaction.followup.send(
-                f"⚠ Failed to generate attendance report: {type(e).__name__}: {e}",
-                ephemeral=True,
-            )
 
 
 class BackToRaidControlButton(discord.ui.Button):
@@ -416,7 +533,7 @@ class BackToRaidControlButton(discord.ui.Button):
         super().__init__(
             label="Back",
             style=discord.ButtonStyle.secondary,
-            row=3,
+            row=4,
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -433,7 +550,7 @@ class BackToRaidControlButton(discord.ui.Button):
 
         await interaction.response.edit_message(
             content="Raid control panel",
-            view=RaidControlView(view.raid_id),
+            view=RaidControlView(view.current_raid_id),
         )
         asyncio.create_task(
             delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
@@ -445,7 +562,7 @@ class CloseAttendanceButton(discord.ui.Button):
         super().__init__(
             label="Close",
             style=discord.ButtonStyle.danger,
-            row=3,
+            row=4,
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -461,20 +578,37 @@ class CloseAttendanceButton(discord.ui.Button):
 class AttendanceView(discord.ui.View):
     def __init__(
         self,
-        raid_id: str,
+        current_raid_id: str,
         *,
+        selected_raid_id: str | None = None,
         selected_user_id: str | None = None,
         selected_action: str | None = None,
     ):
         super().__init__(timeout=120)
-        self.raid_id = str(raid_id)
+
+        self.current_raid_id = str(current_raid_id)
+        self.selected_raid_id = str(selected_raid_id or current_raid_id)
         self.selected_user_id = selected_user_id
         self.selected_action = selected_action
 
-        self.add_item(AttendancePlayerSelect(self.raid_id))
-        self.add_item(AttendanceActionSelect())
+        self.add_item(
+            AttendanceRaidSelect(
+                self.current_raid_id,
+                selected_raid_id=self.selected_raid_id,
+            )
+        )
+        self.add_item(
+            AttendancePlayerSelect(
+                self.selected_raid_id,
+                selected_user_id=self.selected_user_id,
+            )
+        )
+        self.add_item(
+            AttendanceActionSelect(
+                selected_action=self.selected_action,
+            )
+        )
         self.add_item(ApplyAttendanceActionButton())
         self.add_item(ResetAttendancePlayerButton())
-        self.add_item(ShowAttendanceReportButton())
         self.add_item(BackToRaidControlButton())
         self.add_item(CloseAttendanceButton())
