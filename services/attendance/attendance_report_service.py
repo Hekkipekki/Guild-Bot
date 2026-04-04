@@ -4,21 +4,11 @@ from collections import defaultdict
 from typing import Any
 
 from data.attendance_store import load_attendance
-
-
-STATUS_PRESENT = {"attending", "benched", "late"}
-STATUS_MISSED = {"absent", "tentative", "no_sign", "not_selected"}
-
-STATUS_SORT_ORDER = {
-    "attending": 0,
-    "benched": 1,
-    "late": 2,
-    "absent": 3,
-    "tentative": 4,
-    "no_sign": 5,
-    "not_selected": 6,
-    "unknown": 7,
-}
+from services.attendance.attendance_rules import (
+    is_missed_attendance_status,
+    is_present_attendance_status,
+    normalize_attendance_status,
+)
 
 
 def _safe_int(value: Any, default: int = 0) -> int:
@@ -36,14 +26,16 @@ def _get_player_name(player: dict) -> str:
     )
 
 
-def _status_counts_for_attendance(status: str) -> tuple[int, int]:
+def _status_counts_for_attendance(status: str | None) -> tuple[int, int]:
     """
     Returns:
     (present_count, missed_count)
     """
-    if status in STATUS_PRESENT:
+    normalized = normalize_attendance_status(status)
+
+    if is_present_attendance_status(normalized):
         return 1, 0
-    if status in STATUS_MISSED:
+    if is_missed_attendance_status(normalized):
         return 0, 1
     return 0, 0
 
@@ -136,7 +128,7 @@ def build_attendance_matrix(
         raid_id = str(record.get("raid_id"))
         for user_id, player in record.get("players", {}).items():
             user_id = str(user_id)
-            status = (player.get("attendance_status") or "unknown").strip()
+            status = normalize_attendance_status(player.get("attendance_status"))
 
             row = players_by_user[user_id]
             row["user_id"] = user_id

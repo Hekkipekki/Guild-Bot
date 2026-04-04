@@ -1,22 +1,25 @@
+from __future__ import annotations
+
 import asyncio
+
 import discord
 
-from services.comp.roster_comp_service import analyze_roster_comp
 from services.comp.comp_message_service import post_comp_message
+from services.comp.roster_comp_service import analyze_roster_comp
 from services.raid.raid_control_service import (
-    set_player_status,
     remove_player_signup,
+    set_player_status,
 )
 from services.signup.signup_refresh_service import refresh_signup_message_by_id
-from views.signup.comp.comp_choice_view import CompChoiceView
-from views.signup.raid_control.raid_control_components import (
-    RaidControlPlayerSelect,
-    RaidControlActionSelect,
-)
 from utils.discord_utils import delete_interaction_after, delete_message_after
 from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     RAID_CONTROL_AUTO_DELETE_SECONDS,
+)
+from views.signup.comp.comp_choice_view import CompChoiceView
+from views.signup.raid_control.raid_control_components import (
+    RaidControlActionSelect,
+    RaidControlPlayerSelect,
 )
 
 
@@ -43,6 +46,33 @@ async def _send_raid_control_error(
         )
 
 
+async def _edit_panel(
+    interaction: discord.Interaction,
+    *,
+    content: str,
+    view: discord.ui.View | None,
+) -> None:
+    await interaction.response.edit_message(
+        content=content,
+        view=view,
+    )
+
+
+async def _close_panel(
+    interaction: discord.Interaction,
+    *,
+    content: str,
+    delete_after_seconds: int = RAID_CONTROL_AUTO_DELETE_SECONDS,
+) -> None:
+    await interaction.response.edit_message(
+        content=content,
+        view=None,
+    )
+    asyncio.create_task(
+        delete_interaction_after(interaction, delete_after_seconds)
+    )
+
+
 async def _refresh_signup_or_error(
     interaction: discord.Interaction,
     raid_id: str,
@@ -58,6 +88,112 @@ async def _refresh_signup_or_error(
     return False
 
 
+async def _open_change_spec_panel(
+    interaction: discord.Interaction,
+    raid_id: str,
+) -> None:
+    from views.signup.raid_control.raid_control_spec_view import (
+        RaidControlSpecPlayerView,
+    )
+
+    await _edit_panel(
+        interaction,
+        content="Select a player to change spec for this raid only.",
+        view=RaidControlSpecPlayerView(raid_id),
+    )
+
+
+async def _open_raid_settings_panel(
+    interaction: discord.Interaction,
+    raid_id: str,
+) -> None:
+    from views.signup.settings.raid_settings_view import RaidSettingsView
+
+    await _edit_panel(
+        interaction,
+        content="Raid settings panel",
+        view=RaidSettingsView(raid_id),
+    )
+
+
+async def _open_attendance_panel(
+    interaction: discord.Interaction,
+    raid_id: str,
+) -> None:
+    from views.signup.raid_control.attendance_view import (
+        AttendanceView,
+        build_attendance_panel_content,
+    )
+
+    await _edit_panel(
+        interaction,
+        content=build_attendance_panel_content(raid_id),
+        view=AttendanceView(raid_id),
+    )
+
+
+async def _handle_build_comp(
+    interaction: discord.Interaction,
+    raid_id: str,
+) -> None:
+    state, payload = analyze_roster_comp(raid_id)
+
+    if state == "error" or not payload:
+        await _send_raid_control_error(
+            interaction,
+            "Could not build comp. The raid may no longer exist.",
+        )
+        return
+
+    if state == "ambiguous":
+        await _edit_panel(
+            interaction,
+            content="Two valid 10-man comps were found. Choose which one to continue with.",
+            view=CompChoiceView(
+                payload["option_226"],
+                payload["option_235"],
+            ),
+        )
+        return
+
+    comp_data = payload["comp_data"]
+    steps = comp_data.get("bench_choice_steps", [])
+
+    if steps:
+        from views.signup.comp.comp_bench_view import CompBenchView
+
+        first_step = steps[0]
+        count = int(first_step.get("count_to_bench", 0) or 0)
+        role = first_step.get("role") or "player"
+        player_word = "player" if count == 1 else "players"
+
+        await _edit_panel(
+            interaction,
+            content=f"Select {count} {role} {player_word} to bench.",
+            view=CompBenchView(comp_data),
+        )
+        return
+
+    ok, message = await post_comp_message(
+        interaction.channel,
+        comp_data,
+    )
+
+    if not ok:
+        await _close_panel(
+            interaction,
+            content=message,
+            delete_after_seconds=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+        )
+        return
+
+    await _close_panel(
+        interaction,
+        content="Comp message posted.",
+        delete_after_seconds=RAID_CONTROL_AUTO_DELETE_SECONDS,
+    )
+
+
 class ChangeSpecRaidControlButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -68,17 +204,8 @@ class ChangeSpecRaidControlButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            from views.signup.raid_control.raid_control_spec_view import (
-                RaidControlSpecPlayerView,
-            )
-
             view = self.view
-
-            await interaction.response.edit_message(
-                content="Select a player to change spec for this raid only.",
-                view=RaidControlSpecPlayerView(view.raid_id),
-            )
-
+            await _open_change_spec_panel(interaction, view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -96,15 +223,8 @@ class RaidSettingsButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            from views.signup.settings.raid_settings_view import RaidSettingsView
-
             view = self.view
-
-            await interaction.response.edit_message(
-                content="Raid settings panel",
-                view=RaidSettingsView(view.raid_id),
-            )
-
+            await _open_raid_settings_panel(interaction, view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -122,18 +242,8 @@ class AttendanceButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            from views.signup.raid_control.attendance_view import (
-                AttendanceView,
-                build_attendance_panel_content,
-            )
-
             view = self.view
-
-            await interaction.response.edit_message(
-                content=build_attendance_panel_content(view.raid_id),
-                view=AttendanceView(view.raid_id),
-            )
-
+            await _open_attendance_panel(interaction, view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -152,72 +262,7 @@ class BuildCompButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         try:
             view = self.view
-
-            state, payload = analyze_roster_comp(view.raid_id)
-
-            if state == "error" or not payload:
-                await _send_raid_control_error(
-                    interaction,
-                    "Could not build comp. The raid may no longer exist.",
-                )
-                return
-
-            if state == "ambiguous":
-                await interaction.response.edit_message(
-                    content="Two valid 10-man comps were found. Choose which one to continue with.",
-                    view=CompChoiceView(
-                        payload["option_226"],
-                        payload["option_235"],
-                    ),
-                )
-                return
-
-            comp_data = payload["comp_data"]
-            steps = comp_data.get("bench_choice_steps", [])
-
-            if steps:
-                from views.signup.comp.comp_bench_view import CompBenchView
-
-                first_step = steps[0]
-                count = int(first_step.get("count_to_bench", 0) or 0)
-                role = first_step.get("role") or "player"
-                player_word = "player" if count == 1 else "players"
-
-                await interaction.response.edit_message(
-                    content=f"Select {count} {role} {player_word} to bench.",
-                    view=CompBenchView(comp_data),
-                )
-                return
-
-            ok, message = await post_comp_message(
-                interaction.channel,
-                comp_data,
-            )
-
-            if not ok:
-                await interaction.response.edit_message(
-                    content=message,
-                    view=None,
-                )
-                asyncio.create_task(
-                    delete_interaction_after(
-                        interaction,
-                        ERROR_MESSAGE_AUTO_DELETE_SECONDS,
-                    )
-                )
-                return
-
-            await interaction.response.edit_message(
-                content="Comp message posted.",
-                view=None,
-            )
-            asyncio.create_task(
-                delete_interaction_after(
-                    interaction,
-                    RAID_CONTROL_AUTO_DELETE_SECONDS,
-                )
-            )
-
+            await _handle_build_comp(interaction, view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -234,23 +279,20 @@ class CloseRaidControlButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
+        await _close_panel(
+            interaction,
             content="Raid control closed.",
-            view=None,
-        )
-        asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
         )
 
 
 class RaidControlView(discord.ui.View):
     def __init__(self, raid_id: str):
         super().__init__(timeout=120)
-        self.raid_id = raid_id
-        self.selected_user_id = None
-        self.selected_action = None
+        self.raid_id = str(raid_id)
+        self.selected_user_id: str | None = None
+        self.selected_action: str | None = None
 
-        self.add_item(RaidControlPlayerSelect(raid_id))
+        self.add_item(RaidControlPlayerSelect(self.raid_id))
         self.add_item(RaidControlActionSelect())
 
         self.add_item(ChangeSpecRaidControlButton())
@@ -287,10 +329,8 @@ class RaidControlView(discord.ui.View):
             if not refreshed:
                 return
 
-            self.selected_user_id = None
-            self.selected_action = None
-
-            await interaction.response.edit_message(
+            await _edit_panel(
+                interaction,
                 content=f"Player {action_text}.",
                 view=RaidControlView(self.raid_id),
             )
