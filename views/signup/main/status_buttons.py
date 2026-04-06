@@ -5,7 +5,10 @@ from services.signup.signup_service import set_user_status
 from services.signup.signup_refresh_service import refresh_signup_message
 from utils.emoji_helpers import parse_button_emoji
 from utils.ui_timing import ERROR_MESSAGE_AUTO_DELETE_SECONDS
-from utils.discord_utils import delete_interaction_after, delete_message_after
+from utils.discord_utils import delete_interaction_after
+
+
+NOTE_REQUIRED_STATUSES = {"late", "tentative", "absence"}
 
 
 class SignupStatusButton(discord.ui.Button):
@@ -30,6 +33,30 @@ class SignupStatusButton(discord.ui.Button):
         self.status = status
 
     async def callback(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "⚠ This action can only be used inside a server.",
+                ephemeral=True,
+            )
+            asyncio.create_task(
+                delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+            )
+            return
+
+        if self.status in NOTE_REQUIRED_STATUSES:
+            from views.signup.main.status_note_modal import RequiredStatusNoteModal
+
+            await interaction.response.send_modal(
+                RequiredStatusNoteModal(
+                    raid_id=int(self.raid_id),
+                    guild_id=guild.id,
+                    user_id=interaction.user.id,
+                    status=self.status,
+                )
+            )
+            return
+
         ok, error_message = set_user_status(
             raid_id=int(self.raid_id),
             user_id=str(interaction.user.id),
@@ -55,6 +82,4 @@ class SignupStatusButton(discord.ui.Button):
                 ephemeral=True,
                 wait=True,
             )
-            asyncio.create_task(
-                msg.delete(delay=ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-            )
+            asyncio.create_task(msg.delete(delay=ERROR_MESSAGE_AUTO_DELETE_SECONDS))

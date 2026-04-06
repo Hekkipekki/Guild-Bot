@@ -9,6 +9,7 @@ from services.attendance.attendance_service import (
     set_manual_attendance_status,
 )
 from utils.discord_utils import delete_interaction_after, delete_message_after
+from utils.emoji_helpers import parse_button_emoji
 from utils.permissions import can_manage_raid_tools
 from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
@@ -186,7 +187,8 @@ class ApplyAttendanceActionButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
             label="Apply",
-            style=discord.ButtonStyle.success,
+            emoji=parse_button_emoji("sign"),
+            style=discord.ButtonStyle.secondary,
             row=3,
         )
 
@@ -287,8 +289,9 @@ class BackToRaidControlButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
             label="Back",
+            emoji=parse_button_emoji("leave"),
             style=discord.ButtonStyle.secondary,
-            row=4,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -316,8 +319,9 @@ class CloseAttendanceButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
             label="Close",
-            style=discord.ButtonStyle.danger,
-            row=4,
+            emoji=parse_button_emoji("cancel_raid"),
+            style=discord.ButtonStyle.secondary,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction):

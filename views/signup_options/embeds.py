@@ -4,6 +4,20 @@ import config
 from utils.ui_timing import SIGNUP_OPTIONS_AUTO_DELETE_SECONDS
 
 
+STATUS_TITLES = {
+    "sign": "✅ You are signed up for the event!",
+    "late": "🕒 You are marked as late.",
+    "bench": "🪑 You are marked as benched.",
+    "tentative": "❔ You are marked as tentative.",
+    "absence": "🚫 You are marked as absent.",
+}
+
+
+def _build_status_title(entry: dict) -> str:
+    status = (entry.get("status") or "sign").strip()
+    return STATUS_TITLES.get(status, "✅ Your signup has been updated!")
+
+
 def build_signup_options_embed(entry: dict) -> discord.Embed:
     spec_name = entry.get("spec", "-")
     class_name = entry.get("class", "-")
@@ -12,7 +26,7 @@ def build_signup_options_embed(entry: dict) -> discord.Embed:
     spec_emoji = config.SPEC_EMOJIS.get(spec_name, "")
 
     embed = discord.Embed(
-        title="✅ You have been signed up to the event!",
+        title=_build_status_title(entry),
         description="## ⚙ Sign-Up Options",
         color=discord.Color.purple(),
     )

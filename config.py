@@ -240,6 +240,7 @@ SUMMARY_EMOJIS = {
 BUTTON_EMOJIS = {
     "sign": "<:Sign:1482050762912825414>",
     "late": "<:Late:1482050767803121755>",
+    "note": "<:Signups:1482050773616693449>",
     "bench": "<:Bench:1482050765278412942>",
     "tentative": "<:Tentative:1482050766704349334>",
     "absence": "<:Absence:1482050771800555640>",

@@ -7,11 +7,13 @@ import discord
 from services.comp.comp_message_service import post_comp_message
 from services.comp.roster_comp_service import analyze_roster_comp
 from services.raid.raid_control_service import (
+    get_player_entry,
     remove_player_signup,
     set_player_status,
 )
 from services.signup.signup_refresh_service import refresh_signup_message_by_id
 from utils.discord_utils import delete_interaction_after, delete_message_after
+from utils.emoji_helpers import parse_button_emoji
 from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     RAID_CONTROL_AUTO_DELETE_SECONDS,
@@ -77,28 +79,32 @@ async def _refresh_signup_or_error(
     interaction: discord.Interaction,
     raid_id: str,
 ) -> bool:
-    refreshed = await refresh_signup_message_by_id(interaction.channel, int(raid_id))
-    if refreshed:
+    try:
+        refreshed = await refresh_signup_message_by_id(interaction.channel, int(raid_id))
+        if not refreshed:
+            await _send_raid_control_error(
+                interaction,
+                "Raid updated, but the signup message no longer exists.",
+            )
+            return False
         return True
-
-    await _send_raid_control_error(
-        interaction,
-        "Player updated, but the raid signup no longer exists.",
-    )
-    return False
+    except Exception as e:
+        await _send_raid_control_error(
+            interaction,
+            f"Raid updated, but failed to refresh signup: {e}",
+        )
+        return False
 
 
 async def _open_change_spec_panel(
     interaction: discord.Interaction,
     raid_id: str,
 ) -> None:
-    from views.signup.raid_control.raid_control_spec_view import (
-        RaidControlSpecPlayerView,
-    )
+    from views.signup.raid_control.raid_control_spec_view import RaidControlSpecPlayerView
 
     await _edit_panel(
         interaction,
-        content="Select a player to change spec for this raid only.",
+        content="Select a player to change spec.",
         view=RaidControlSpecPlayerView(raid_id),
     )
 
@@ -111,7 +117,7 @@ async def _open_raid_settings_panel(
 
     await _edit_panel(
         interaction,
-        content="Raid settings panel",
+        content="Raid settings",
         view=RaidSettingsView(raid_id),
     )
 
@@ -138,7 +144,7 @@ async def _handle_build_comp(
 ) -> None:
     state, payload = analyze_roster_comp(raid_id)
 
-    if state == "error" or not payload:
+    if state == "error" or payload is None:
         await _send_raid_control_error(
             interaction,
             "Could not build comp. The raid may no longer exist.",
@@ -198,6 +204,7 @@ class ChangeSpecRaidControlButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
             label="Change Spec",
+            emoji=parse_button_emoji("config"),
             style=discord.ButtonStyle.secondary,
             row=2,
         )
@@ -217,6 +224,7 @@ class RaidSettingsButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
             label="Raid Settings",
+            emoji=parse_button_emoji("config"),
             style=discord.ButtonStyle.secondary,
             row=2,
         )
@@ -236,7 +244,8 @@ class AttendanceButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
             label="Attendance",
-            style=discord.ButtonStyle.primary,
+            emoji=parse_button_emoji("create_template"),
+            style=discord.ButtonStyle.secondary,
             row=2,
         )
 
@@ -255,7 +264,8 @@ class BuildCompButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
             label="Build Comp",
-            style=discord.ButtonStyle.success,
+            emoji=parse_button_emoji("create_raid"),
+            style=discord.ButtonStyle.secondary,
             row=2,
         )
 
@@ -270,18 +280,52 @@ class BuildCompButton(discord.ui.Button):
             )
 
 
-class CloseRaidControlButton(discord.ui.Button):
+class PlayerNoteButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
-            label="Close",
-            style=discord.ButtonStyle.danger,
+            label="Note",
+            emoji=parse_button_emoji("note"),
+            style=discord.ButtonStyle.secondary,
             row=2,
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await _close_panel(
-            interaction,
-            content="Raid control closed.",
+        view = self.view
+        selected_user_id = view.selected_user_id
+
+        if not selected_user_id:
+            await _send_raid_control_error(
+                interaction,
+                "Select a player first.",
+            )
+            return
+
+        entry = get_player_entry(view.raid_id, selected_user_id)
+        if not entry:
+            await _send_raid_control_error(
+                interaction,
+                "Could not load that player's signup entry.",
+            )
+            return
+
+        player_name = (
+            (entry.get("name") or "").strip()
+            or (entry.get("display_name") or "").strip()
+            or f"<@{selected_user_id}>"
+        )
+        status = entry.get("status") or "Unknown"
+        note = (entry.get("note") or "").strip()
+
+        await interaction.response.send_message(
+            (
+                f"**Player:** {player_name}\n"
+                f"**Status:** {status}\n"
+                f"**Note:** {note or '-'}"
+            ),
+            ephemeral=True,
+        )
+        asyncio.create_task(
+            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
         )
 
 
@@ -299,7 +343,7 @@ class RaidControlView(discord.ui.View):
         self.add_item(RaidSettingsButton())
         self.add_item(AttendanceButton())
         self.add_item(BuildCompButton())
-        self.add_item(CloseRaidControlButton())
+        self.add_item(PlayerNoteButton())
 
     async def try_apply_action(self, interaction: discord.Interaction):
         try:
