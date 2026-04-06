@@ -115,14 +115,16 @@ async def on_guild_join(guild: discord.Guild):
         title=f"Thanks for adding Guild Raid Bot to {guild.name}!",
         description=(
             "Before using the bot, a server administrator must configure it.\n\n"
-            "**Run:** `/guildadmin`\n\n"
+            "⚙️ __**Setup**__\n"
+            "**Run:** `/setup`\n\n"
             "Then configure:\n"
-            "• WeakAuras channel\n"
-            "• Raid admins\n"
-            "• Raid team (optional)\n"
-            "• Raid description template\n\n"
-            "After setup you can create raids with:\n"
-            "`/raid`"
+            "• **WeakAuras channel**\n"
+            "• **Raid admins / leaders**\n"
+            "• **Raid team** *(optional)*\n\n"
+            "⚔️ __**Create raids**__\n"
+            "After setup, use `/raid` to create raid signups.\n\n"
+            "📖 __**Need help?**__\n"
+            "Use `/help` to open the help panel."
         ),
         color=discord.Color.purple(),
     )

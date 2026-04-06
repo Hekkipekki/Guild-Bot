@@ -39,6 +39,7 @@ class RequiredStatusNoteModal(discord.ui.Modal):
             placeholder="Example: 10 min late, work, traffic, family, etc.",
             style=discord.TextStyle.paragraph,
             required=True,
+            min_length=1,
             max_length=200,
             default=existing_note,
         )

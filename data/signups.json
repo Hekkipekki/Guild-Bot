@@ -1531,10 +1531,30 @@
         "class": "Druid",
         "spec": "Balance",
         "role": "Ranged",
-        "timestamp": 1775442575.2910416,
+        "timestamp": 1775461387.0458627,
         "name": "Hekkipekki",
         "note": "",
         "display_name": "Hekkipekki",
+        "status": "sign"
+      },
+      "771806222525267968": {
+        "class": "Rogue",
+        "spec": "Assassination",
+        "role": "Melee",
+        "timestamp": 1775461485.7396286,
+        "name": "Shadé",
+        "note": "",
+        "display_name": "Shadé",
+        "status": "sign"
+      },
+      "489526528309460993": {
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "timestamp": 1775462219.2711742,
+        "name": "Nickfury",
+        "note": "",
+        "display_name": "Nickfury",
         "status": "sign"
       }
     },
