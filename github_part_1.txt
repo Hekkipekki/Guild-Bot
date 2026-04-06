@@ -24,6 +24,7 @@ Directory structure:
     │   ├── guild_settings_dev.json
     │   ├── guild_settings_store.py
     │   ├── raid_template_store.py
+    │   ├── raid_templates.json
     │   ├── raid_templates_dev.json
     │   ├── signup_store.py
     │   └── signups_dev.json
@@ -642,6 +643,8 @@ pause
 ================================================
 FILE: cogs/attendance.py
 ================================================
+import asyncio
+
 import discord
 from discord import app_commands, File
 from discord.ext import commands
@@ -651,6 +654,11 @@ from services.attendance.attendance_image_service import (
 )
 from services.attendance.attendance_report_service import (
     get_guild_attendance_records,
+)
+from utils.discord_utils import delete_message_after, send_ephemeral_error
+from utils.ui_timing import (
+    ATTENDANCE_REPORT_AUTO_DELETE_SECONDS,
+    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
 )
 
 
@@ -675,9 +683,10 @@ class AttendanceCommands(commands.Cog):
         guild = interaction.guild
 
         if guild is None:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ This command can only be used in a server.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
@@ -692,7 +701,6 @@ class AttendanceCommands(commands.Cog):
         try:
             finalized_only = not include_unfinalized
 
-            # Fallback so older test data still works
             if finalized_only:
                 finalized_records = get_guild_attendance_records(
                     guild.id,
@@ -710,15 +718,24 @@ class AttendanceCommands(commands.Cog):
 
             file = File(fp=buffer, filename="attendance_report.png")
 
-            await interaction.followup.send(
+            msg = await interaction.followup.send(
                 file=file,
                 ephemeral=True,
+                wait=True,
+            )
+
+            asyncio.create_task(
+                delete_message_after(
+                    msg,
+                    ATTENDANCE_REPORT_AUTO_DELETE_SECONDS,
+                )
             )
 
         except Exception as e:
-            await interaction.followup.send(
+            await send_ephemeral_error(
+                interaction,
                 f"⚠ Failed to generate attendance report: {type(e).__name__}: {e}",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
 
 
@@ -729,10 +746,17 @@ async def setup(bot):
 ================================================
 FILE: cogs/guild_admin.py
 ================================================
+import asyncio
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+from utils.discord_utils import send_ephemeral_error, delete_interaction_after
+from utils.ui_timing import (
+    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+    SLASH_PANEL_AUTO_DELETE_SECONDS,
+)
 from views.guild_admin.guild_admin_helpers import build_guild_config_embed
 from views.guild_admin.guild_admin_view import GuildSetupView
 
@@ -750,9 +774,10 @@ class GuildAdminCommands(commands.Cog):
         if _is_guild_admin(interaction):
             return False
 
-        await interaction.response.send_message(
+        await send_ephemeral_error(
+            interaction,
             "⛔ You must be a server administrator to use this command.",
-            ephemeral=True,
+            delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
         )
         return True
 
@@ -762,9 +787,10 @@ class GuildAdminCommands(commands.Cog):
     ) -> discord.Guild | None:
         guild = interaction.guild
         if guild is None:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ This command can only be used in a server.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return None
         return guild
@@ -783,6 +809,9 @@ class GuildAdminCommands(commands.Cog):
             view=GuildSetupView(),
             ephemeral=True,
         )
+        asyncio.create_task(
+            delete_interaction_after(interaction, SLASH_PANEL_AUTO_DELETE_SECONDS)
+        )
 
 
 async def setup(bot):
@@ -792,11 +821,18 @@ async def setup(bot):
 ================================================
 FILE: cogs/raid_builder.py
 ================================================
+import asyncio
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+from utils.discord_utils import send_ephemeral_error, delete_interaction_after
 from utils.permissions import can_manage_raid_tools
+from utils.ui_timing import (
+    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+    SLASH_PANEL_AUTO_DELETE_SECONDS,
+)
 from views.raid_builder import RaidStartView
 
 
@@ -807,9 +843,10 @@ class RaidBuilderCommands(commands.Cog):
     @app_commands.command(name="raid", description="Open the raid creation panel.")
     async def raid(self, interaction: discord.Interaction):
         if not can_manage_raid_tools(interaction):
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⛔ You do not have access to create raids.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
@@ -817,9 +854,10 @@ class RaidBuilderCommands(commands.Cog):
         channel = interaction.channel
 
         if guild is None or channel is None:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ This command can only be used in a server.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
@@ -827,6 +865,9 @@ class RaidBuilderCommands(commands.Cog):
             "Raid setup",
             view=RaidStartView(guild.id, channel.id),
             ephemeral=True,
+        )
+        asyncio.create_task(
+            delete_interaction_after(interaction, SLASH_PANEL_AUTO_DELETE_SECONDS)
         )
 
 
@@ -848,8 +889,12 @@ from services.raid.raid_admin_service import (
     update_raid_time_only,
     update_raid_date_only,
 )
-
 from services.signup.signup_refresh_service import refresh_signup_message_by_id
+from utils.discord_utils import send_ephemeral_error, send_ephemeral_success
+from utils.ui_timing import (
+    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+    SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+)
 
 
 class RaidLeaderCommands(commands.Cog):
@@ -881,20 +926,33 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok = update_raid_title(raid_id_int, new_title)
         if not ok:
-            await interaction.response.send_message("⚠ Raid signup not found.", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                "⚠ Raid signup not found.",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
-        message = "✅ Raid title updated." if refreshed else "✅ Raid title updated, but could not refresh the embed message."
-        await interaction.response.send_message(message, ephemeral=True)
+        message = (
+            "✅ Raid title updated."
+            if refreshed
+            else "✅ Raid title updated, but could not refresh the embed message."
+        )
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @app_commands.command(name="raiddesc", description="Change the description of a raid signup")
     @app_commands.checks.has_permissions(administrator=True)
@@ -907,20 +965,33 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok = update_raid_description(raid_id_int, new_description)
         if not ok:
-            await interaction.response.send_message("⚠ Raid signup not found.", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                "⚠ Raid signup not found.",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
-        message = "✅ Raid description updated." if refreshed else "✅ Raid description updated, but could not refresh the embed message."
-        await interaction.response.send_message(message, ephemeral=True)
+        message = (
+            "✅ Raid description updated."
+            if refreshed
+            else "✅ Raid description updated, but could not refresh the embed message."
+        )
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @app_commands.command(name="raidleader", description="Change the leader text of a raid signup")
     @app_commands.checks.has_permissions(administrator=True)
@@ -933,20 +1004,33 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok = update_raid_leader(raid_id_int, new_leader)
         if not ok:
-            await interaction.response.send_message("⚠ Raid signup not found.", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                "⚠ Raid signup not found.",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
-        message = "✅ Raid leader updated." if refreshed else "✅ Raid leader updated, but could not refresh the embed message."
-        await interaction.response.send_message(message, ephemeral=True)
+        message = (
+            "✅ Raid leader updated."
+            if refreshed
+            else "✅ Raid leader updated, but could not refresh the embed message."
+        )
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @app_commands.command(name="raidtime", description="Change the raid time using HH:MM, for example 19:30")
     @app_commands.checks.has_permissions(administrator=True)
@@ -959,15 +1043,20 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok, updated_ts, error_message = update_raid_time_only(raid_id_int, new_time)
         if not ok:
-            await interaction.response.send_message(f"⚠ {error_message}", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                f"⚠ {error_message}",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
@@ -976,7 +1065,11 @@ class RaidLeaderCommands(commands.Cog):
             if refreshed
             else f"✅ Raid time updated to <t:{updated_ts}:t>, but could not refresh the embed message."
         )
-        await interaction.response.send_message(message, ephemeral=True)
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @app_commands.command(name="raiddate", description="Change the raid date using YYYY-MM-DD, for example 2026-03-15")
     @app_commands.checks.has_permissions(administrator=True)
@@ -989,15 +1082,20 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok, updated_ts, error_message = update_raid_date_only(raid_id_int, new_date)
         if not ok:
-            await interaction.response.send_message(f"⚠ {error_message}", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                f"⚠ {error_message}",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
@@ -1006,7 +1104,11 @@ class RaidLeaderCommands(commands.Cog):
             if refreshed
             else f"✅ Raid date updated to <t:{updated_ts}:D>, but could not refresh the embed message."
         )
-        await interaction.response.send_message(message, ephemeral=True)
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @raidtitle.error
     @raiddesc.error
@@ -1020,16 +1122,18 @@ class RaidLeaderCommands(commands.Cog):
     ):
         if isinstance(error, app_commands.errors.MissingPermissions):
             if not interaction.response.is_done():
-                await interaction.response.send_message(
+                await send_ephemeral_error(
+                    interaction,
                     "⛔ You do not have permission to use this command.",
-                    ephemeral=True,
+                    delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
                 )
             return
 
         if not interaction.response.is_done():
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 f"⚠ Command failed: {error}",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
 
 
@@ -3213,72 +3317,3 @@ def remove_character(guild_id: int, user_id: int, index: int) -> bool:
 
 
 def update_character_name_by_class(
-    guild_id: int,
-    user_id: int,
-    class_name: str,
-    new_name: str,
-) -> bool:
-    data = load_characters()
-    guild_bucket = _get_guild_bucket(data, guild_id)
-    user_key = str(user_id)
-
-    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
-        return False
-
-    for char in guild_bucket[user_key]:
-        if char.get("class") == class_name:
-            char["name"] = new_name.strip()
-            save_characters(data)
-            return True
-
-    return False
-
-
-def update_character_spec_by_class(
-    guild_id: int,
-    user_id: int,
-    class_name: str,
-    new_spec: str,
-    new_role: str,
-) -> bool:
-    data = load_characters()
-    guild_bucket = _get_guild_bucket(data, guild_id)
-    user_key = str(user_id)
-
-    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
-        return False
-
-    for char in guild_bucket[user_key]:
-        if char.get("class") == class_name:
-            char["spec"] = new_spec
-            char["role"] = new_role
-            save_characters(data)
-            return True
-
-    return False
-
-
-================================================
-FILE: data/characters_dev.json
-================================================
-{
-    "1480200690654777466": {
-        "141881090913599488": [
-            {
-                "name": "Hekkipekki",
-                "class": "Druid",
-                "spec": "Guardian",
-                "role": "Tank"
-            }
-        ]
-    }
-}
-
-
-================================================
-FILE: data/guild_settings.json
-================================================
-{
-  "1480200690654777466": {
-    "guild_name": "Hekkipekkis server",
-    "raid_control_user_ids": [

@@ -1,3 +1,36 @@
+                value="add",
+                emoji="➕",
+            )
+        )
+
+        options.append(
+            discord.SelectOption(
+                label="Manage Characters",
+                value="manage",
+                emoji="⚙️",
+            )
+        )
+
+        placeholder = "Select your saved character"
+        if filter_class:
+            placeholder = f"Select your {filter_class} character"
+
+        super().__init__(
+            placeholder=placeholder,
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        value = self.values[0]
+
+        # ADD CHARACTER
+        if value == "add":
+            await interaction.response.edit_message(
+                content="Choose a class to save as a character:",
+                view=AddCharacterClassView(
+                    self.guild_id,
                     interaction.user.id,
                     self.parent_message_id,
                     preselected_class=self.filter_class,
@@ -715,7 +748,7 @@ from services.signup.signup_service import set_user_status
 from services.signup.signup_refresh_service import refresh_signup_message
 from utils.emoji_helpers import parse_button_emoji
 from utils.ui_timing import ERROR_MESSAGE_AUTO_DELETE_SECONDS
-from utils.discord_utils import delete_interaction_after
+from utils.discord_utils import delete_message_after
 
 
 NOTE_REQUIRED_STATUSES = {"late", "tentative", "absence"}
@@ -792,7 +825,7 @@ class SignupStatusButton(discord.ui.Button):
                 ephemeral=True,
                 wait=True,
             )
-            asyncio.create_task(msg.delete(delay=ERROR_MESSAGE_AUTO_DELETE_SECONDS))
+            asyncio.create_task(delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS))
 
 
 ================================================

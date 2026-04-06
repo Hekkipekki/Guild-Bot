@@ -6,7 +6,7 @@ from services.signup.signup_service import (
     set_user_status_with_note,
 )
 from services.signup.signup_refresh_service import refresh_signup_message_by_id
-from utils.discord_utils import delete_interaction_after
+from utils.discord_utils import delete_interaction_after, delete_message_after
 from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     SIGNUP_OPTIONS_AUTO_DELETE_SECONDS,
@@ -46,6 +46,14 @@ class RequiredStatusNoteModal(discord.ui.Modal):
 
     async def _send_error(self, interaction: discord.Interaction, message: str) -> None:
         if interaction.response.is_done():
+            msg = await interaction.followup.send(
+                message,
+                ephemeral=True,
+                wait=True,
+            )
+            asyncio.create_task(
+                delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+            )
             return
 
         await interaction.response.send_message(message, ephemeral=True)
