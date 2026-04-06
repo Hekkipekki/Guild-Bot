@@ -1,3 +1,5 @@
+import asyncio
+
 import discord
 from discord import app_commands, File
 from discord.ext import commands
@@ -7,6 +9,11 @@ from services.attendance.attendance_image_service import (
 )
 from services.attendance.attendance_report_service import (
     get_guild_attendance_records,
+)
+from utils.discord_utils import delete_message_after, send_ephemeral_error
+from utils.ui_timing import (
+    ATTENDANCE_REPORT_AUTO_DELETE_SECONDS,
+    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
 )
 
 
@@ -31,9 +38,10 @@ class AttendanceCommands(commands.Cog):
         guild = interaction.guild
 
         if guild is None:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ This command can only be used in a server.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
@@ -48,7 +56,6 @@ class AttendanceCommands(commands.Cog):
         try:
             finalized_only = not include_unfinalized
 
-            # Fallback so older test data still works
             if finalized_only:
                 finalized_records = get_guild_attendance_records(
                     guild.id,
@@ -66,15 +73,24 @@ class AttendanceCommands(commands.Cog):
 
             file = File(fp=buffer, filename="attendance_report.png")
 
-            await interaction.followup.send(
+            msg = await interaction.followup.send(
                 file=file,
                 ephemeral=True,
+                wait=True,
+            )
+
+            asyncio.create_task(
+                delete_message_after(
+                    msg,
+                    ATTENDANCE_REPORT_AUTO_DELETE_SECONDS,
+                )
             )
 
         except Exception as e:
-            await interaction.followup.send(
+            await send_ephemeral_error(
+                interaction,
                 f"⚠ Failed to generate attendance report: {type(e).__name__}: {e}",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
 
 

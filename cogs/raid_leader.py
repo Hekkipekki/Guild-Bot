@@ -9,8 +9,12 @@ from services.raid.raid_admin_service import (
     update_raid_time_only,
     update_raid_date_only,
 )
-
 from services.signup.signup_refresh_service import refresh_signup_message_by_id
+from utils.discord_utils import send_ephemeral_error, send_ephemeral_success
+from utils.ui_timing import (
+    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+    SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+)
 
 
 class RaidLeaderCommands(commands.Cog):
@@ -42,20 +46,33 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok = update_raid_title(raid_id_int, new_title)
         if not ok:
-            await interaction.response.send_message("⚠ Raid signup not found.", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                "⚠ Raid signup not found.",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
-        message = "✅ Raid title updated." if refreshed else "✅ Raid title updated, but could not refresh the embed message."
-        await interaction.response.send_message(message, ephemeral=True)
+        message = (
+            "✅ Raid title updated."
+            if refreshed
+            else "✅ Raid title updated, but could not refresh the embed message."
+        )
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @app_commands.command(name="raiddesc", description="Change the description of a raid signup")
     @app_commands.checks.has_permissions(administrator=True)
@@ -68,20 +85,33 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok = update_raid_description(raid_id_int, new_description)
         if not ok:
-            await interaction.response.send_message("⚠ Raid signup not found.", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                "⚠ Raid signup not found.",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
-        message = "✅ Raid description updated." if refreshed else "✅ Raid description updated, but could not refresh the embed message."
-        await interaction.response.send_message(message, ephemeral=True)
+        message = (
+            "✅ Raid description updated."
+            if refreshed
+            else "✅ Raid description updated, but could not refresh the embed message."
+        )
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @app_commands.command(name="raidleader", description="Change the leader text of a raid signup")
     @app_commands.checks.has_permissions(administrator=True)
@@ -94,20 +124,33 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok = update_raid_leader(raid_id_int, new_leader)
         if not ok:
-            await interaction.response.send_message("⚠ Raid signup not found.", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                "⚠ Raid signup not found.",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
-        message = "✅ Raid leader updated." if refreshed else "✅ Raid leader updated, but could not refresh the embed message."
-        await interaction.response.send_message(message, ephemeral=True)
+        message = (
+            "✅ Raid leader updated."
+            if refreshed
+            else "✅ Raid leader updated, but could not refresh the embed message."
+        )
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @app_commands.command(name="raidtime", description="Change the raid time using HH:MM, for example 19:30")
     @app_commands.checks.has_permissions(administrator=True)
@@ -120,15 +163,20 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok, updated_ts, error_message = update_raid_time_only(raid_id_int, new_time)
         if not ok:
-            await interaction.response.send_message(f"⚠ {error_message}", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                f"⚠ {error_message}",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
@@ -137,7 +185,11 @@ class RaidLeaderCommands(commands.Cog):
             if refreshed
             else f"✅ Raid time updated to <t:{updated_ts}:t>, but could not refresh the embed message."
         )
-        await interaction.response.send_message(message, ephemeral=True)
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @app_commands.command(name="raiddate", description="Change the raid date using YYYY-MM-DD, for example 2026-03-15")
     @app_commands.checks.has_permissions(administrator=True)
@@ -150,15 +202,20 @@ class RaidLeaderCommands(commands.Cog):
         try:
             raid_id_int = int(raid_id)
         except ValueError:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ Raid ID must be a valid message ID number.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
         ok, updated_ts, error_message = update_raid_date_only(raid_id_int, new_date)
         if not ok:
-            await interaction.response.send_message(f"⚠ {error_message}", ephemeral=True)
+            await send_ephemeral_error(
+                interaction,
+                f"⚠ {error_message}",
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+            )
             return
 
         refreshed = await self._refresh_signup(interaction, raid_id_int)
@@ -167,7 +224,11 @@ class RaidLeaderCommands(commands.Cog):
             if refreshed
             else f"✅ Raid date updated to <t:{updated_ts}:D>, but could not refresh the embed message."
         )
-        await interaction.response.send_message(message, ephemeral=True)
+        await send_ephemeral_success(
+            interaction,
+            message,
+            delete_after=SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS,
+        )
 
     @raidtitle.error
     @raiddesc.error
@@ -181,16 +242,18 @@ class RaidLeaderCommands(commands.Cog):
     ):
         if isinstance(error, app_commands.errors.MissingPermissions):
             if not interaction.response.is_done():
-                await interaction.response.send_message(
+                await send_ephemeral_error(
+                    interaction,
                     "⛔ You do not have permission to use this command.",
-                    ephemeral=True,
+                    delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
                 )
             return
 
         if not interaction.response.is_done():
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 f"⚠ Command failed: {error}",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
 
 

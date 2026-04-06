@@ -4233,5 +4233,40 @@
     },
     "attendance_snapshot_created": true,
     "attendance_record_id": "1490510636487278652"
+  },
+  "1490514335347376230": {
+    "title": "test",
+    "description": "test",
+    "leader": "test",
+    "start_ts": 1775496600,
+    "channel_id": 1480200691938099263,
+    "guild_id": 1480200690654777466,
+    "users": {
+      "141881090913599488": {
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "timestamp": 1775437109.7657592,
+        "name": "Balance Druid",
+        "note": "",
+        "status": "sign"
+      }
+    },
+    "expected_players": [
+      "1480200859735293965",
+      "141881090913599488"
+    ],
+    "missing_signup_reminders_sent": {
+      "2880": false,
+      "1440": false
+    },
+    "signed_player_reminders_sent": {
+      "60": false
+    },
+    "missing_reminder_message_id": null,
+    "signed_reminder_message_id": null,
+    "is_recurring": true,
+    "recurring_interval_days": 7,
+    "recurring_created_next": false
   }
 }

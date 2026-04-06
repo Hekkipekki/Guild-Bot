@@ -1,0 +1,3284 @@
+Directory structure:
+└── hekkipekki-guild-bot---live/
+    ├── bot.py
+    ├── config.py
+    ├── github-recovery-codes.txt
+    ├── split_file.py
+    ├── Start Bot.bat
+    ├── cogs/
+    │   ├── attendance.py
+    │   ├── guild_admin.py
+    │   ├── raid_builder.py
+    │   ├── raid_leader.py
+    │   ├── raid_lifecycle.py
+    │   ├── recurring_raids.py
+    │   ├── reminders.py
+    │   ├── signup.py
+    │   └── wa_commands.py
+    ├── data/
+    │   ├── attendance.json
+    │   ├── attendance_store.py
+    │   ├── character_store.py
+    │   ├── characters_dev.json
+    │   ├── guild_settings.json
+    │   ├── guild_settings_dev.json
+    │   ├── guild_settings_store.py
+    │   ├── raid_template_store.py
+    │   ├── raid_templates_dev.json
+    │   ├── signup_store.py
+    │   └── signups_dev.json
+    ├── files/
+    │   ├── Fojji-ToT-Personal-Assignments[1.0.0].txt
+    │   └── Fojji_-_T15Raid_Frame_Throne_of_Thunder-3.0.2.txt
+    ├── logic/
+    │   ├── embed_builder.py
+    │   ├── roster_builder.py
+    │   ├── unassigned.py
+    │   └── embed/
+    │       ├── __init__.py
+    │       ├── comp_embed.py
+    │       ├── player_formatting.py
+    │       ├── signup_embed.py
+    │       └── summary_helpers.py
+    ├── services/
+    │   ├── attendance/
+    │   │   ├── __init__.py
+    │   │   ├── attendance_image_service.py
+    │   │   ├── attendance_queries.py
+    │   │   ├── attendance_report_service.py
+    │   │   ├── attendance_rules.py
+    │   │   └── attendance_service.py
+    │   ├── character/
+    │   │   ├── __init__.py
+    │   │   └── character_service.py
+    │   ├── comp/
+    │   │   ├── __init__.py
+    │   │   ├── comp_message_service.py
+    │   │   └── roster_comp_service.py
+    │   ├── guild/
+    │   │   ├── guild_settings_service.py
+    │   │   └── weakauras_panel_service.py
+    │   ├── raid/
+    │   │   ├── __init__.py
+    │   │   ├── raid_admin_service.py
+    │   │   ├── raid_control_service.py
+    │   │   ├── raid_lifecycle_service.py
+    │   │   ├── raid_preset_service.py
+    │   │   ├── raid_recurring_service.py
+    │   │   └── raid_template_service.py
+    │   ├── reminder/
+    │   │   ├── __init__.py
+    │   │   └── reminder_service.py
+    │   └── signup/
+    │       ├── __init__.py
+    │       ├── signup_message_service.py
+    │       ├── signup_preset_service.py
+    │       ├── signup_refresh_service.py
+    │       ├── signup_service.py
+    │       ├── signup_template_service.py
+    │       └── signup_ui_service.py
+    ├── utils/
+    │   ├── discord_utils.py
+    │   ├── emoji_helpers.py
+    │   ├── permissions.py
+    │   ├── time_helpers.py
+    │   └── ui_timing.py
+    └── views/
+        ├── character_select.py
+        ├── raidpack_views.py
+        ├── signup_views.py
+        ├── guild_admin/
+        │   ├── __init__.py
+        │   ├── guild_admin_helpers.py
+        │   ├── guild_admin_manage_views.py
+        │   ├── guild_admin_modals.py
+        │   └── guild_admin_view.py
+        ├── raid_builder/
+        │   ├── __init__.py
+        │   ├── raid_builder_buttons.py
+        │   ├── raid_builder_helpers.py
+        │   ├── raid_builder_modals.py
+        │   ├── raid_builder_selects.py
+        │   └── raid_builder_view.py
+        ├── signup/
+        │   ├── __init__.py
+        │   ├── character/
+        │   │   ├── __init__.py
+        │   │   ├── character_add_view.py
+        │   │   ├── character_manage_view.py
+        │   │   └── character_select_view.py
+        │   ├── comp/
+        │   │   ├── __init__.py
+        │   │   ├── comp_bench_view.py
+        │   │   └── comp_choice_view.py
+        │   ├── main/
+        │   │   ├── __init__.py
+        │   │   ├── class_dropdown.py
+        │   │   ├── main_signup_view.py
+        │   │   ├── shared.py
+        │   │   ├── status_buttons.py
+        │   │   └── status_note_modal.py
+        │   ├── raid_control/
+        │   │   ├── __init__.py
+        │   │   ├── attendance_view.py
+        │   │   ├── attendance_view_helpers.py
+        │   │   ├── raid_control_button.py
+        │   │   ├── raid_control_components.py
+        │   │   ├── raid_control_spec_view.py
+        │   │   └── raid_control_view.py
+        │   └── settings/
+        │       ├── __init__.py
+        │       ├── raid_settings_modals.py
+        │       └── raid_settings_view.py
+        └── signup_options/
+            ├── __init__.py
+            ├── embeds.py
+            ├── helpers.py
+            ├── modals.py
+            ├── options_view.py
+            └── spec_edit_view.py
+
+================================================
+FILE: bot.py
+================================================
+import asyncio
+import traceback
+
+import discord
+from discord.ext import commands
+
+import config
+from data.signup_store import load_signups
+from services.guild.guild_settings_service import sync_guild_identity
+from services.guild.weakauras_panel_service import ensure_weakauras_panel_for_guild
+from views.raidpack_views import RaidPackView
+from views.signup_views import SignupView
+
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+_views_registered = False
+_commands_synced = False
+
+# Only active cogs should be listed here.
+EXTENSIONS = [
+    "cogs.signup",
+    "cogs.reminders",
+    "cogs.guild_admin",
+    "cogs.raid_builder",
+    "cogs.raid_lifecycle",
+    "cogs.attendance",
+]
+
+
+def _get_persistent_signup_ids() -> list[str]:
+    signups = load_signups()
+    return list(signups.keys())
+
+
+def _register_persistent_views() -> None:
+    global _views_registered
+
+    if _views_registered:
+        return
+
+    bot.add_view(RaidPackView())
+
+    for message_id in _get_persistent_signup_ids():
+        try:
+            bot.add_view(SignupView(str(message_id)))
+        except Exception as e:
+            print(f"Failed to register SignupView for message {message_id}: {e}")
+
+    _views_registered = True
+
+
+async def _sync_application_commands() -> None:
+    global _commands_synced
+
+    if _commands_synced:
+        return
+
+    try:
+        test_guild_id = getattr(config, "TEST_GUILD_ID", None)
+
+        if test_guild_id:
+            guild_obj = discord.Object(id=test_guild_id)
+
+            bot.tree.clear_commands(guild=guild_obj)
+            cleared = await bot.tree.sync(guild=guild_obj)
+            print(
+                f"Cleared guild slash commands for {test_guild_id}. "
+                f"Remaining guild commands: {len(cleared)}"
+            )
+
+        synced = await bot.tree.sync()
+        print(f"Globally synced {len(synced)} slash command(s).")
+
+    except Exception as e:
+        print(f"Failed to sync slash commands: {e}")
+
+    _commands_synced = True
+
+
+async def _load_extensions() -> None:
+    for extension in EXTENSIONS:
+        await bot.load_extension(extension)
+
+
+async def _sync_guild_names() -> None:
+    for guild in bot.guilds:
+        try:
+            sync_guild_identity(guild.id, guild.name)
+        except Exception as e:
+            print(f"[Guild Sync] {guild.id}: failed to sync guild name - {e}")
+
+
+async def _ensure_weakauras_panels() -> None:
+    for guild in bot.guilds:
+        try:
+            ok, message = await ensure_weakauras_panel_for_guild(bot, guild)
+            print(f"[WA] {guild.name}: {message}")
+        except Exception as e:
+            print(f"[WA] {guild.name}: failed - {e}")
+
+
+@bot.event
+async def on_guild_join(guild: discord.Guild):
+    try:
+        sync_guild_identity(guild.id, guild.name)
+    except Exception as e:
+        print(f"[Guild Join] Failed to store guild name for {guild.id}: {e}")
+
+    embed = discord.Embed(
+        title=f"Thanks for adding Guild Raid Bot to {guild.name}!",
+        description=(
+            "Before using the bot, a server administrator must configure it.\n\n"
+            "**Run:** `/guildadmin`\n\n"
+            "Then configure:\n"
+            "• WeakAuras channel\n"
+            "• Raid admins\n"
+            "• Raid team (optional)\n"
+            "• Raid description template\n\n"
+            "After setup you can create raids with:\n"
+            "`/raid`"
+        ),
+        color=discord.Color.purple(),
+    )
+    embed.set_footer(text="Guild Raid Bot setup")
+
+    me = guild.me
+
+    channel = guild.system_channel
+    if channel and me and channel.permissions_for(me).send_messages:
+        try:
+            await channel.send(embed=embed)
+            return
+        except Exception as e:
+            print(f"[Guild Join] Failed to send onboarding in system channel for {guild.name}: {e}")
+
+    for channel in guild.text_channels:
+        if me and channel.permissions_for(me).send_messages:
+            try:
+                await channel.send(embed=embed)
+                return
+            except Exception:
+                continue
+
+
+@bot.event
+async def on_ready():
+    _register_persistent_views()
+    await _sync_application_commands()
+    await _sync_guild_names()
+    await _ensure_weakauras_panels()
+
+    try:
+        await bot.change_presence(activity=discord.Game("DEV BUILD"))
+    except Exception as e:
+        print(f"Failed to set presence: {e}")
+
+    print(f"Logged in as {bot.user}")
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    print("Command error:")
+    traceback.print_exception(type(error), error, error.__traceback__)
+
+
+async def main():
+    if not config.TOKEN:
+        raise RuntimeError("Bot token not found. Define TOKEN in secrets_local.py")
+
+    async with bot:
+        await _load_extensions()
+        await bot.start(config.TOKEN)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+
+================================================
+FILE: config.py
+================================================
+from pathlib import Path
+
+# ============================================================
+# Application config
+# ============================================================
+# NOTE:
+# - Runtime/app-level settings belong here
+# - Guild/server-specific settings belong in guild_settings.json
+#   and must be accessed through guild_settings_service.py
+
+# Dev-only: used for clearing old guild-scoped slash commands during testing.
+# Safe to keep, but should not be used as a source of guild settings.
+TEST_GUILD_ID = None
+
+BASE_DIR = Path(__file__).resolve().parent
+
+try:
+    from secrets_local import TOKEN
+except ImportError:
+    TOKEN = None
+
+PACKS = {
+    "tot_01_06": {
+        "label": "ToT Boss 1–6",
+        "file": "files/Fojji_-_T1501-06_Throne_of_Thunder-3.0.2.txt",
+        "title": "Fojji - Throne of Thunder [01–06]",
+        "version": "v3.0.2",
+    },
+    "tot_07_13": {
+        "label": "ToT Boss 7–13",
+        "file": "files/Fojji_-_T1507-13_Throne_of_Thunder-3.0.3.txt",
+        "title": "Fojji - Throne of Thunder [07–13]",
+        "version": "v3.0.3",
+    },
+    "tot_frames": {
+        "label": "ToT Raid Frames",
+        "file": "files/Fojji_-_T15Raid_Frame_Throne_of_Thunder-3.0.2.txt",
+        "title": "Fojji - Throne of Thunder Raid Frames",
+        "version": "v3.0.2",
+    },
+    "tot_personal_assignments": {
+        "label": "ToT Assignments",
+        "file": "files/Fojji-ToT-Personal-Assignments[1.0.0].txt",
+        "title": "Fojji - ToT Personal Assignments",
+        "version": "v1.0.0",
+    },
+    "tot_assignments": {
+        "label": "Fojji - Raid Assignments [TOT][Raid Leader][1.0.1]",
+        "file": "files/Fojji - Raid Assignments [TOT][Raid Leader][1.0.1].txt",
+        "title": "Fojji - Raid Assignments [ToT] (Raid Leader)",
+        "version": "v1.0.1",
+    },
+    "msv": {
+        "label": "Fojji - Mogu'Shan Vaults v1.0.20",
+        "file": "files/Fojji-MoguShan-v1.0.20.txt",
+        "title": "Fojji - Mogu'Shan Vaults",
+        "version": "v1.0.20",
+    },
+    "hof": {
+        "label": "Fojji - Heart of Fear v1.0.10",
+        "file": "files/Fojji-Heart-of-Fear-v1.0.10.txt",
+        "title": "Fojji - Heart of Fear",
+        "version": "v1.0.10",
+    },
+    "toes": {
+        "label": "Fojji - Terrace of Endless Springs v3.0.9",
+        "file": "files/Fojji-Terrace-of-Endless-Springs-v3.0.9.txt",
+        "title": "Fojji - Terrace of Endless Springs",
+        "version": "v3.0.9",
+    },
+}
+
+CLASSES = [
+    "Death Knight",
+    "Warrior",
+    "Druid",
+    "Paladin",
+    "Monk",
+    "Priest",
+    "Mage",
+    "Warlock",
+    "Hunter",
+    "Rogue",
+    "Shaman",
+]
+
+CLASS_SPECS = {
+    "Death Knight": {
+        "Blood": "Tank",
+        "FrostDK": "Melee",
+        "Unholy": "Melee",
+    },
+    "Warrior": {
+        "Arms": "Melee",
+        "Fury": "Melee",
+        "ProtectionWarrior": "Tank",
+    },
+    "Druid": {
+        "Balance": "Ranged",
+        "Feral": "Melee",
+        "Guardian": "Tank",
+        "RestorationDruid": "Healer",
+    },
+    "Paladin": {
+        "HolyPaladin": "Healer",
+        "ProtectionPaladin": "Tank",
+        "Retribution": "Melee",
+    },
+    "Monk": {
+        "Brewmaster": "Tank",
+        "Mistweaver": "Healer",
+        "Windwalker": "Melee",
+    },
+    "Priest": {
+        "Discipline": "Healer",
+        "HolyPriest": "Healer",
+        "Shadow": "Ranged",
+    },
+    "Mage": {
+        "Arcane": "Ranged",
+        "Fire": "Ranged",
+        "Frost": "Ranged",
+    },
+    "Warlock": {
+        "Affliction": "Ranged",
+        "Demonology": "Ranged",
+        "Destruction": "Ranged",
+    },
+    "Hunter": {
+        "Beast Mastery": "Ranged",
+        "Marksmanship": "Ranged",
+        "Survival": "Ranged",
+    },
+    "Rogue": {
+        "Assassination": "Melee",
+        "Combat": "Melee",
+        "Subtlety": "Melee",
+    },
+    "Shaman": {
+        "Elemental": "Ranged",
+        "Enhancement": "Melee",
+        "RestorationShaman": "Healer",
+    },
+}
+
+ROLE_LIMITS = {
+    "Tank": 2,
+    "Healer": 3,
+    "DPS": 9,
+}
+
+SPEC_EMOJIS = {
+    # Death Knight
+    "Blood": "<:Blood:1482050758114414853>",
+    "FrostDK": "<:FrostDK:1482050821133963305>",
+    "Unholy": "<:Unholy:1482050820059959397>",
+
+    # Druid
+    "Balance": "<:Balance:1482050818885812345>",
+    "Feral": "<:Feral:1482050817417674924>",
+    "Guardian": "<:Guardian:1482050756889805000>",
+    "RestorationDruid": "<:RestorationDruid:1482050816092278957>",
+
+    # Hunter
+    "Beast Mastery": "<:BeastMastery:1482050810857652446>",
+    "BeastMastery": "<:BeastMastery:1482050810857652446>",
+    "Marksmanship": "<:Marksmanship:1482050812825043114>",
+    "Survival": "<:Survival:1482050814041391194>",
+
+    # Mage
+    "Arcane": "<:Arcane:1482050791450611793>",
+    "Fire": "<:Fire:1482050790100045824>",
+    "Frost": "<:Frost:1482050788753805362>",
+
+    # Monk
+    "Brewmaster": "<:Brewmaster:1482050787323412602>",
+    "Mistweaver": "<:Mistweaver:1482050786002337973>",
+    "Windwalker": "<:Windwalker:1482050784941047891>",
+
+    # Paladin
+    "HolyPaladin": "<:HolyPaladin:1482050797096271943>",
+    "ProtectionPaladin": "<:ProtectionPaladin:1482050755899691138>",
+    "Retribution": "<:Retribution:1482050799210332210>",
+
+    # Priest
+    "Discipline": "<:Discipline:1482050792696451193>",
+    "HolyPriest": "<:HolyPriest:1482050794244276305>",
+    "Shadow": "<:Shadow:1482050795737190611>",
+
+    # Rogue
+    "Assassination": "<:Assassination:1482050781443133572>",
+    "Combat": "<:Combat:1482050780000292955>",
+    "Subtlety": "<:Sublety:1482050782445437070>",
+    "Sublety": "<:Sublety:1482050782445437070>",
+
+    # Shaman
+    "Elemental": "<:Elemental:1482050809712611328>",
+    "Enhancement": "<:Enmhancement:1482050808647520396>",
+    "Enmhancement": "<:Enmhancement:1482050808647520396>",
+    "RestorationShaman": "<:RestorationShaman:1482050807674441779>",
+
+    # Warlock
+    "Affliction": "<:Affliction:1482050800539799634>",
+    "Demonology": "<:Demonology:1482050801928110181>",
+    "Destruction": "<:Destruction:1482050802976690197>",
+
+    # Warrior
+    "Arms": "<:Arms:1482050804503281868>",
+    "Fury": "<:Fury:1482050806357168319>",
+    "ProtectionWarrior": "<:ProtectionWarrior:1482050759561318400>",
+}
+
+CLASS_EMOJIS = {
+    "Death Knight": "<:DEATHKNIGHT:1482050742767452448>",
+    "Warrior": "<:WARRIOR:1482050753450344571>",
+    "Druid": "<:DRUID:1482050743723884584>",
+    "Paladin": "<:PALADIN:1482050746407977084>",
+    "Monk": "<:MONK:1482050741060374649>",
+    "Priest": "<:PRIEST:1482050747909800026>",
+    "Mage": "<:MAGE:1482050754599588061>",
+    "Warlock": "<:WARLOCK:1482050752208965754>",
+    "Hunter": "<:HUNTER:1482050745325981696>",
+    "Rogue": "<:ROGUE:1482050749776269443>",
+    "Shaman": "<:SHAMAN:1482050751034560564>",
+}
+
+SUMMARY_EMOJIS = {
+    "Countdown": "<:Countdown:1482050770453921883>",
+    "Absence": "<:Absence:1482050771800555640>",
+    "Signups": "<:Signups:1482050773616693449>",
+    "DPS": "<:DPS:1482050775311192187>",
+    "Tank": "<:Tank:1482050777060085960>",
+    "Healer": "<:Healer:1482050778683277514>",
+    "Tentative": "<:Tentative:1482050766704349334>",
+    "Late": "<:Late:1482050767803121755>",
+    "Calendar": "<:Calendar:1482050769015537794>",
+    "Bench": "<:Bench:1482050765278412942>",
+}
+
+BUTTON_EMOJIS = {
+    "sign": "<:Sign:1482050762912825414>",
+    "late": "<:Late:1482050767803121755>",
+    "note": "<:Signups:1482050773616693449>",
+    "bench": "<:Bench:1482050765278412942>",
+    "tentative": "<:Tentative:1482050766704349334>",
+    "absence": "<:Absence:1482050771800555640>",
+    "config": "<:Config:1482050761507471390>",
+    "leave": "<:Leave:1482050763973988392>",
+    "create_raid": "<:create_raid:1482050739625787581>",
+    "create_template": "<:create_template:1482050738342461510>",
+    "submit_raid": "<:submit_raid:1482050736840900701>",
+    "cancel_raid": "<:cancel_raid:1482050734672314518>",
+}
+
+
+================================================
+FILE: github-recovery-codes.txt
+================================================
+ac14e-fdaa0
+df3b5-329f4
+fd0f6-333bf
+7dde0-40ee1
+428df-1a92c
+ac531-f52b8
+56d08-4f37c
+81790-0dc30
+e95e7-9417f
+1d002-d3e84
+0a90f-d6679
+2e09b-983db
+7452f-5b229
+91268-d7403
+3bef2-36a83
+8fb1b-037b5
+
+
+================================================
+FILE: split_file.py
+================================================
+input_file = r"C:\Dev Projects\Bot\Guild Bot - Dev\github.txt"
+
+with open(input_file, "r", encoding="utf-8") as f:
+    lines = f.readlines()
+
+total_lines = len(lines)
+chunk_size = total_lines // 4
+
+for i in range(4):
+    start = i * chunk_size
+    end = (i + 1) * chunk_size if i < 3 else total_lines
+
+    output_file = rf"C:\Dev Projects\Bot\Guild Bot - Dev\github_part_{i+1}.txt"
+
+    with open(output_file, "w", encoding="utf-8") as out:
+        out.writelines(lines[start:end])
+
+print("File split into 4 parts successfully.")
+
+
+================================================
+FILE: Start Bot.bat
+================================================
+@echo off
+echo Starting Discord bot...
+cd /d "%~dp0"
+
+python bot.py
+
+echo.
+echo Bot stopped.
+pause
+
+
+================================================
+FILE: cogs/attendance.py
+================================================
+import discord
+from discord import app_commands, File
+from discord.ext import commands
+
+from services.attendance.attendance_image_service import (
+    render_attendance_report_image,
+)
+from services.attendance.attendance_report_service import (
+    get_guild_attendance_records,
+)
+
+
+class AttendanceCommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(
+        name="attendance",
+        description="Show the guild attendance report.",
+    )
+    @app_commands.describe(
+        raids="Number of recent raids to include (default: 12)",
+        include_unfinalized="Include raids that are not finalized yet",
+    )
+    async def attendance(
+        self,
+        interaction: discord.Interaction,
+        raids: int | None = None,
+        include_unfinalized: bool = False,
+    ):
+        guild = interaction.guild
+
+        if guild is None:
+            await interaction.response.send_message(
+                "⚠ This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        limit_raids = raids or 12
+        if limit_raids < 1:
+            limit_raids = 1
+        if limit_raids > 30:
+            limit_raids = 30
+
+        await interaction.response.defer(ephemeral=True, thinking=True)
+
+        try:
+            finalized_only = not include_unfinalized
+
+            # Fallback so older test data still works
+            if finalized_only:
+                finalized_records = get_guild_attendance_records(
+                    guild.id,
+                    finalized_only=True,
+                )
+                if not finalized_records:
+                    finalized_only = False
+
+            buffer = render_attendance_report_image(
+                guild_id=guild.id,
+                finalized_only=finalized_only,
+                limit_raids=limit_raids,
+                title=None,
+            )
+
+            file = File(fp=buffer, filename="attendance_report.png")
+
+            await interaction.followup.send(
+                file=file,
+                ephemeral=True,
+            )
+
+        except Exception as e:
+            await interaction.followup.send(
+                f"⚠ Failed to generate attendance report: {type(e).__name__}: {e}",
+                ephemeral=True,
+            )
+
+
+async def setup(bot):
+    await bot.add_cog(AttendanceCommands(bot))
+
+
+================================================
+FILE: cogs/guild_admin.py
+================================================
+import discord
+from discord import app_commands
+from discord.ext import commands
+
+from views.guild_admin.guild_admin_helpers import build_guild_config_embed
+from views.guild_admin.guild_admin_view import GuildSetupView
+
+
+def _is_guild_admin(interaction: discord.Interaction) -> bool:
+    user = interaction.user
+    return getattr(user.guild_permissions, "administrator", False)
+
+
+class GuildAdminCommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    async def _deny_if_not_admin(self, interaction: discord.Interaction) -> bool:
+        if _is_guild_admin(interaction):
+            return False
+
+        await interaction.response.send_message(
+            "⛔ You must be a server administrator to use this command.",
+            ephemeral=True,
+        )
+        return True
+
+    async def _get_guild_or_fail(
+        self,
+        interaction: discord.Interaction,
+    ) -> discord.Guild | None:
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "⚠ This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return None
+        return guild
+
+    @app_commands.command(name="setup", description="Open the server setup panel.")
+    async def setup_panel(self, interaction: discord.Interaction):
+        if await self._deny_if_not_admin(interaction):
+            return
+
+        guild = await self._get_guild_or_fail(interaction)
+        if guild is None:
+            return
+
+        await interaction.response.send_message(
+            embed=build_guild_config_embed(guild),
+            view=GuildSetupView(),
+            ephemeral=True,
+        )
+
+
+async def setup(bot):
+    await bot.add_cog(GuildAdminCommands(bot))
+
+
+================================================
+FILE: cogs/raid_builder.py
+================================================
+import discord
+from discord import app_commands
+from discord.ext import commands
+
+from utils.permissions import can_manage_raid_tools
+from views.raid_builder import RaidStartView
+
+
+class RaidBuilderCommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(name="raid", description="Open the raid creation panel.")
+    async def raid(self, interaction: discord.Interaction):
+        if not can_manage_raid_tools(interaction):
+            await interaction.response.send_message(
+                "⛔ You do not have access to create raids.",
+                ephemeral=True,
+            )
+            return
+
+        guild = interaction.guild
+        channel = interaction.channel
+
+        if guild is None or channel is None:
+            await interaction.response.send_message(
+                "⚠ This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message(
+            "Raid setup",
+            view=RaidStartView(guild.id, channel.id),
+            ephemeral=True,
+        )
+
+
+async def setup(bot):
+    await bot.add_cog(RaidBuilderCommands(bot))
+
+
+================================================
+FILE: cogs/raid_leader.py
+================================================
+import discord
+from discord import app_commands
+from discord.ext import commands
+
+from services.raid.raid_admin_service import (
+    update_raid_title,
+    update_raid_description,
+    update_raid_leader,
+    update_raid_time_only,
+    update_raid_date_only,
+)
+
+from services.signup.signup_refresh_service import refresh_signup_message_by_id
+
+
+class RaidLeaderCommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    async def _refresh_signup(
+        self,
+        interaction: discord.Interaction,
+        raid_id: int,
+    ) -> bool:
+        if interaction.channel is None:
+            return False
+
+        try:
+            await refresh_signup_message_by_id(interaction.channel, raid_id)
+            return True
+        except Exception:
+            return False
+
+    @app_commands.command(name="raidtitle", description="Change the title of a raid signup")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def raidtitle(
+        self,
+        interaction: discord.Interaction,
+        raid_id: str,
+        new_title: str,
+    ):
+        try:
+            raid_id_int = int(raid_id)
+        except ValueError:
+            await interaction.response.send_message(
+                "⚠ Raid ID must be a valid message ID number.",
+                ephemeral=True,
+            )
+            return
+
+        ok = update_raid_title(raid_id_int, new_title)
+        if not ok:
+            await interaction.response.send_message("⚠ Raid signup not found.", ephemeral=True)
+            return
+
+        refreshed = await self._refresh_signup(interaction, raid_id_int)
+        message = "✅ Raid title updated." if refreshed else "✅ Raid title updated, but could not refresh the embed message."
+        await interaction.response.send_message(message, ephemeral=True)
+
+    @app_commands.command(name="raiddesc", description="Change the description of a raid signup")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def raiddesc(
+        self,
+        interaction: discord.Interaction,
+        raid_id: str,
+        new_description: str,
+    ):
+        try:
+            raid_id_int = int(raid_id)
+        except ValueError:
+            await interaction.response.send_message(
+                "⚠ Raid ID must be a valid message ID number.",
+                ephemeral=True,
+            )
+            return
+
+        ok = update_raid_description(raid_id_int, new_description)
+        if not ok:
+            await interaction.response.send_message("⚠ Raid signup not found.", ephemeral=True)
+            return
+
+        refreshed = await self._refresh_signup(interaction, raid_id_int)
+        message = "✅ Raid description updated." if refreshed else "✅ Raid description updated, but could not refresh the embed message."
+        await interaction.response.send_message(message, ephemeral=True)
+
+    @app_commands.command(name="raidleader", description="Change the leader text of a raid signup")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def raidleader(
+        self,
+        interaction: discord.Interaction,
+        raid_id: str,
+        new_leader: str,
+    ):
+        try:
+            raid_id_int = int(raid_id)
+        except ValueError:
+            await interaction.response.send_message(
+                "⚠ Raid ID must be a valid message ID number.",
+                ephemeral=True,
+            )
+            return
+
+        ok = update_raid_leader(raid_id_int, new_leader)
+        if not ok:
+            await interaction.response.send_message("⚠ Raid signup not found.", ephemeral=True)
+            return
+
+        refreshed = await self._refresh_signup(interaction, raid_id_int)
+        message = "✅ Raid leader updated." if refreshed else "✅ Raid leader updated, but could not refresh the embed message."
+        await interaction.response.send_message(message, ephemeral=True)
+
+    @app_commands.command(name="raidtime", description="Change the raid time using HH:MM, for example 19:30")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def raidtime(
+        self,
+        interaction: discord.Interaction,
+        raid_id: str,
+        new_time: str,
+    ):
+        try:
+            raid_id_int = int(raid_id)
+        except ValueError:
+            await interaction.response.send_message(
+                "⚠ Raid ID must be a valid message ID number.",
+                ephemeral=True,
+            )
+            return
+
+        ok, updated_ts, error_message = update_raid_time_only(raid_id_int, new_time)
+        if not ok:
+            await interaction.response.send_message(f"⚠ {error_message}", ephemeral=True)
+            return
+
+        refreshed = await self._refresh_signup(interaction, raid_id_int)
+        message = (
+            f"✅ Raid time updated to <t:{updated_ts}:t>."
+            if refreshed
+            else f"✅ Raid time updated to <t:{updated_ts}:t>, but could not refresh the embed message."
+        )
+        await interaction.response.send_message(message, ephemeral=True)
+
+    @app_commands.command(name="raiddate", description="Change the raid date using YYYY-MM-DD, for example 2026-03-15")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def raiddate(
+        self,
+        interaction: discord.Interaction,
+        raid_id: str,
+        new_date: str,
+    ):
+        try:
+            raid_id_int = int(raid_id)
+        except ValueError:
+            await interaction.response.send_message(
+                "⚠ Raid ID must be a valid message ID number.",
+                ephemeral=True,
+            )
+            return
+
+        ok, updated_ts, error_message = update_raid_date_only(raid_id_int, new_date)
+        if not ok:
+            await interaction.response.send_message(f"⚠ {error_message}", ephemeral=True)
+            return
+
+        refreshed = await self._refresh_signup(interaction, raid_id_int)
+        message = (
+            f"✅ Raid date updated to <t:{updated_ts}:D>."
+            if refreshed
+            else f"✅ Raid date updated to <t:{updated_ts}:D>, but could not refresh the embed message."
+        )
+        await interaction.response.send_message(message, ephemeral=True)
+
+    @raidtitle.error
+    @raiddesc.error
+    @raidleader.error
+    @raidtime.error
+    @raiddate.error
+    async def raid_command_error(
+        self,
+        interaction: discord.Interaction,
+        error: app_commands.AppCommandError,
+    ):
+        if isinstance(error, app_commands.errors.MissingPermissions):
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    "⛔ You do not have permission to use this command.",
+                    ephemeral=True,
+                )
+            return
+
+        if not interaction.response.is_done():
+            await interaction.response.send_message(
+                f"⚠ Command failed: {error}",
+                ephemeral=True,
+            )
+
+
+async def setup(bot):
+    await bot.add_cog(RaidLeaderCommands(bot))
+
+
+================================================
+FILE: cogs/raid_lifecycle.py
+================================================
+import time
+
+import discord
+from discord.ext import commands, tasks
+
+from data.signup_store import load_signups, save_signups
+from services.attendance.attendance_service import sync_attendance_from_comp
+from services.raid.raid_lifecycle_service import (
+    is_signup_due_for_lifecycle,
+    is_recurring_signup,
+    build_next_recurring_signup,
+)
+from services.signup.signup_message_service import send_signup_message
+
+
+class _ChannelCtx:
+    def __init__(self, channel):
+        self.channel = channel
+
+    async def send(self, *args, **kwargs):
+        return await self.channel.send(*args, **kwargs)
+
+
+async def _delete_message_if_exists(channel, message_id: int | None) -> None:
+    if not message_id:
+        return
+
+    try:
+        msg = await channel.fetch_message(int(message_id))
+        await msg.delete()
+
+    except discord.NotFound:
+        return
+
+    except discord.Forbidden:
+        return
+
+    except discord.HTTPException:
+        return
+
+
+async def _delete_old_raid_messages(bot, raid_id: str, signup: dict) -> None:
+    guild_id = signup.get("guild_id")
+    channel_id = signup.get("channel_id")
+
+    if not guild_id or not channel_id:
+        return
+
+    guild = bot.get_guild(int(guild_id))
+
+    if guild is None:
+        try:
+            guild = await bot.fetch_guild(int(guild_id))
+        except discord.HTTPException:
+            return
+
+    channel = guild.get_channel(int(channel_id))
+
+    if channel is None:
+        try:
+            channel = await guild.fetch_channel(int(channel_id))
+        except discord.HTTPException:
+            return
+
+    await _delete_message_if_exists(channel, int(raid_id))
+    await _delete_message_if_exists(channel, signup.get("comp_message_id"))
+    await _delete_message_if_exists(channel, signup.get("missing_reminder_message_id"))
+    await _delete_message_if_exists(channel, signup.get("signed_reminder_message_id"))
+
+
+def _sync_attendance_snapshot_if_possible(raid_id: str, signup: dict) -> None:
+    """
+    Safety net:
+    If a comp exists, make sure attendance is synced one last time before
+    lifecycle cleanup removes the live signup entry.
+    """
+    last_comp_data = signup.get("last_comp_data")
+    comp_message_id = signup.get("comp_message_id")
+
+    if not last_comp_data or not comp_message_id:
+        return
+
+    try:
+        sync_attendance_from_comp(
+            raid_id=raid_id,
+            guild_id=signup.get("guild_id"),
+            channel_id=signup.get("channel_id"),
+            comp_message_id=comp_message_id,
+            comp_data=last_comp_data,
+            actor_user_id=None,
+        )
+    except Exception as e:
+        print(f"[Attendance Sync] Failed before lifecycle cleanup for raid {raid_id}: {e}")
+
+
+class RaidLifecycleCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.lifecycle_loop.start()
+
+    def cog_unload(self):
+        self.lifecycle_loop.cancel()
+
+    @tasks.loop(minutes=1)
+    async def lifecycle_loop(self):
+        data = load_signups()
+        now_ts = int(time.time())
+
+        changed = False
+        raid_ids_to_remove: list[str] = []
+
+        for raid_id, signup in list(data.items()):
+
+            if signup.get("lifecycle_processed"):
+                continue
+
+            if not is_signup_due_for_lifecycle(signup, now_ts):
+                continue
+
+            # Non-recurring raid cleanup
+            if not is_recurring_signup(signup):
+                _sync_attendance_snapshot_if_possible(str(raid_id), signup)
+
+                await _delete_old_raid_messages(self.bot, str(raid_id), signup)
+
+                raid_ids_to_remove.append(str(raid_id))
+                continue
+
+            guild_id = signup.get("guild_id")
+            channel_id = signup.get("channel_id")
+
+            if not guild_id or not channel_id:
+                continue
+
+            guild = self.bot.get_guild(int(guild_id))
+
+            if guild is None:
+                try:
+                    guild = await self.bot.fetch_guild(int(guild_id))
+                except discord.HTTPException:
+                    continue
+
+            channel = guild.get_channel(int(channel_id))
+
+            if channel is None:
+                try:
+                    channel = await guild.fetch_channel(int(channel_id))
+                except discord.HTTPException:
+                    continue
+
+            next_signup = build_next_recurring_signup(signup, now_ts)
+
+            new_message_id = await send_signup_message(_ChannelCtx(channel), next_signup)
+
+            if not new_message_id:
+                continue
+
+            data[str(new_message_id)] = next_signup
+            changed = True
+
+            _sync_attendance_snapshot_if_possible(str(raid_id), signup)
+
+            await _delete_old_raid_messages(self.bot, str(raid_id), signup)
+
+            raid_ids_to_remove.append(str(raid_id))
+
+        for raid_id in raid_ids_to_remove:
+            if raid_id in data:
+                del data[raid_id]
+                changed = True
+
+        if changed:
+            save_signups(data)
+
+    @lifecycle_loop.before_loop
+    async def before_lifecycle_loop(self):
+        await self.bot.wait_until_ready()
+        print("Raid lifecycle system active.")
+
+
+async def setup(bot):
+    await bot.add_cog(RaidLifecycleCog(bot))
+
+
+================================================
+FILE: cogs/recurring_raids.py
+================================================
+import time
+
+from discord.ext import commands, tasks
+
+from data.signup_store import load_signups, save_signups
+from services.raid.raid_recurring_service import (
+    should_create_next_recurring,
+    build_next_recurring_signup,
+    mark_next_recurring_created,
+)
+from services.signup.signup_message_service import send_signup_message
+
+
+class _ChannelCtx:
+    def __init__(self, channel):
+        self.channel = channel
+
+    async def send(self, *args, **kwargs):
+        return await self.channel.send(*args, **kwargs)
+
+
+class RecurringRaidCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.recurring_loop.start()
+
+    def cog_unload(self):
+        self.recurring_loop.cancel()
+
+    @tasks.loop(minutes=1)
+    async def recurring_loop(self):
+        data = load_signups()
+        now_ts = int(time.time())
+        changed = False
+
+        for raid_id, signup in list(data.items()):
+            if not should_create_next_recurring(signup, now_ts):
+                continue
+
+            guild_id = signup.get("guild_id")
+            channel_id = signup.get("channel_id")
+
+            if not guild_id or not channel_id:
+                continue
+
+            guild = self.bot.get_guild(int(guild_id))
+            if guild is None:
+                try:
+                    guild = await self.bot.fetch_guild(int(guild_id))
+                except Exception:
+                    continue
+
+            channel = guild.get_channel(int(channel_id))
+            if channel is None:
+                try:
+                    channel = await guild.fetch_channel(int(channel_id))
+                except Exception:
+                    continue
+
+            next_signup = build_next_recurring_signup(signup)
+
+            ok = await send_signup_message(_ChannelCtx(channel), next_signup)
+            if not ok:
+                continue
+
+            mark_next_recurring_created(signup)
+            changed = True
+
+        if changed:
+            save_signups(data)
+
+    @recurring_loop.before_loop
+    async def before_recurring_loop(self):
+        await self.bot.wait_until_ready()
+
+
+async def setup(bot):
+    await bot.add_cog(RecurringRaidCog(bot))
+
+
+================================================
+FILE: cogs/reminders.py
+================================================
+import time
+import discord
+from discord.ext import commands, tasks
+
+from data.signup_store import load_signups, save_signups
+from services.reminder.reminder_service import (
+    ensure_missing_signup_reminder_state,
+    ensure_signed_player_reminder_state,
+    get_signup_title,
+    get_missing_players,
+    get_signed_players,
+    find_missing_signup_threshold_to_send,
+    find_signed_player_threshold_to_send,
+    build_missing_signup_reminder_message,
+    build_signed_player_reminder_message,
+)
+
+
+async def _fetch_channel(bot, channel_id: int):
+    channel = bot.get_channel(channel_id)
+    if channel is not None:
+        return channel
+
+    try:
+        return await bot.fetch_channel(channel_id)
+    except Exception:
+        return None
+
+
+async def _fetch_message(channel, message_id: int | None):
+    if not message_id:
+        return None
+
+    try:
+        return await channel.fetch_message(int(message_id))
+    except Exception:
+        return None
+
+
+async def _delete_message_if_exists(channel, message_id: int | None) -> bool:
+    msg = await _fetch_message(channel, message_id)
+    if msg is None:
+        return False
+
+    try:
+        await msg.delete()
+        return True
+    except Exception:
+        return False
+
+
+async def _replace_message(
+    channel,
+    old_message_id: int | None,
+    content: str,
+) -> int | None:
+    """
+    Delete the old reminder message if it exists, then send a fresh one.
+    Returns the new message ID, or None on failure.
+    """
+    if old_message_id:
+        await _delete_message_if_exists(channel, old_message_id)
+
+    try:
+        msg = await channel.send(content)
+        return msg.id
+    except Exception:
+        return None
+
+
+class ReminderCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.reminder_loop.start()
+
+    def cog_unload(self):
+        self.reminder_loop.cancel()
+
+    @tasks.loop(minutes=1)
+    async def reminder_loop(self):
+        data = load_signups()
+        now = int(time.time())
+        changed = False
+
+        for raid_id, signup in data.items():
+            start_ts = signup.get("start_ts")
+            channel_id = signup.get("channel_id")
+            guild_id = signup.get("guild_id")
+
+            if not start_ts or not channel_id or not guild_id:
+                continue
+
+            seconds_left = start_ts - now
+            if seconds_left <= 0:
+                continue
+
+            minutes_left = seconds_left // 60
+
+            guild = self.bot.get_guild(int(guild_id))
+            if guild is None:
+                continue
+
+            channel = guild.get_channel(int(channel_id))
+
+            if channel is None:
+                try:
+                    channel = await guild.fetch_channel(int(channel_id))
+                except Exception:
+                    continue
+
+            missing_reminders_sent = ensure_missing_signup_reminder_state(signup)
+            signed_reminders_sent = ensure_signed_player_reminder_state(signup)
+            title = get_signup_title(signup)
+
+            missing_reminder_message_id = signup.get("missing_reminder_message_id")
+            signed_reminder_message_id = signup.get("signed_reminder_message_id")
+            comp_message_id = signup.get("comp_message_id")
+
+            # -------------------------
+            # 1) Missing signup reminders
+            # -------------------------
+            missing_players = get_missing_players(signup)
+            if missing_players:
+                threshold_info = find_missing_signup_threshold_to_send(
+                    minutes_left,
+                    missing_reminders_sent,
+                )
+
+                if threshold_info:
+                    threshold_str, label = threshold_info
+
+                    content = build_missing_signup_reminder_message(
+                        title=title,
+                        label=label,
+                        start_ts=start_ts,
+                        user_ids=missing_players,
+                    )
+
+                    active_message_id = await _replace_message(
+                        channel,
+                        missing_reminder_message_id,
+                        content,
+                    )
+
+                    if active_message_id:
+                        signup["missing_reminder_message_id"] = active_message_id
+                        missing_reminders_sent[threshold_str] = True
+                        changed = True
+
+            # -------------------------
+            # 2) Signed player reminder
+            # Only send if a comp has been posted
+            # -------------------------
+            signed_players = get_signed_players(signup)
+            if signed_players and comp_message_id:
+                threshold_info = find_signed_player_threshold_to_send(
+                    minutes_left,
+                    signed_reminders_sent,
+                )
+
+                if threshold_info:
+                    threshold_str, label = threshold_info
+
+                    # remove missing reminder first to keep channel clean
+                    if missing_reminder_message_id:
+                        await _delete_message_if_exists(channel, missing_reminder_message_id)
+                        signup["missing_reminder_message_id"] = None
+                        changed = True
+
+                    content = build_signed_player_reminder_message(
+                        title=title,
+                        label=label,
+                        start_ts=start_ts,
+                        user_ids=signed_players,
+                    )
+
+                    active_message_id = await _replace_message(
+                        channel,
+                        signed_reminder_message_id,
+                        content,
+                    )
+
+                    if active_message_id:
+                        signup["signed_reminder_message_id"] = active_message_id
+                        signed_reminders_sent[threshold_str] = True
+                        changed = True
+
+        if changed:
+            save_signups(data)
+
+    @reminder_loop.before_loop
+    async def before_reminder_loop(self):
+        await self.bot.wait_until_ready()
+
+
+async def setup(bot):
+    await bot.add_cog(ReminderCog(bot))
+
+
+================================================
+FILE: cogs/signup.py
+================================================
+import discord
+from discord.ext import commands
+
+from services.raid.raid_preset_service import (
+    build_wednesday_signup,
+    build_sunday_signup,
+    build_template_signup,
+)
+from services.signup.signup_message_service import send_signup_message
+
+
+class SignupCommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    async def _delete_command_message(self, ctx: commands.Context) -> None:
+        try:
+            await ctx.message.delete()
+        except discord.Forbidden:
+            pass
+        except discord.NotFound:
+            pass
+
+    async def _send_temporary_confirmation(
+        self,
+        ctx: commands.Context,
+        content: str,
+        *,
+        delete_after: int = 5,
+    ) -> None:
+        msg = await ctx.send(content)
+        try:
+            await msg.delete(delay=delete_after)
+        except (discord.Forbidden, discord.NotFound):
+            pass
+
+    async def _post_signup(self, ctx: commands.Context, signup: dict) -> None:
+        await self._delete_command_message(ctx)
+
+        ok = await send_signup_message(ctx, signup)
+        if not ok:
+            await self._send_temporary_confirmation(
+                ctx,
+                "⚠ Failed to create signup message.",
+            )
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def nuke(self, ctx: commands.Context):
+        await self._delete_command_message(ctx)
+
+        deleted_messages = await ctx.channel.purge(limit=1000)
+
+        await self._send_temporary_confirmation(
+            ctx,
+            f"💣 Deleted {len(deleted_messages)} messages from this channel.",
+        )
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def template(self, ctx: commands.Context):
+        signup = build_template_signup(ctx.guild.id, ctx.channel.id)
+        await self._post_signup(ctx, signup)
+
+async def setup(bot):
+    await bot.add_cog(SignupCommands(bot))
+
+
+================================================
+FILE: cogs/wa_commands.py
+================================================
+from discord.ext import commands
+
+from services.guild.guild_settings_service import get_weakauras_channel_id
+from views.raidpack_views import RaidPackView
+
+
+WA_PANEL_TEXT = """# Must Have Addons & WA's
+- [Method Raid Tools](https://www.curseforge.com/wow/addons/method-raid-tools)
+- [Gargul](https://www.curseforge.com/wow/addons/gargul)
+- <:fojji:1482050733258838087> [Fojjicore](https://www.curseforge.com/wow/addons/fojjicore)
+- <:fojji:1482050733258838087> [Fojji - Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `cheddar123`
+- <:fojji:1482050733258838087> [Raid Anchors WA](https://wago.io/FojjiRaidAnchors-MoP)
+
+**Raid Weakauras (Check at bottom)**
+
+### RAIDLEADER ONLY
+- <:fojji:1482050733258838087> [Fojji - [T15][Raid Leader] Throne of Thunder](https://wago.io/Fojji-ToT-RL) > `macaron123`
+
+# Optional WeakAuras
+- <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP) > `nutella123`
+- <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP-PF) > `paprika123`
+- <:fojji:1482050733258838087> [Fojji - Gear Checker](https://wago.io/Fojji-GearChecker) > `cucina123`
+- <:fojji:1482050733258838087> [Fojji Trinket/Proc Tracker](https://wago.io/FojjiTrinkets-MoP)
+- <:fojji:1482050733258838087> [Fojji - Raid Ability Timeline](https://wago.io/FojjiRaidAbilityTimeline) > `turnip123`
+
+**Click the buttons below to download the Raid Pack WAs**
+Click *"Dismiss this message"* if it shows an old version, then re-click the button.
+"""
+
+
+class WACommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command()
+    async def tot(self, ctx: commands.Context):
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("❌ This command can only be used in a server.")
+            return
+
+        channel_id = get_weakauras_channel_id(guild.id)
+        if not channel_id:
+            await ctx.send(
+                "❌ No WeakAuras channel is configured for this server. "
+                "Use the Guild Admin panel to set one first."
+            )
+            return
+
+        channel = guild.get_channel(channel_id)
+        if channel is None:
+            try:
+                channel = await guild.fetch_channel(channel_id)
+            except Exception:
+                channel = None
+
+        if channel is None:
+            await ctx.send("❌ Could not find the configured WeakAuras channel.")
+            return
+
+        await channel.send(
+            content=WA_PANEL_TEXT,
+            view=RaidPackView(),
+        )
+
+
+async def setup(bot):
+    await bot.add_cog(WACommands(bot))
+
+
+================================================
+FILE: data/attendance.json
+================================================
+{
+  "1489956097136660521": {
+    "raid_id": "1489956097136660521",
+    "guild_id": 1480200690654777466,
+    "channel_id": 1480200691938099263,
+    "title": "HC Progression - Template Preview",
+    "description": "Visual preview with fake raid roster",
+    "leader": "Raid Leader",
+    "start_ts": 1775669400,
+    "comp_message_id": 1489956267471536138,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "demo_0": {
+        "display_name": "Holytoast",
+        "name": "",
+        "class": "Monk",
+        "spec": "Brewmaster",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_0",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_1": {
+        "display_name": "Soulrot",
+        "name": "",
+        "class": "Paladin",
+        "spec": "ProtectionPaladin",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_1",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_2": {
+        "display_name": "Totemlord",
+        "name": "",
+        "class": "Shaman",
+        "spec": "RestorationShaman",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_2",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_3": {
+        "display_name": "Moonbeef",
+        "name": "",
+        "class": "Monk",
+        "spec": "Mistweaver",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_3",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_4": {
+        "display_name": "Critlord",
+        "name": "",
+        "class": "Druid",
+        "spec": "RestorationDruid",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_4",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_5": {
+        "display_name": "Windbonk",
+        "name": "",
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_5",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_6": {
+        "display_name": "Clawbert",
+        "name": "",
+        "class": "Shaman",
+        "spec": "Enhancement",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_6",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_7": {
+        "display_name": "Shockbot",
+        "name": "",
+        "class": "Warlock",
+        "spec": "Destruction",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_7",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_8": {
+        "display_name": "Shieldbro",
+        "name": "",
+        "class": "Priest",
+        "spec": "Shadow",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_8",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": "141881090913599488",
+        "edited_at": 1775434416
+      },
+      "demo_9": {
+        "display_name": "Thorgrim",
+        "name": "",
+        "class": "Rogue",
+        "spec": "Combat",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_9",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_13": {
+        "display_name": "Smitey",
+        "name": "",
+        "class": "Shaman",
+        "spec": "RestorationShaman",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_13",
+        "signup_status": "bench",
+        "auto_status": "benched",
+        "attendance_status": "benched",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_10": {
+        "display_name": "Hexella",
+        "name": "",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_10",
+        "signup_status": "late",
+        "auto_status": "late",
+        "attendance_status": "late",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_11": {
+        "display_name": "Leafhealz",
+        "name": "",
+        "class": "Hunter",
+        "spec": "Survival",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_11",
+        "signup_status": "tentative",
+        "auto_status": "tentative",
+        "attendance_status": "tentative",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_12": {
+        "display_name": "Glimmer",
+        "name": "",
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_12",
+        "signup_status": "absence",
+        "auto_status": "absent",
+        "attendance_status": "absent",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "141881090913599488": {
+        "display_name": "",
+        "name": "Balance Druid",
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "absence",
+        "auto_status": "absent",
+        "attendance_status": "absent",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1775303658,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1775303658,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1775434414,
+        "action": "attendance_player_updated",
+        "by_user_id": "141881090913599488",
+        "target_user_id": "demo_8",
+        "attendance_status": "absent"
+      },
+      {
+        "timestamp": 1775434416,
+        "action": "attendance_player_reset_to_auto",
+        "by_user_id": "141881090913599488",
+        "target_user_id": "demo_8"
+      }
+    ],
+    "finalized_at": 1775303658,
+    "finalized_by": "auto_comp_post"
+  },
+  "1489956173175062538": {
+    "raid_id": "1489956173175062538",
+    "guild_id": 1480200690654777466,
+    "channel_id": 1480200691938099263,
+    "title": "HC Progression - Template Preview",
+    "description": "Visual preview with fake raid roster",
+    "leader": "Raid Leader",
+    "start_ts": 1775669400,
+    "comp_message_id": 1489956325914968206,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "demo_0": {
+        "display_name": "Smitey",
+        "name": "",
+        "class": "Monk",
+        "spec": "Brewmaster",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_0",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_1": {
+        "display_name": "Leafhealz",
+        "name": "",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_1",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_2": {
+        "display_name": "Critlord",
+        "name": "",
+        "class": "Monk",
+        "spec": "Mistweaver",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_2",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_3": {
+        "display_name": "Totemlord",
+        "name": "",
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_3",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_4": {
+        "display_name": "Holytoast",
+        "name": "",
+        "class": "Priest",
+        "spec": "HolyPriest",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_4",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_5": {
+        "display_name": "Arrowqt",
+        "name": "",
+        "class": "Rogue",
+        "spec": "Assassination",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_5",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_6": {
+        "display_name": "Shockbot",
+        "name": "",
+        "class": "Mage",
+        "spec": "Fire",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_6",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_7": {
+        "display_name": "Bearjuice",
+        "name": "",
+        "class": "Rogue",
+        "spec": "Combat",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_7",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_8": {
+        "display_name": "Shieldbro",
+        "name": "",
+        "class": "Warlock",
+        "spec": "Demonology",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_8",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_9": {
+        "display_name": "Shadowzap",
+        "name": "",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_9",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_13": {
+        "display_name": "Mendrina",
+        "name": "",
+        "class": "Rogue",
+        "spec": "Combat",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_13",
+        "signup_status": "bench",
+        "auto_status": "benched",
+        "attendance_status": "benched",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_10": {
+        "display_name": "Pyroblastz",
+        "name": "",
+        "class": "Mage",
+        "spec": "Frost",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_10",
+        "signup_status": "late",
+        "auto_status": "late",
+        "attendance_status": "late",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "141881090913599488": {
+        "display_name": "",
+        "name": "Balance Druid",
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "late",
+        "auto_status": "late",
+        "attendance_status": "late",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_11": {
+        "display_name": "Moonbeef",
+        "name": "",
+        "class": "Warrior",
+        "spec": "Arms",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_11",
+        "signup_status": "tentative",
+        "auto_status": "tentative",
+        "attendance_status": "tentative",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_12": {
+        "display_name": "Thorgrim",
+        "name": "",
+        "class": "Shaman",
+        "spec": "Enhancement",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_12",
+        "signup_status": "absence",
+        "auto_status": "absent",
+        "attendance_status": "absent",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1775303674,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1775303674,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "finalized_at": 1775303674,
+    "finalized_by": "auto_comp_post"
+  },
+  "1489956345246519416": {
+    "raid_id": "1489956345246519416",
+    "guild_id": 1480200690654777466,
+    "channel_id": 1480200691938099263,
+    "title": "HC Progression - Template Preview",
+    "description": "Visual preview with fake raid roster",
+    "leader": "Raid Leader",
+    "start_ts": 1775669400,
+    "comp_message_id": 1489956516072259686,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "demo_0": {
+        "display_name": "Thorgrim",
+        "name": "",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_0",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_1": {
+        "display_name": "Hexella",
+        "name": "",
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_1",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_2": {
+        "display_name": "Critlord",
+        "name": "",
+        "class": "Druid",
+        "spec": "RestorationDruid",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_2",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_3": {
+        "display_name": "Soulrot",
+        "name": "",
+        "class": "Shaman",
+        "spec": "RestorationShaman",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_3",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "141881090913599488": {
+        "display_name": "",
+        "name": "Balance Druid",
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "absent",
+        "status_source": "manual",
+        "manual_override": true,
+        "edited_by": "141881090913599488",
+        "edited_at": 1775304578
+      },
+      "demo_5": {
+        "display_name": "Shockbot",
+        "name": "",
+        "class": "Paladin",
+        "spec": "Retribution",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_5",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_6": {
+        "display_name": "Sneakstab",
+        "name": "",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_6",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_7": {
+        "display_name": "Frostzug",
+        "name": "",
+        "class": "Rogue",
+        "spec": "Combat",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_7",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_8": {
+        "display_name": "Glimmer",
+        "name": "",
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_8",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_9": {
+        "display_name": "Leafhealz",
+        "name": "",
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_9",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_13": {
+        "display_name": "Darkmoo",
+        "name": "",
+        "class": "Priest",
+        "spec": "Shadow",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_13",
+        "signup_status": "bench",
+        "auto_status": "benched",
+        "attendance_status": "benched",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_4": {
+        "display_name": "Pyroblastz",
+        "name": "",
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_4",
+        "signup_status": "bench",
+        "auto_status": "benched",
+        "attendance_status": "benched",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_10": {
+        "display_name": "Totemlord",
+        "name": "",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_10",
+        "signup_status": "late",
+        "auto_status": "late",
+        "attendance_status": "late",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_11": {
+        "display_name": "Holytoast",
+        "name": "",
+        "class": "Mage",
+        "spec": "Fire",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_11",
+        "signup_status": "tentative",
+        "auto_status": "tentative",
+        "attendance_status": "tentative",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_12": {
+        "display_name": "Windbonk",
+        "name": "",
+        "class": "Rogue",
+        "spec": "Subtlety",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_12",
+        "signup_status": "absence",
+        "auto_status": "absent",
+        "attendance_status": "absent",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1775303718,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1775303718,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1775304578,
+        "action": "attendance_player_updated",
+        "by_user_id": "141881090913599488",
+        "target_user_id": "141881090913599488",
+        "attendance_status": "absent"
+      }
+    ],
+    "finalized_at": 1775303718,
+    "finalized_by": "auto_comp_post"
+  },
+  "1490506036803538946": {
+    "raid_id": "1490506036803538946",
+    "guild_id": 1480200690654777466,
+    "channel_id": 1480200691938099263,
+    "title": "HC Progression - Template Preview",
+    "description": "Visual preview with fake raid roster",
+    "leader": "Raid Leader",
+    "start_ts": 1775669400,
+    "comp_message_id": 1490506200465281114,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "demo_9": {
+        "display_name": "Bonkadin",
+        "name": "",
+        "class": "Warrior",
+        "spec": "Arms",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_9",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_11": {
+        "display_name": "Glimmer",
+        "name": "",
+        "class": "Hunter",
+        "spec": "Beast Mastery",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_11",
+        "signup_status": "tentative",
+        "auto_status": "tentative",
+        "attendance_status": "tentative",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_8": {
+        "display_name": "Sneakstab",
+        "name": "",
+        "class": "Hunter",
+        "spec": "Marksmanship",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_8",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_4": {
+        "display_name": "Dotsdot",
+        "name": "",
+        "class": "Druid",
+        "spec": "RestorationDruid",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_4",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_7": {
+        "display_name": "Leafhealz",
+        "name": "",
+        "class": "Death Knight",
+        "spec": "FrostDK",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_7",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_12": {
+        "display_name": "Shieldbro",
+        "name": "",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_12",
+        "signup_status": "absence",
+        "auto_status": "absent",
+        "attendance_status": "absent",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_2": {
+        "display_name": "Moonbeef",
+        "name": "",
+        "class": "Monk",
+        "spec": "Mistweaver",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_2",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_13": {
+        "display_name": "Soulrot",
+        "name": "",
+        "class": "Hunter",
+        "spec": "Marksmanship",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_13",
+        "signup_status": "bench",
+        "auto_status": "benched",
+        "attendance_status": "benched",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_5": {
+        "display_name": "Mendrina",
+        "name": "",
+        "class": "Rogue",
+        "spec": "Combat",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_5",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_3": {
+        "display_name": "Smitey",
+        "name": "",
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_3",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_6": {
+        "display_name": "Frostzug",
+        "name": "",
+        "class": "Monk",
+        "spec": "Windwalker",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_6",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_1": {
+        "display_name": "Hexella",
+        "name": "",
+        "class": "Monk",
+        "spec": "Brewmaster",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_1",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_10": {
+        "display_name": "Shadowzap",
+        "name": "",
+        "class": "Paladin",
+        "spec": "Retribution",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_10",
+        "signup_status": "late",
+        "auto_status": "late",
+        "attendance_status": "late",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_0": {
+        "display_name": "Totemlord",
+        "name": "",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_0",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1775434770,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1775434770,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "finalized_at": 1775434770,
+    "finalized_by": "auto_comp_post"
+  },
+  "1490510636487278652": {
+    "raid_id": "1490510636487278652",
+    "guild_id": 1480200690654777466,
+    "channel_id": 1480200691938099263,
+    "title": "HC Progression - Template Preview",
+    "description": "Visual preview with fake raid roster",
+    "leader": "Raid Leader",
+    "start_ts": 1775669400,
+    "comp_message_id": 1490510678883045406,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "demo_4": {
+        "display_name": "Bonkadin",
+        "name": "",
+        "class": "Paladin",
+        "spec": "HolyPaladin",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_4",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_6": {
+        "display_name": "Clawbert",
+        "name": "",
+        "class": "Rogue",
+        "spec": "Subtlety",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_6",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_1": {
+        "display_name": "Pyroblastz",
+        "name": "",
+        "class": "Druid",
+        "spec": "Guardian",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_1",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_12": {
+        "display_name": "Mendrina",
+        "name": "",
+        "class": "Warrior",
+        "spec": "Arms",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_12",
+        "signup_status": "absence",
+        "auto_status": "absent",
+        "attendance_status": "absent",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_5": {
+        "display_name": "Shieldbro",
+        "name": "",
+        "class": "Druid",
+        "spec": "Feral",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_5",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_11": {
+        "display_name": "Thorgrim",
+        "name": "",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_11",
+        "signup_status": "tentative",
+        "auto_status": "tentative",
+        "attendance_status": "tentative",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_0": {
+        "display_name": "Bearjuice",
+        "name": "",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "demo_0",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_13": {
+        "display_name": "Dotsdot",
+        "name": "",
+        "class": "Mage",
+        "spec": "Fire",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_13",
+        "signup_status": "bench",
+        "auto_status": "benched",
+        "attendance_status": "benched",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_8": {
+        "display_name": "Critlord",
+        "name": "",
+        "class": "Shaman",
+        "spec": "Enhancement",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_8",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_7": {
+        "display_name": "Smitey",
+        "name": "",
+        "class": "Warlock",
+        "spec": "Destruction",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_7",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_2": {
+        "display_name": "Shadowzap",
+        "name": "",
+        "class": "Monk",
+        "spec": "Mistweaver",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_2",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_10": {
+        "display_name": "Leafhealz",
+        "name": "",
+        "class": "Hunter",
+        "spec": "Beast Mastery",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "demo_10",
+        "signup_status": "late",
+        "auto_status": "late",
+        "attendance_status": "late",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_3": {
+        "display_name": "Windbonk",
+        "name": "",
+        "class": "Shaman",
+        "spec": "RestorationShaman",
+        "role": "Healer",
+        "note": "",
+        "user_id": "demo_3",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "demo_9": {
+        "display_name": "Darkmoo",
+        "name": "",
+        "class": "Monk",
+        "spec": "Windwalker",
+        "role": "Melee",
+        "note": "",
+        "user_id": "demo_9",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1775435838,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1775435838,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "finalized_at": 1775435838,
+    "finalized_by": "auto_comp_post"
+  }
+}
+
+
+================================================
+FILE: data/attendance_store.py
+================================================
+import json
+from pathlib import Path
+from typing import Any
+
+
+DATA_FILE = Path(__file__).resolve().parent / "attendance.json"
+
+
+def _ensure_data_dir() -> None:
+    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+
+def load_attendance() -> dict[str, dict[str, Any]]:
+    if not DATA_FILE.exists():
+        return {}
+
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def save_attendance(data: dict[str, dict[str, Any]]) -> None:
+    _ensure_data_dir()
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def find_attendance_record(
+    data: dict[str, dict[str, Any]],
+    raid_id: int | str,
+) -> dict[str, Any] | None:
+    return data.get(str(raid_id))
+
+
+def get_or_create_attendance_record(
+    data: dict[str, dict[str, Any]],
+    raid_id: int | str,
+) -> dict[str, Any]:
+    key = str(raid_id)
+
+    if key not in data:
+        data[key] = {
+            "raid_id": key,
+            "guild_id": None,
+            "channel_id": None,
+            "title": "",
+            "description": "",
+            "leader": "",
+            "start_ts": None,
+            "comp_message_id": None,
+            "snapshot_source": "comp_post",
+            "snapshot_version": 1,
+            "finalized": False,
+            "players": {},
+            "history": [],
+        }
+
+    return data[key]
+
+
+================================================
+FILE: data/character_store.py
+================================================
+import json
+from pathlib import Path
+
+
+FILE = Path(__file__).resolve().parent / "characters.json"
+
+
+def _ensure_data_dir() -> None:
+    FILE.parent.mkdir(parents=True, exist_ok=True)
+
+
+def load_characters() -> dict:
+    if not FILE.exists():
+        return {}
+
+    try:
+        with open(FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def save_characters(data: dict) -> None:
+    _ensure_data_dir()
+
+    with open(FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def _is_legacy_user_only_format(data: dict) -> bool:
+    """
+    Legacy format:
+    {
+        "user_id": [characters]
+    }
+
+    New format:
+    {
+        "guild_id": {
+            "user_id": [characters]
+        }
+    }
+    """
+    if not data:
+        return False
+
+    return all(isinstance(value, list) for value in data.values())
+
+
+def _migrate_legacy_data_to_guild(data: dict, guild_id: int) -> dict:
+    """
+    One-time lazy migration:
+    Move legacy flat user->characters data into the guild that first accesses it.
+    """
+    if not _is_legacy_user_only_format(data):
+        return data
+
+    migrated = {
+        str(guild_id): {
+            str(user_id): chars if isinstance(chars, list) else []
+            for user_id, chars in data.items()
+        }
+    }
+    save_characters(migrated)
+    return migrated
+
+
+def _get_guild_bucket(data: dict, guild_id: int) -> dict:
+    data = _migrate_legacy_data_to_guild(data, guild_id)
+
+    guild_key = str(guild_id)
+    guild_bucket = data.get(guild_key)
+
+    if not isinstance(guild_bucket, dict):
+        data[guild_key] = {}
+        save_characters(data)
+        guild_bucket = data[guild_key]
+
+    return guild_bucket
+
+
+def _get_user_list(data: dict, guild_id: int, user_id: int) -> list[dict]:
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
+
+    user_chars = guild_bucket.get(user_key, [])
+    if not isinstance(user_chars, list):
+        guild_bucket[user_key] = []
+        save_characters(data)
+        return []
+
+    return user_chars
+
+
+def get_user_characters(guild_id: int, user_id: int) -> list[dict]:
+    data = load_characters()
+    return _get_user_list(data, guild_id, user_id)
+
+
+def get_character_by_class(guild_id: int, user_id: int, class_name: str) -> dict | None:
+    characters = get_user_characters(guild_id, user_id)
+
+    for char in characters:
+        if char.get("class") == class_name:
+            return char
+
+    return None
+
+
+def add_character(guild_id: int, user_id: int, char: dict) -> bool:
+    data = load_characters()
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
+
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+        guild_bucket[user_key] = []
+
+    existing = guild_bucket[user_key]
+
+    for saved in existing:
+        if saved.get("class") == char.get("class"):
+            return False
+
+    existing.append(char)
+    save_characters(data)
+    return True
+
+
+def remove_character(guild_id: int, user_id: int, index: int) -> bool:
+    data = load_characters()
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
+
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+        return False
+
+    if not (0 <= index < len(guild_bucket[user_key])):
+        return False
+
+    guild_bucket[user_key].pop(index)
+    save_characters(data)
+    return True
+
+
+def update_character_name_by_class(
+    guild_id: int,
+    user_id: int,
+    class_name: str,
+    new_name: str,
+) -> bool:
+    data = load_characters()
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
+
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+        return False
+
+    for char in guild_bucket[user_key]:
+        if char.get("class") == class_name:
+            char["name"] = new_name.strip()
+            save_characters(data)
+            return True
+
+    return False
+
+
+def update_character_spec_by_class(
+    guild_id: int,
+    user_id: int,
+    class_name: str,
+    new_spec: str,
+    new_role: str,
+) -> bool:
+    data = load_characters()
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
+
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+        return False
+
+    for char in guild_bucket[user_key]:
+        if char.get("class") == class_name:
+            char["spec"] = new_spec
+            char["role"] = new_role
+            save_characters(data)
+            return True
+
+    return False
+
+
+================================================
+FILE: data/characters_dev.json
+================================================
+{
+    "1480200690654777466": {
+        "141881090913599488": [
+            {
+                "name": "Hekkipekki",
+                "class": "Druid",
+                "spec": "Guardian",
+                "role": "Tank"
+            }
+        ]
+    }
+}
+
+
+================================================
+FILE: data/guild_settings.json
+================================================
+{
+  "1480200690654777466": {
+    "guild_name": "Hekkipekkis server",
+    "raid_control_user_ids": [

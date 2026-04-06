@@ -1,8 +1,15 @@
+import asyncio
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+from utils.discord_utils import send_ephemeral_error, delete_interaction_after
 from utils.permissions import can_manage_raid_tools
+from utils.ui_timing import (
+    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+    SLASH_PANEL_AUTO_DELETE_SECONDS,
+)
 from views.raid_builder import RaidStartView
 
 
@@ -13,9 +20,10 @@ class RaidBuilderCommands(commands.Cog):
     @app_commands.command(name="raid", description="Open the raid creation panel.")
     async def raid(self, interaction: discord.Interaction):
         if not can_manage_raid_tools(interaction):
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⛔ You do not have access to create raids.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
@@ -23,9 +31,10 @@ class RaidBuilderCommands(commands.Cog):
         channel = interaction.channel
 
         if guild is None or channel is None:
-            await interaction.response.send_message(
+            await send_ephemeral_error(
+                interaction,
                 "⚠ This command can only be used in a server.",
-                ephemeral=True,
+                delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
             )
             return
 
@@ -33,6 +42,9 @@ class RaidBuilderCommands(commands.Cog):
             "Raid setup",
             view=RaidStartView(guild.id, channel.id),
             ephemeral=True,
+        )
+        asyncio.create_task(
+            delete_interaction_after(interaction, SLASH_PANEL_AUTO_DELETE_SECONDS)
         )
 
 

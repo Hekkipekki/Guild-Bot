@@ -1,0 +1,16 @@
+{
+  "1480200690654777466": {
+    "templates": [
+      {
+        "name": "test",
+        "title": "test",
+        "description": "test",
+        "leader": "test",
+        "time": "19:30",
+        "channel_id": 1480200691938099263,
+        "is_recurring": true,
+        "recurring_interval_days": 7
+      }
+    ]
+  }
+}

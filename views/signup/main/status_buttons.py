@@ -5,7 +5,7 @@ from services.signup.signup_service import set_user_status
 from services.signup.signup_refresh_service import refresh_signup_message
 from utils.emoji_helpers import parse_button_emoji
 from utils.ui_timing import ERROR_MESSAGE_AUTO_DELETE_SECONDS
-from utils.discord_utils import delete_interaction_after
+from utils.discord_utils import delete_message_after
 
 
 NOTE_REQUIRED_STATUSES = {"late", "tentative", "absence"}
@@ -82,4 +82,4 @@ class SignupStatusButton(discord.ui.Button):
                 ephemeral=True,
                 wait=True,
             )
-            asyncio.create_task(msg.delete(delay=ERROR_MESSAGE_AUTO_DELETE_SECONDS))
+            asyncio.create_task(delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS))
