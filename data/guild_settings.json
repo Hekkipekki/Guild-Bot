@@ -1,8 +1,13 @@
 {
   "1480200690654777466": {
     "guild_name": "Hekkipekkis server",
-    "raid_control_user_ids": [],
-    "expected_players": [],
+    "raid_control_user_ids": [
+      "141881090913599488"
+    ],
+    "expected_players": [
+      "1480200859735293965",
+      "141881090913599488"
+    ],
     "default_leader": "",
     "default_description": "",
     "weakauras_channel_id": 1480200691938099263,

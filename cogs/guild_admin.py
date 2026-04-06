@@ -2,7 +2,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from views.guild_admin.guild_admin_view import GuildAdminView, build_guild_config_embed
+from views.guild_admin.guild_admin_helpers import build_guild_config_embed
+from views.guild_admin.guild_admin_view import GuildSetupView
 
 
 def _is_guild_admin(interaction: discord.Interaction) -> bool:
@@ -37,8 +38,8 @@ class GuildAdminCommands(commands.Cog):
             return None
         return guild
 
-    @app_commands.command(name="guildadmin", description="Open the guild admin panel.")
-    async def guildadmin(self, interaction: discord.Interaction):
+    @app_commands.command(name="setup", description="Open the server setup panel.")
+    async def setup_panel(self, interaction: discord.Interaction):
         if await self._deny_if_not_admin(interaction):
             return
 
@@ -48,7 +49,7 @@ class GuildAdminCommands(commands.Cog):
 
         await interaction.response.send_message(
             embed=build_guild_config_embed(guild),
-            view=GuildAdminView(),
+            view=GuildSetupView(),
             ephemeral=True,
         )
 
