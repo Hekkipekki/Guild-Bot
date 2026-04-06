@@ -47,6 +47,7 @@ def _apply_status_and_note(
     entry["status"] = status
     entry["timestamp"] = time.time()
     entry.setdefault("name", "")
+    entry.setdefault("display_name", "")
 
     if note is not None:
         entry["note"] = note.strip()
@@ -66,13 +67,23 @@ def get_signup_user(raid_id: int, user_id: str) -> dict | None:
     return signup.get("users", {}).get(user_id)
 
 
-def set_user_status(raid_id: int, user_id: str, status: str) -> tuple[bool, str | None]:
+# 🔥 UPDATED: add display_name support
+def set_user_status(
+    raid_id: int,
+    user_id: str,
+    status: str,
+    *,
+    display_name: str | None = None,
+) -> tuple[bool, str | None]:
     data = load_signups()
     signup = _get_signup(data, raid_id)
 
     entry, error_message = _validate_signup_entry_for_status(signup, user_id, create=True)
     if entry is None:
         return False, error_message
+
+    if display_name:
+        entry["display_name"] = display_name
 
     _apply_status_and_note(entry, status=status)
     save_signups(data)
@@ -84,6 +95,8 @@ def set_user_status_with_note(
     user_id: str,
     status: str,
     note: str,
+    *,
+    display_name: str | None = None,
 ) -> tuple[bool, str | None]:
     data = load_signups()
     signup = _get_signup(data, raid_id)
@@ -95,6 +108,9 @@ def set_user_status_with_note(
     cleaned_note = note.strip()
     if status in NOTE_REQUIRED_STATUSES and not cleaned_note:
         return False, "⚠ A note is required for Tentative or Absence."
+
+    if display_name:
+        entry["display_name"] = display_name
 
     _apply_status_and_note(entry, status=status, note=cleaned_note)
     save_signups(data)
@@ -118,7 +134,14 @@ def remove_user_signup(raid_id: int, user_id: str) -> bool:
     return True
 
 
-def set_user_class(raid_id: int, user_id: str, selected_class: str) -> bool:
+# 🔥 UPDATED
+def set_user_class(
+    raid_id: int,
+    user_id: str,
+    selected_class: str,
+    *,
+    display_name: str | None = None,
+) -> bool:
     data = load_signups()
     signup = _get_signup(data, raid_id)
 
@@ -134,10 +157,14 @@ def set_user_class(raid_id: int, user_id: str, selected_class: str) -> bool:
     entry.setdefault("name", "")
     entry.setdefault("note", "")
 
+    if display_name:
+        entry["display_name"] = display_name
+
     save_signups(data)
     return True
 
 
+# 🔥 UPDATED
 def set_user_spec(
     raid_id: int,
     user_id: str,
@@ -147,6 +174,7 @@ def set_user_spec(
     *,
     character_name: str | None = None,
     auto_sign: bool = False,
+    display_name: str | None = None,
 ) -> bool:
     data = load_signups()
     signup = _get_signup(data, raid_id)
@@ -167,6 +195,9 @@ def set_user_spec(
         entry.setdefault("name", f"{selected_spec} {selected_class}")
 
     entry.setdefault("note", "")
+
+    if display_name:
+        entry["display_name"] = display_name
 
     if auto_sign:
         entry["status"] = "sign"

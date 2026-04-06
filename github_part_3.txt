@@ -1,71 +1,3 @@
-        for template in templates
-        if template.get("name", "").strip().lower() != name
-    ]
-
-    if len(updated_templates) == len(templates):
-        return False
-
-    save_guild_templates(guild_id, updated_templates)
-    return True
-
-
-def get_template_by_name(guild_id: int, template_name: str) -> dict | None:
-    templates = get_guild_templates(guild_id)
-    name = template_name.strip().lower()
-
-    for template in templates:
-        if template.get("name", "").strip().lower() == name:
-            return template
-
-    return None
-
-
-def build_raid_data_from_template(
-    guild_id: int,
-    channel_id: int,
-    template_name: str,
-    date_str: str,
-) -> dict | None:
-    template = get_template_by_name(guild_id, template_name)
-    if not template:
-        return None
-
-    return {
-        "title": template.get("title", "New Raid Signup"),
-        "description": template.get("description", ""),
-        "leader": template.get("leader", ""),
-        "date": date_str,
-        "time": template.get("time", "19:30"),
-        "channel_id": template.get("channel_id") or channel_id,
-        "is_recurring": bool(template.get("is_recurring", False)),
-        "recurring_interval_days": template.get("recurring_interval_days"),
-    }
-
-
-================================================
-FILE: services/reminder/__init__.py
-================================================
-[Empty file]
-
-
-================================================
-FILE: services/reminder/reminder_service.py
-================================================
-from logic.unassigned import get_unassigned_players
-
-
-MISSING_SIGNUP_THRESHOLDS = {
-    "2880": "48 hours",
-    "1440": "24 hours",
-}
-
-SIGNED_PLAYER_THRESHOLDS = {
-    "60": "1 hour",
-}
-
-
-def should_send_threshold(minutes_left: int, threshold: int, window: int = 300) -> bool:
-    """
     Send reminder if current time is inside the allowed reminder window.
 
     Example with window=300 (5 hours):
@@ -714,6 +646,51 @@ from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
 )
 
+# Tracks the latest signup-options ephemeral message for each (raid_id, user_id)
+# so a new main-signup interaction can replace the old ephemeral instead of stacking.
+_ACTIVE_SIGNUP_OPTION_MESSAGES: dict[tuple[int, int], discord.WebhookMessage] = {}
+
+
+def _panel_key(raid_id: int, user_id: int) -> tuple[int, int]:
+    return (int(raid_id), int(user_id))
+
+
+def _forget_panel(raid_id: int, user_id: int) -> None:
+    _ACTIVE_SIGNUP_OPTION_MESSAGES.pop(_panel_key(raid_id, user_id), None)
+
+
+async def _delete_tracked_panel(
+    raid_id: int,
+    user_id: int,
+) -> None:
+    key = _panel_key(raid_id, user_id)
+    old_msg = _ACTIVE_SIGNUP_OPTION_MESSAGES.pop(key, None)
+
+    if old_msg is None:
+        return
+
+    try:
+        await old_msg.delete()
+    except Exception:
+        pass
+
+
+async def _auto_delete_tracked_panel(
+    raid_id: int,
+    user_id: int,
+    message: discord.WebhookMessage,
+    seconds: int,
+) -> None:
+    try:
+        await asyncio.sleep(seconds)
+        await message.delete()
+    except Exception:
+        pass
+    finally:
+        key = _panel_key(raid_id, user_id)
+        if _ACTIVE_SIGNUP_OPTION_MESSAGES.get(key) is message:
+            _ACTIVE_SIGNUP_OPTION_MESSAGES.pop(key, None)
+
 
 async def _send_error_response(
     interaction: discord.Interaction,
@@ -821,23 +798,103 @@ async def show_signup_options_panel(
         )
         return False
 
-    if interaction.response.is_done():
-        msg = await interaction.followup.send(
-            embed=build_signup_options_embed(entry),
-            view=SignupOptionsView(guild.id, raid_id, user_id),
-            ephemeral=True,
-            wait=True,
-        )
-        asyncio.create_task(delete_message_after(msg, delete_after))
-    else:
-        await interaction.response.edit_message(
-            content=None,
-            embed=build_signup_options_embed(entry),
-            view=SignupOptionsView(guild.id, raid_id, user_id),
-        )
-        asyncio.create_task(delete_interaction_after(interaction, delete_after))
+    embed = build_signup_options_embed(entry)
+    view = SignupOptionsView(guild.id, raid_id, user_id)
 
-    return True
+    # Always remove the previous tracked signup-options panel first,
+    # so the user only sees one active ephemeral panel at a time.
+    await _delete_tracked_panel(raid_id, user_id)
+
+    try:
+        if interaction.response.is_done():
+            msg = await interaction.followup.send(
+                embed=embed,
+                view=view,
+                ephemeral=True,
+                wait=True,
+            )
+        else:
+            await interaction.response.send_message(
+                embed=embed,
+                view=view,
+                ephemeral=True,
+            )
+            msg = await interaction.original_response()
+
+        _ACTIVE_SIGNUP_OPTION_MESSAGES[_panel_key(raid_id, user_id)] = msg
+        asyncio.create_task(
+            _auto_delete_tracked_panel(raid_id, user_id, msg, delete_after)
+        )
+        return True
+
+    except Exception as e:
+        await _send_error_response(
+            interaction,
+            f"⚠ Could not open signup options: {e}",
+        )
+        return False
+
+
+async def replace_signup_options_panel(
+    interaction: discord.Interaction,
+    raid_id: int,
+    user_id: int,
+    *,
+    delete_after: int = SIGNUP_OPTIONS_AUTO_DELETE_SECONDS,
+) -> bool:
+    """
+    Use this only when the interaction already comes from the signup-options
+    ephemeral panel itself and should replace that exact panel.
+    """
+    from views.signup_options.options_view import SignupOptionsView
+
+    entry = get_signup_entry(raid_id, str(user_id))
+    if not entry:
+        await _send_error_response(
+            interaction,
+            "⚠ Could not load signup options.",
+        )
+        return False
+
+    guild = interaction.guild
+    if guild is None:
+        await _send_error_response(
+            interaction,
+            "⚠ This action can only be used inside a server.",
+        )
+        return False
+
+    embed = build_signup_options_embed(entry)
+    view = SignupOptionsView(guild.id, raid_id, user_id)
+
+    try:
+        if interaction.response.is_done():
+            await interaction.edit_original_response(
+                content=None,
+                embed=embed,
+                view=view,
+            )
+            msg = await interaction.original_response()
+        else:
+            await interaction.response.edit_message(
+                content=None,
+                embed=embed,
+                view=view,
+            )
+            msg = await interaction.original_response()
+
+        _ACTIVE_SIGNUP_OPTION_MESSAGES[_panel_key(raid_id, user_id)] = msg
+        asyncio.create_task(
+            _auto_delete_tracked_panel(raid_id, user_id, msg, delete_after)
+        )
+        return True
+
+    except Exception as e:
+        await _send_error_response(
+            interaction,
+            f"⚠ Could not replace signup options: {e}",
+        )
+        return False
 
 
 async def refresh_and_show_signup_options_from_interaction(
@@ -1072,17 +1129,20 @@ def next_weekday(weekday: int, hour: int, minute: int) -> int:
 FILE: utils/ui_timing.py
 ================================================
 # Core generic timings
-ERROR_MESSAGE_AUTO_DELETE_SECONDS = 15
-SHORT_CONFIRMATION_AUTO_DELETE_SECONDS = 12
+ERROR_MESSAGE_AUTO_DELETE_SECONDS = 10
+SHORT_CONFIRMATION_AUTO_DELETE_SECONDS = 10
+
+# Backward compatibility for older imports
+SHORT_CONFIRMATION_DELETE_SECONDS = SHORT_CONFIRMATION_AUTO_DELETE_SECONDS
 
 # Panels / menus
-SIGNUP_OPTIONS_AUTO_DELETE_SECONDS = 60
-CHARACTER_MENU_AUTO_DELETE_SECONDS = 60
+SIGNUP_OPTIONS_AUTO_DELETE_SECONDS = 30
+CHARACTER_MENU_AUTO_DELETE_SECONDS = 30
 RAID_CONTROL_AUTO_DELETE_SECONDS = 60
 SLASH_PANEL_AUTO_DELETE_SECONDS = 60
 
 # Slash-command one-off replies
-SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS = 20
+SLASH_COMMAND_RESPONSE_AUTO_DELETE_SECONDS = 10
 
 # Special cases
 ATTENDANCE_REPORT_AUTO_DELETE_SECONDS = 45
@@ -3291,29 +3351,3 @@ class CharacterSelect(discord.ui.Select):
     ):
         self.guild_id = guild_id
         self.parent_message_id = parent_message_id
-        self.user_id = user_id
-        self.filter_class = filter_class
-
-        characters = get_user_characters(guild_id, user_id)
-
-        if filter_class:
-            characters = [c for c in characters if c["class"] == filter_class]
-
-        self.filtered_characters = characters
-        options = []
-
-        for i, char in enumerate(characters):
-            emoji = parse_spec_emoji(char["spec"])
-
-            options.append(
-                discord.SelectOption(
-                    label=char["name"],
-                    description=f"{char['class']} • {char['spec']}",
-                    value=str(i),
-                    emoji=emoji,
-                )
-            )
-
-        options.append(
-            discord.SelectOption(
-                label="Add Character",

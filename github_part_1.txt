@@ -3317,3 +3317,37 @@ def remove_character(guild_id: int, user_id: int, index: int) -> bool:
 
 
 def update_character_name_by_class(
+    guild_id: int,
+    user_id: int,
+    class_name: str,
+    new_name: str,
+) -> bool:
+    data = load_characters()
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
+
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+        return False
+
+    for char in guild_bucket[user_key]:
+        if char.get("class") == class_name:
+            char["name"] = new_name.strip()
+            save_characters(data)
+            return True
+
+    return False
+
+
+def update_character_spec_by_class(
+    guild_id: int,
+    user_id: int,
+    class_name: str,
+    new_spec: str,
+    new_role: str,
+) -> bool:
+    data = load_characters()
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
+
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+        return False

@@ -8,6 +8,7 @@ from services.signup.signup_service import (
 )
 from services.signup.signup_ui_service import (
     refresh_main_signup_from_channel,
+    replace_signup_options_panel,
 )
 from utils.ui_timing import (
     SIGNUP_OPTIONS_AUTO_DELETE_SECONDS,
@@ -15,7 +16,6 @@ from utils.ui_timing import (
 )
 from .helpers import get_signup_entry
 from utils.discord_utils import delete_interaction_after
-from .embeds import build_signup_options_embed
 
 
 async def _show_modal_error(interaction: discord.Interaction, message: str) -> None:
@@ -72,22 +72,17 @@ class EditNameModal(discord.ui.Modal, title="Edit Character Name"):
         if not refreshed:
             return
 
-        updated = get_signup_entry(self.raid_id, str(self.user_id))
-        if not updated:
-            await _show_modal_error(interaction, "Signup not found.")
-            return
-
-        from .options_view import SignupOptionsView
-
-        await interaction.response.edit_message(
-            content=None,
-            embed=build_signup_options_embed(updated),
-            view=SignupOptionsView(self.guild_id, self.raid_id, self.user_id),
+        replaced = await replace_signup_options_panel(
+            interaction,
+            self.raid_id,
+            self.user_id,
+            delete_after=SIGNUP_OPTIONS_AUTO_DELETE_SECONDS,
         )
-
-        asyncio.create_task(
-            delete_interaction_after(interaction, SIGNUP_OPTIONS_AUTO_DELETE_SECONDS)
-        )
+        if not replaced:
+            await _show_modal_error(
+                interaction,
+                "⚠ Name updated, but could not refresh signup options.",
+            )
 
 
 class EditNoteModal(discord.ui.Modal, title="Edit Note"):
@@ -120,19 +115,14 @@ class EditNoteModal(discord.ui.Modal, title="Edit Note"):
         if not refreshed:
             return
 
-        updated = get_signup_entry(self.raid_id, str(self.user_id))
-        if not updated:
-            await _show_modal_error(interaction, "Signup not found.")
-            return
-
-        from .options_view import SignupOptionsView
-
-        await interaction.response.edit_message(
-            content=None,
-            embed=build_signup_options_embed(updated),
-            view=SignupOptionsView(self.guild_id, self.raid_id, self.user_id),
+        replaced = await replace_signup_options_panel(
+            interaction,
+            self.raid_id,
+            self.user_id,
+            delete_after=SIGNUP_OPTIONS_AUTO_DELETE_SECONDS,
         )
-
-        asyncio.create_task(
-            delete_interaction_after(interaction, SIGNUP_OPTIONS_AUTO_DELETE_SECONDS)
-        )
+        if not replaced:
+            await _show_modal_error(
+                interaction,
+                "⚠ Note updated, but could not refresh signup options.",
+            )

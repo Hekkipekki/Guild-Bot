@@ -28,6 +28,7 @@ EXTENSIONS = [
     "cogs.raid_builder",
     "cogs.raid_lifecycle",
     "cogs.attendance",
+    "cogs.help",
 ]
 
 

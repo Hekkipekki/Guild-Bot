@@ -64,14 +64,15 @@ class ClassDropdown(discord.ui.Select):
 
             if saved_char:
                 ok = set_user_spec(
-                    raid_id=int(self.raid_id),
-                    user_id=str(interaction.user.id),
-                    selected_class=saved_char["class"],
-                    selected_spec=saved_char["spec"],
-                    role=saved_char["role"],
-                    character_name=saved_char["name"],
-                    auto_sign=True,
-                )
+                        raid_id=int(self.raid_id),
+                        user_id=str(interaction.user.id),
+                        selected_class=saved_char["class"],
+                        selected_spec=saved_char["spec"],
+                        role=saved_char["role"],
+                        character_name=saved_char["name"],
+                        auto_sign=True,
+                        display_name=interaction.user.display_name,
+                    )
 
                 if not ok:
                     await interaction.response.send_message(

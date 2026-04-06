@@ -5,14 +5,14 @@ from services.signup.signup_service import (
     get_signup_user,
     set_user_status_with_note,
 )
-from services.signup.signup_refresh_service import refresh_signup_message_by_id
+from services.signup.signup_ui_service import (
+    refresh_and_show_signup_options_from_channel,
+)
 from utils.discord_utils import delete_interaction_after, delete_message_after
 from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     SIGNUP_OPTIONS_AUTO_DELETE_SECONDS,
 )
-from views.signup_options.embeds import build_signup_options_embed
-from views.signup_options.options_view import SignupOptionsView
 
 
 class RequiredStatusNoteModal(discord.ui.Modal):
@@ -67,6 +67,7 @@ class RequiredStatusNoteModal(discord.ui.Modal):
             user_id=str(self.user_id),
             status=self.status,
             note=str(self.note_input).strip(),
+            display_name=interaction.user.display_name,
         )
 
         if not ok:
@@ -76,24 +77,15 @@ class RequiredStatusNoteModal(discord.ui.Modal):
             )
             return
 
-        refreshed = await refresh_signup_message_by_id(interaction.channel, self.raid_id)
-        if not refreshed:
+        shown = await refresh_and_show_signup_options_from_channel(
+            interaction,
+            self.raid_id,
+            self.user_id,
+            delete_after=SIGNUP_OPTIONS_AUTO_DELETE_SECONDS,
+        )
+
+        if not shown:
             await self._send_error(
                 interaction,
-                "⚠ Status updated, but the raid signup could not be refreshed.",
+                "⚠ Status updated, but could not reopen signup options.",
             )
-            return
-
-        updated_entry = get_signup_user(self.raid_id, str(self.user_id))
-        if not updated_entry:
-            await self._send_error(interaction, "⚠ Signup not found.")
-            return
-
-        await interaction.response.send_message(
-            embed=build_signup_options_embed(updated_entry),
-            view=SignupOptionsView(self.guild_id, self.raid_id, self.user_id),
-            ephemeral=True,
-        )
-        asyncio.create_task(
-            delete_interaction_after(interaction, SIGNUP_OPTIONS_AUTO_DELETE_SECONDS)
-        )

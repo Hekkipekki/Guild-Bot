@@ -12,5 +12,19 @@
         "recurring_interval_days": 7
       }
     ]
+  },
+  "1423706462773051542": {
+    "templates": [
+      {
+        "name": "Sun",
+        "title": "HC Progress, Alt raid or Off day",
+        "description": "Raid signup",
+        "leader": "Rhegaran",
+        "time": "19:30",
+        "channel_id": 1445169144377901107,
+        "is_recurring": true,
+        "recurring_interval_days": 7
+      }
+    ]
   }
 }
