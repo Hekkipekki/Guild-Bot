@@ -9,6 +9,7 @@ from services.attendance.attendance_rules import (
     is_present_attendance_status,
     normalize_attendance_status,
 )
+from services.guild.guild_settings_service import get_expected_players
 
 
 def _safe_int(value: Any, default: int = 0) -> int:
@@ -19,14 +20,6 @@ def _safe_int(value: Any, default: int = 0) -> int:
 
 
 def _get_player_name(player: dict) -> str:
-    """
-    Best available user-facing name for attendance reports.
-
-    Priority:
-    1. Stored Discord display name
-    2. Character name
-    3. Discord user id fallback
-    """
     display_name = (player.get("display_name") or "").strip()
     if display_name:
         return display_name
@@ -43,12 +36,6 @@ def _get_player_name(player: dict) -> str:
 
 
 def _get_status_priority(status: str | None) -> int:
-    """
-    Higher = better
-
-    Priority requested:
-    Attended > Benched > Late > Tentative > Absent > Unassigned
-    """
     order = {
         "attending": 5,
         "benched": 4,
@@ -63,10 +50,6 @@ def _get_status_priority(status: str | None) -> int:
 
 
 def _status_counts_for_attendance(status: str | None) -> tuple[int, int]:
-    """
-    Returns:
-    (present_count, missed_count)
-    """
     normalized = normalize_attendance_status(status)
 
     if is_present_attendance_status(normalized):
@@ -85,6 +68,21 @@ def _build_raid_summary(record: dict) -> dict:
         "start_ts": _safe_int(record.get("start_ts"), 0),
         "finalized": bool(record.get("finalized")),
     }
+
+
+def _get_current_raid_team(guild_id: int | str) -> set[str]:
+    return {str(user_id) for user_id in get_expected_players(int(guild_id))}
+
+
+def _get_record_expected_players(record: dict) -> set[str]:
+    expected = record.get("expected_players", [])
+
+    if expected:
+        return {str(user_id) for user_id in expected}
+
+    # Backward compatibility for older attendance records created before
+    # expected_players was stored on the attendance snapshot.
+    return {str(user_id) for user_id in record.get("players", {}).keys()}
 
 
 def get_guild_attendance_records(
@@ -120,29 +118,13 @@ def build_attendance_matrix(
     finalized_only: bool = True,
     limit_raids: int | None = None,
 ) -> dict:
-    """
-    Returns a render-friendly matrix structure:
+    guild_id_int = _safe_int(guild_id)
+    current_raid_team_ids = _get_current_raid_team(guild_id_int)
 
-    {
-        "guild_id": ...,
-        "raids": [...],
-        "players": [
-            {
-                "user_id": "...",
-                "name": "...",
-                "attendance_pct": 90,
-                "present_count": 9,
-                "missed_count": 1,
-                "raid_statuses": {
-                    "raid_id_1": "attending",
-                    "raid_id_2": "benched",
-                    ...
-                }
-            }
-        ]
-    }
-    """
-    records = get_guild_attendance_records(guild_id, finalized_only=finalized_only)
+    records = get_guild_attendance_records(
+        guild_id_int,
+        finalized_only=finalized_only,
+    )
 
     if limit_raids is not None and limit_raids > 0:
         records = records[-limit_raids:]
@@ -162,29 +144,43 @@ def build_attendance_matrix(
 
     for record in records:
         raid_id = str(record.get("raid_id"))
+        record_players = record.get("players", {})
+        record_expected_ids = _get_record_expected_players(record)
 
-        for user_id, player in record.get("players", {}).items():
+        if current_raid_team_ids:
+            relevant_user_ids = current_raid_team_ids & record_expected_ids
+        else:
+            relevant_user_ids = record_expected_ids
+
+        for user_id in relevant_user_ids:
             user_id = str(user_id)
-            status = normalize_attendance_status(player.get("attendance_status"))
+            player = record_players.get(user_id)
+
+            if player:
+                status = normalize_attendance_status(player.get("attendance_status"))
+                candidate_name = _get_player_name(player)
+            else:
+                status = "no_sign"
+                candidate_name = f"Discord {user_id}"
 
             row = players_by_user[user_id]
             row["user_id"] = user_id
 
-            # Prefer stored Discord display name if it appears later.
-            candidate_name = _get_player_name(player)
             current_name = (row["name"] or "").strip()
             current_is_fallback = (
                 not current_name
                 or current_name == "Unknown"
                 or current_name.startswith("Discord ")
+                or current_name.startswith("User ")
             )
-            candidate_is_display_name = bool((player.get("display_name") or "").strip())
+
+            candidate_is_display_name = bool(
+                player and (player.get("display_name") or "").strip()
+            )
 
             if current_is_fallback or candidate_is_display_name:
                 row["name"] = candidate_name
 
-            # Merge multiple characters for the same Discord user by keeping
-            # the best attendance status for each raid.
             existing_status = row["raid_statuses"].get(raid_id)
             if existing_status is None:
                 row["raid_statuses"][raid_id] = status
@@ -193,7 +189,6 @@ def build_attendance_matrix(
 
     players = list(players_by_user.values())
 
-    # Recalculate counts from the merged final per-raid statuses.
     for row in players:
         row["present_count"] = 0
         row["missed_count"] = 0
@@ -218,10 +213,11 @@ def build_attendance_matrix(
     )
 
     return {
-        "guild_id": _safe_int(guild_id),
+        "guild_id": guild_id_int,
         "raids": raids,
         "players": players,
         "finalized_only": finalized_only,
+        "raid_team_only": bool(current_raid_team_ids),
     }
 
 

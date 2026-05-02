@@ -8,6 +8,7 @@ from data.attendance_store import (
     load_attendance,
     save_attendance,
 )
+from data.signup_store import find_message_signup, load_signups
 from services.attendance.attendance_rules import (
     VALID_ATTENDANCE_STATUSES,
     build_manual_placeholder_player,
@@ -34,19 +35,61 @@ def _append_history(
     history.append(payload)
 
 
+def _get_signup_for_raid(raid_id: int | str) -> dict[str, Any] | None:
+    data = load_signups()
+    return find_message_signup(data, str(raid_id))
+
+
+def _get_expected_players_for_raid(raid_id: int | str) -> list[str]:
+    signup = _get_signup_for_raid(raid_id)
+    if not signup:
+        return []
+
+    return [str(user_id) for user_id in signup.get("expected_players", [])]
+
+
+def _build_auto_no_sign_player(user_id: int | str) -> dict[str, Any]:
+    key = str(user_id)
+    return {
+        "display_name": f"User {key}",
+        "name": "",
+        "class": "",
+        "spec": "",
+        "role": "",
+        "note": "",
+        "user_id": key,
+        "signup_status": "no_sign",
+        "auto_status": "no_sign",
+        "attendance_status": "no_sign",
+        "status_source": "auto",
+        "manual_override": False,
+        "edited_by": None,
+        "edited_at": None,
+    }
+
+
+def _add_expected_no_sign_players(
+    *,
+    auto_players: dict[str, dict[str, Any]],
+    expected_players: list[str],
+) -> dict[str, dict[str, Any]]:
+    updated = dict(auto_players)
+
+    for user_id in expected_players:
+        key = str(user_id)
+        if key in updated:
+            continue
+
+        updated[key] = _build_auto_no_sign_player(key)
+
+    return updated
+
+
 def _merge_snapshot_players(
     *,
     existing_players: dict[str, dict[str, Any]],
     auto_players: dict[str, dict[str, Any]],
 ) -> dict[str, dict[str, Any]]:
-    """
-    Merge fresh auto-derived snapshot data with any previous manual overrides.
-
-    Rules:
-    - Auto snapshot remains the source of truth for current roster metadata.
-    - Existing manual overrides keep their chosen attendance_status.
-    - Manual-only players (for example added via attendance editor) are preserved.
-    """
     merged: dict[str, dict[str, Any]] = {}
 
     all_user_ids = set(auto_players.keys()) | set(existing_players.keys())
@@ -77,7 +120,6 @@ def _merge_snapshot_players(
             merged[user_id] = player
             continue
 
-        # Preserve players that only exist because of manual attendance editing.
         if existing:
             player = dict(existing)
             player["user_id"] = str(user_id)
@@ -104,17 +146,17 @@ def sync_attendance_from_comp(
     comp_data: dict[str, Any],
     actor_user_id: int | str | None,
 ) -> dict[str, Any]:
-    """
-    Create or refresh the attendance snapshot from the latest comp data.
-
-    This remains the public integration point used by:
-    - comp posting/updating
-    - lifecycle cleanup safety sync
-    """
     data = load_attendance()
     record = get_or_create_attendance_record(data, raid_id)
 
+    expected_players = _get_expected_players_for_raid(raid_id)
+
     auto_players = derive_auto_snapshot_players(comp_data)
+    auto_players = _add_expected_no_sign_players(
+        auto_players=auto_players,
+        expected_players=expected_players,
+    )
+
     existing_players = record.get("players", {})
 
     record["raid_id"] = str(raid_id)
@@ -127,8 +169,10 @@ def sync_attendance_from_comp(
     record["comp_message_id"] = (
         int(comp_message_id) if comp_message_id is not None else record.get("comp_message_id")
     )
+
+    record["expected_players"] = expected_players
     record["snapshot_source"] = "comp_post"
-    record["snapshot_version"] = 2
+    record["snapshot_version"] = 3
     record["players"] = _merge_snapshot_players(
         existing_players=existing_players,
         auto_players=auto_players,
@@ -143,7 +187,7 @@ def sync_attendance_from_comp(
         record,
         "attendance_snapshot_created",
         by_user_id=actor_user_id,
-        extra={"snapshot_version": 2},
+        extra={"snapshot_version": 3},
     )
     _append_history(
         record,
@@ -223,7 +267,6 @@ def set_manual_attendance_status(
     player["edited_by"] = str(edited_by_user_id) if edited_by_user_id is not None else None
     player["edited_at"] = int(time.time())
 
-    # Keep attendance record finalized after admin edits.
     record["finalized"] = True
 
     _append_history(
