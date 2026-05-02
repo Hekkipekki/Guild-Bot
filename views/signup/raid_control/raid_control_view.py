@@ -6,6 +6,7 @@ import discord
 
 from services.comp.comp_message_service import post_comp_message
 from services.comp.roster_comp_service import analyze_roster_comp
+from services.raid.raid_cancel_service import cancel_signup_raid
 from services.raid.raid_control_service import (
     get_player_entry,
     remove_player_signup,
@@ -38,14 +39,12 @@ async def _send_raid_control_error(
         asyncio.create_task(
             delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
         )
-    else:
-        await interaction.response.send_message(
-            message,
-            ephemeral=True,
-        )
-        asyncio.create_task(
-            delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-        )
+        return
+
+    await interaction.response.send_message(message, ephemeral=True)
+    asyncio.create_task(
+        delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+    )
 
 
 async def _edit_panel(
@@ -54,10 +53,7 @@ async def _edit_panel(
     content: str,
     view: discord.ui.View | None,
 ) -> None:
-    await interaction.response.edit_message(
-        content=content,
-        view=view,
-    )
+    await interaction.response.edit_message(content=content, view=view)
 
 
 async def _close_panel(
@@ -66,10 +62,7 @@ async def _close_panel(
     content: str,
     delete_after_seconds: int = RAID_CONTROL_AUTO_DELETE_SECONDS,
 ) -> None:
-    await interaction.response.edit_message(
-        content=content,
-        view=None,
-    )
+    await interaction.response.edit_message(content=content, view=None)
     asyncio.create_task(
         delete_interaction_after(interaction, delete_after_seconds)
     )
@@ -88,6 +81,7 @@ async def _refresh_signup_or_error(
             )
             return False
         return True
+
     except Exception as e:
         await _send_raid_control_error(
             interaction,
@@ -126,14 +120,16 @@ async def _open_attendance_panel(
     interaction: discord.Interaction,
     raid_id: str,
 ) -> None:
-    from views.signup.raid_control.attendance_view import (
-        AttendanceView,
-        build_attendance_panel_content,
-    )
+    from views.signup.raid_control.attendance_view import AttendanceView
+    from views.signup.raid_control.attendance_view_helpers import build_panel_content
 
     await _edit_panel(
         interaction,
-        content=build_attendance_panel_content(raid_id),
+        content=build_panel_content(
+            selected_raid_id=str(raid_id),
+            selected_user_id=None,
+            selected_action=None,
+        ),
         view=AttendanceView(raid_id),
     )
 
@@ -155,10 +151,7 @@ async def _handle_build_comp(
         await _edit_panel(
             interaction,
             content="Two valid 10-man comps were found. Choose which one to continue with.",
-            view=CompChoiceView(
-                payload["option_226"],
-                payload["option_235"],
-            ),
+            view=CompChoiceView(payload["option_226"], payload["option_235"]),
         )
         return
 
@@ -180,10 +173,7 @@ async def _handle_build_comp(
         )
         return
 
-    ok, message = await post_comp_message(
-        interaction.channel,
-        comp_data,
-    )
+    ok, message = await post_comp_message(interaction.channel, comp_data)
 
     if not ok:
         await _close_panel(
@@ -200,6 +190,50 @@ async def _handle_build_comp(
     )
 
 
+class CancelRaidModal(discord.ui.Modal, title="Cancel Raid"):
+    cancel_message = discord.ui.TextInput(
+        label="Message to signed players",
+        placeholder="Example: Raid is cancelled tonight due to roster issues.",
+        style=discord.TextStyle.paragraph,
+        required=True,
+        min_length=1,
+        max_length=500,
+    )
+
+    def __init__(self, raid_id: str):
+        super().__init__()
+        self.raid_id = str(raid_id)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            ok, message = await cancel_signup_raid(
+                bot=interaction.client,
+                raid_id=self.raid_id,
+                cancel_message=str(self.cancel_message).strip(),
+            )
+
+            if not ok:
+                await _send_raid_control_error(interaction, f"⚠ {message}")
+                return
+
+            await interaction.response.edit_message(
+                content=(
+                    "✅ Raid cancelled. Signup message, comp message, reminders, "
+                    "attendance record, and JSON entry removed."
+                ),
+                view=None,
+            )
+            asyncio.create_task(
+                delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            )
+
+        except Exception as e:
+            await _send_raid_control_error(
+                interaction,
+                f"Cancel raid failed: {type(e).__name__}: {e}",
+            )
+
+
 class ChangeSpecRaidControlButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -211,8 +245,7 @@ class ChangeSpecRaidControlButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            view = self.view
-            await _open_change_spec_panel(interaction, view.raid_id)
+            await _open_change_spec_panel(interaction, self.view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -231,8 +264,7 @@ class RaidSettingsButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            view = self.view
-            await _open_raid_settings_panel(interaction, view.raid_id)
+            await _open_raid_settings_panel(interaction, self.view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -251,8 +283,7 @@ class AttendanceButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            view = self.view
-            await _open_attendance_panel(interaction, view.raid_id)
+            await _open_attendance_panel(interaction, self.view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -271,8 +302,7 @@ class BuildCompButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            view = self.view
-            await _handle_build_comp(interaction, view.raid_id)
+            await _handle_build_comp(interaction, self.view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -294,10 +324,7 @@ class PlayerNoteButton(discord.ui.Button):
         selected_user_id = view.selected_user_id
 
         if not selected_user_id:
-            await _send_raid_control_error(
-                interaction,
-                "Select a player first.",
-            )
+            await _send_raid_control_error(interaction, "Select a player first.")
             return
 
         entry = get_player_entry(view.raid_id, selected_user_id)
@@ -329,6 +356,21 @@ class PlayerNoteButton(discord.ui.Button):
         )
 
 
+class CancelRaidButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label="Cancel Raid",
+            emoji=parse_button_emoji("cancel_raid"),
+            style=discord.ButtonStyle.danger,
+            row=3,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(
+            CancelRaidModal(self.view.raid_id)
+        )
+
+
 class RaidControlView(discord.ui.View):
     def __init__(self, raid_id: str):
         super().__init__(timeout=120)
@@ -344,6 +386,7 @@ class RaidControlView(discord.ui.View):
         self.add_item(AttendanceButton())
         self.add_item(BuildCompButton())
         self.add_item(PlayerNoteButton())
+        self.add_item(CancelRaidButton())
 
     async def try_apply_action(self, interaction: discord.Interaction):
         try:
@@ -373,11 +416,18 @@ class RaidControlView(discord.ui.View):
             if not refreshed:
                 return
 
-            await _edit_panel(
-                interaction,
-                content=f"Player {action_text}.",
-                view=RaidControlView(self.raid_id),
-            )
+            if interaction.response.is_done():
+                await interaction.edit_original_response(
+                    content=f"Player {action_text}.",
+                    view=RaidControlView(self.raid_id),
+                )
+            else:
+                await _edit_panel(
+                    interaction,
+                    content=f"Player {action_text}.",
+                    view=RaidControlView(self.raid_id),
+                )
+
             asyncio.create_task(
                 delete_interaction_after(
                     interaction,

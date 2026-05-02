@@ -1,9 +1,13 @@
 @echo off
-echo Starting Discord bot...
-cd /d "%~dp0"
+cd /d "C:\Dev Projects\Bot\Guild Bot - Dev"
 
-python bot.py
+echo Starting Guild Discord Bot...
+echo Folder: %cd%
+echo.
+
+py bot.py
 
 echo.
-echo Bot stopped.
+echo Bot stopped or crashed.
+echo.
 pause
