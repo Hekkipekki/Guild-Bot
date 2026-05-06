@@ -1,63 +1,66 @@
 import discord
 from discord.ext import commands
 
-from data.signup_store import load_signups, save_signups, remove_message_signup
-from services.raid_preset_service import (
+from services.raid.raid_preset_service import (
     build_wednesday_signup,
     build_sunday_signup,
     build_template_signup,
 )
-from services.signup_message_service import send_signup_message
+from services.signup.signup_message_service import send_signup_message
 
 
 class SignupCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def nuke(self, ctx: commands.Context):
+    async def _delete_command_message(self, ctx: commands.Context) -> None:
         try:
             await ctx.message.delete()
         except discord.Forbidden:
             pass
+        except discord.NotFound:
+            pass
 
-        deleted_messages = await ctx.channel.purge(limit=1000)
+    async def _send_temporary_confirmation(
+        self,
+        ctx: commands.Context,
+        content: str,
+        *,
+        delete_after: int = 5,
+    ) -> None:
+        msg = await ctx.send(content)
+        try:
+            await msg.delete(delay=delete_after)
+        except (discord.Forbidden, discord.NotFound):
+            pass
 
-        data = load_signups()
-        removed_signups = 0
+    async def _post_signup(self, ctx: commands.Context, signup: dict) -> None:
+        await self._delete_command_message(ctx)
 
-        for message in deleted_messages:
-            if remove_message_signup(data, message.id):
-                removed_signups += 1
-
-        if removed_signups:
-            save_signups(data)
-
-        msg = await ctx.send(
-            f"💣 Deleted {len(deleted_messages)} messages. "
-            f"Removed {removed_signups} signup entries from JSON."
-        )
-        await msg.delete(delay=5)
+        ok = await send_signup_message(ctx, signup)
+        if not ok:
+            await self._send_temporary_confirmation(
+                ctx,
+                "⚠ Failed to create signup message.",
+            )
 
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def wedsignup(self, ctx: commands.Context):
-        signup = build_wednesday_signup(ctx.channel.id)
-        await send_signup_message(ctx, signup)
+    async def nuke(self, ctx: commands.Context):
+        await self._delete_command_message(ctx)
+
+        deleted_messages = await ctx.channel.purge(limit=1000)
+
+        await self._send_temporary_confirmation(
+            ctx,
+            f"💣 Deleted {len(deleted_messages)} messages from this channel.",
+        )
 
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def template(self, ctx: commands.Context):
-        signup = build_template_signup(ctx.channel.id)
-        await send_signup_message(ctx, signup)
-
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def sunsignup(self, ctx: commands.Context):
-        signup = build_sunday_signup(ctx.channel.id)
-        await send_signup_message(ctx, signup)
-
+        signup = build_template_signup(ctx.guild.id, ctx.channel.id)
+        await self._post_signup(ctx, signup)
 
 async def setup(bot):
     await bot.add_cog(SignupCommands(bot))

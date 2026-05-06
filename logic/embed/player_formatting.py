@@ -1,6 +1,9 @@
 import config
 
 
+NOTE_MARKER = " - 📝"
+
+
 def get_player_display_text(user_id: str, info: dict) -> str:
     """
     Priority for signed players:
@@ -19,10 +22,17 @@ def get_player_display_text(user_id: str, info: dict) -> str:
     return f"<@{user_id}>"
 
 
+def _has_note(info: dict) -> bool:
+    return bool((info.get("note") or "").strip())
+
+
 def format_player_line(user_id: str, info: dict) -> str:
     spec = info.get("spec", "Unknown")
     emoji = config.SPEC_EMOJIS.get(spec, "")
     player_text = get_player_display_text(user_id, info)
+
+    if _has_note(info):
+        player_text = f"{player_text}{NOTE_MARKER}"
 
     return f"{emoji} {player_text}" if emoji else player_text
 

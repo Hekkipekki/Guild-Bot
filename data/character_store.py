@@ -1,31 +1,105 @@
 import json
-import os
-
-FILE = "data/characters.json"
+from pathlib import Path
 
 
-def load_characters():
-    if not os.path.exists(FILE):
+FILE = Path(__file__).resolve().parent / "characters.json"
+
+
+def _ensure_data_dir() -> None:
+    FILE.parent.mkdir(parents=True, exist_ok=True)
+
+
+def load_characters() -> dict:
+    if not FILE.exists():
         return {}
 
-    with open(FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, OSError):
+        return {}
 
 
-def save_characters(data):
-    os.makedirs(os.path.dirname(FILE), exist_ok=True)
+def save_characters(data: dict) -> None:
+    _ensure_data_dir()
 
     with open(FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 
-def get_user_characters(user_id: int):
+def _is_legacy_user_only_format(data: dict) -> bool:
+    """
+    Legacy format:
+    {
+        "user_id": [characters]
+    }
+
+    New format:
+    {
+        "guild_id": {
+            "user_id": [characters]
+        }
+    }
+    """
+    if not data:
+        return False
+
+    return all(isinstance(value, list) for value in data.values())
+
+
+def _migrate_legacy_data_to_guild(data: dict, guild_id: int) -> dict:
+    """
+    One-time lazy migration:
+    Move legacy flat user->characters data into the guild that first accesses it.
+    """
+    if not _is_legacy_user_only_format(data):
+        return data
+
+    migrated = {
+        str(guild_id): {
+            str(user_id): chars if isinstance(chars, list) else []
+            for user_id, chars in data.items()
+        }
+    }
+    save_characters(migrated)
+    return migrated
+
+
+def _get_guild_bucket(data: dict, guild_id: int) -> dict:
+    data = _migrate_legacy_data_to_guild(data, guild_id)
+
+    guild_key = str(guild_id)
+    guild_bucket = data.get(guild_key)
+
+    if not isinstance(guild_bucket, dict):
+        data[guild_key] = {}
+        save_characters(data)
+        guild_bucket = data[guild_key]
+
+    return guild_bucket
+
+
+def _get_user_list(data: dict, guild_id: int, user_id: int) -> list[dict]:
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
+
+    user_chars = guild_bucket.get(user_key, [])
+    if not isinstance(user_chars, list):
+        guild_bucket[user_key] = []
+        save_characters(data)
+        return []
+
+    return user_chars
+
+
+def get_user_characters(guild_id: int, user_id: int) -> list[dict]:
     data = load_characters()
-    return data.get(str(user_id), [])
+    return _get_user_list(data, guild_id, user_id)
 
 
-def get_character_by_class(user_id: int, class_name: str):
-    characters = get_user_characters(user_id)
+def get_character_by_class(guild_id: int, user_id: int, class_name: str) -> dict | None:
+    characters = get_user_characters(guild_id, user_id)
 
     for char in characters:
         if char.get("class") == class_name:
@@ -34,16 +108,16 @@ def get_character_by_class(user_id: int, class_name: str):
     return None
 
 
-def add_character(user_id: int, char: dict):
+def add_character(guild_id: int, user_id: int, char: dict) -> bool:
     data = load_characters()
-    user = str(user_id)
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
 
-    if user not in data:
-        data[user] = []
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+        guild_bucket[user_key] = []
 
-    existing = data[user]
+    existing = guild_bucket[user_key]
 
-    # max 1 saved character per class
     for saved in existing:
         if saved.get("class") == char.get("class"):
             return False
@@ -53,26 +127,36 @@ def add_character(user_id: int, char: dict):
     return True
 
 
-def remove_character(user_id: int, index: int):
+def remove_character(guild_id: int, user_id: int, index: int) -> bool:
     data = load_characters()
-    user = str(user_id)
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
 
-    if user in data and 0 <= index < len(data[user]):
-        data[user].pop(index)
-        save_characters(data)
-        return True
-
-    return False
-
-
-def update_character_name_by_class(user_id: int, class_name: str, new_name: str) -> bool:
-    data = load_characters()
-    user = str(user_id)
-
-    if user not in data:
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
         return False
 
-    for char in data[user]:
+    if not (0 <= index < len(guild_bucket[user_key])):
+        return False
+
+    guild_bucket[user_key].pop(index)
+    save_characters(data)
+    return True
+
+
+def update_character_name_by_class(
+    guild_id: int,
+    user_id: int,
+    class_name: str,
+    new_name: str,
+) -> bool:
+    data = load_characters()
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
+
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+        return False
+
+    for char in guild_bucket[user_key]:
         if char.get("class") == class_name:
             char["name"] = new_name.strip()
             save_characters(data)
@@ -81,14 +165,21 @@ def update_character_name_by_class(user_id: int, class_name: str, new_name: str)
     return False
 
 
-def update_character_spec_by_class(user_id: int, class_name: str, new_spec: str, new_role: str) -> bool:
+def update_character_spec_by_class(
+    guild_id: int,
+    user_id: int,
+    class_name: str,
+    new_spec: str,
+    new_role: str,
+) -> bool:
     data = load_characters()
-    user = str(user_id)
+    guild_bucket = _get_guild_bucket(data, guild_id)
+    user_key = str(user_id)
 
-    if user not in data:
+    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
         return False
 
-    for char in data[user]:
+    for char in guild_bucket[user_key]:
         if char.get("class") == class_name:
             char["spec"] = new_spec
             char["role"] = new_role

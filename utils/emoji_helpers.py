@@ -22,3 +22,7 @@ def parse_class_emoji(class_name: str):
 
 def parse_button_emoji(name: str):
     return _parse_emoji(getattr(config, "BUTTON_EMOJIS", {}).get(name))
+
+
+def get_button_emoji(name: str):
+    return parse_button_emoji(name)

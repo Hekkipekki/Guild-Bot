@@ -1,0 +1,3521 @@
+        [
+          "141881090913599488",
+          {
+            "class": "Warrior",
+            "spec": "Fury",
+            "role": "Melee",
+            "timestamp": 1775441503.087667,
+            "name": "Yes",
+            "note": "",
+            "display_name": "Hekkipekki",
+            "status": "sign"
+          }
+        ]
+      ],
+      "bench_players": [
+        [
+          "demo_13",
+          {
+            "display_name": "Stonepaw",
+            "class": "Mage",
+            "spec": "Frost",
+            "role": "Ranged",
+            "status": "bench",
+            "timestamp": 1775441502.8488102
+          }
+        ],
+        [
+          "demo_3",
+          {
+            "display_name": "Hexella",
+            "class": "Priest",
+            "spec": "HolyPriest",
+            "role": "Healer",
+            "status": "sign",
+            "timestamp": 1775441492.8488102
+          }
+        ]
+      ],
+      "late_players": [
+        [
+          "demo_10",
+          {
+            "display_name": "Arrowqt",
+            "class": "Warlock",
+            "spec": "Destruction",
+            "role": "Ranged",
+            "status": "late",
+            "timestamp": 1775441499.8488102
+          }
+        ]
+      ],
+      "tentative_players": [
+        [
+          "demo_11",
+          {
+            "display_name": "Shieldbro",
+            "class": "Hunter",
+            "spec": "Marksmanship",
+            "role": "Ranged",
+            "status": "tentative",
+            "timestamp": 1775441500.8488102
+          }
+        ]
+      ],
+      "absence_players": [
+        [
+          "demo_12",
+          {
+            "display_name": "Bonkadin",
+            "class": "Druid",
+            "spec": "Guardian",
+            "role": "Tank",
+            "status": "absence",
+            "timestamp": 1775441501.8488102
+          }
+        ]
+      ],
+      "selected_players": [
+        [
+          "demo_0",
+          {
+            "display_name": "Windbonk",
+            "class": "Death Knight",
+            "spec": "Blood",
+            "role": "Tank",
+            "status": "sign",
+            "timestamp": 1775441489.8488102
+          }
+        ],
+        [
+          "demo_1",
+          {
+            "display_name": "Sneakstab",
+            "class": "Paladin",
+            "spec": "ProtectionPaladin",
+            "role": "Tank",
+            "status": "sign",
+            "timestamp": 1775441490.8488102
+          }
+        ],
+        [
+          "demo_2",
+          {
+            "display_name": "Pyroblastz",
+            "class": "Monk",
+            "spec": "Mistweaver",
+            "role": "Healer",
+            "status": "sign",
+            "timestamp": 1775441491.8488102
+          }
+        ],
+        [
+          "demo_4",
+          {
+            "display_name": "Leafhealz",
+            "class": "Shaman",
+            "spec": "RestorationShaman",
+            "role": "Healer",
+            "status": "sign",
+            "timestamp": 1775441493.8488102
+          }
+        ],
+        [
+          "demo_5",
+          {
+            "display_name": "Clawbert",
+            "class": "Warrior",
+            "spec": "Fury",
+            "role": "Melee",
+            "status": "sign",
+            "timestamp": 1775441494.8488102
+          }
+        ],
+        [
+          "demo_6",
+          {
+            "display_name": "Thorgrim",
+            "class": "Paladin",
+            "spec": "Retribution",
+            "role": "Melee",
+            "status": "sign",
+            "timestamp": 1775441495.8488102
+          }
+        ],
+        [
+          "demo_7",
+          {
+            "display_name": "Totemlord",
+            "class": "Warlock",
+            "spec": "Demonology",
+            "role": "Ranged",
+            "status": "sign",
+            "timestamp": 1775441496.8488102
+          }
+        ],
+        [
+          "demo_8",
+          {
+            "display_name": "Darkmoo",
+            "class": "Druid",
+            "spec": "Balance",
+            "role": "Ranged",
+            "status": "sign",
+            "timestamp": 1775441497.8488102
+          }
+        ],
+        [
+          "demo_9",
+          {
+            "display_name": "Glimmer",
+            "class": "Mage",
+            "spec": "Arcane",
+            "role": "Ranged",
+            "status": "sign",
+            "timestamp": 1775441498.8488102
+          }
+        ],
+        [
+          "141881090913599488",
+          {
+            "class": "Warrior",
+            "spec": "Fury",
+            "role": "Melee",
+            "timestamp": 1775441503.087667,
+            "name": "Yes",
+            "note": "",
+            "display_name": "Hekkipekki",
+            "status": "sign"
+          }
+        ]
+      ],
+      "signed_players": [
+        [
+          "demo_0",
+          {
+            "display_name": "Windbonk",
+            "class": "Death Knight",
+            "spec": "Blood",
+            "role": "Tank",
+            "status": "sign",
+            "timestamp": 1775441489.8488102
+          }
+        ],
+        [
+          "demo_1",
+          {
+            "display_name": "Sneakstab",
+            "class": "Paladin",
+            "spec": "ProtectionPaladin",
+            "role": "Tank",
+            "status": "sign",
+            "timestamp": 1775441490.8488102
+          }
+        ],
+        [
+          "demo_2",
+          {
+            "display_name": "Pyroblastz",
+            "class": "Monk",
+            "spec": "Mistweaver",
+            "role": "Healer",
+            "status": "sign",
+            "timestamp": 1775441491.8488102
+          }
+        ],
+        [
+          "demo_4",
+          {
+            "display_name": "Leafhealz",
+            "class": "Shaman",
+            "spec": "RestorationShaman",
+            "role": "Healer",
+            "status": "sign",
+            "timestamp": 1775441493.8488102
+          }
+        ],
+        [
+          "demo_5",
+          {
+            "display_name": "Clawbert",
+            "class": "Warrior",
+            "spec": "Fury",
+            "role": "Melee",
+            "status": "sign",
+            "timestamp": 1775441494.8488102
+          }
+        ],
+        [
+          "demo_6",
+          {
+            "display_name": "Thorgrim",
+            "class": "Paladin",
+            "spec": "Retribution",
+            "role": "Melee",
+            "status": "sign",
+            "timestamp": 1775441495.8488102
+          }
+        ],
+        [
+          "demo_7",
+          {
+            "display_name": "Totemlord",
+            "class": "Warlock",
+            "spec": "Demonology",
+            "role": "Ranged",
+            "status": "sign",
+            "timestamp": 1775441496.8488102
+          }
+        ],
+        [
+          "demo_8",
+          {
+            "display_name": "Darkmoo",
+            "class": "Druid",
+            "spec": "Balance",
+            "role": "Ranged",
+            "status": "sign",
+            "timestamp": 1775441497.8488102
+          }
+        ],
+        [
+          "demo_9",
+          {
+            "display_name": "Glimmer",
+            "class": "Mage",
+            "spec": "Arcane",
+            "role": "Ranged",
+            "status": "sign",
+            "timestamp": 1775441498.8488102
+          }
+        ],
+        [
+          "141881090913599488",
+          {
+            "class": "Warrior",
+            "spec": "Fury",
+            "role": "Melee",
+            "timestamp": 1775441503.087667,
+            "name": "Yes",
+            "note": "",
+            "display_name": "Hekkipekki",
+            "status": "sign"
+          }
+        ]
+      ],
+      "mentions": [
+        "<@demo_0>",
+        "<@demo_1>",
+        "<@demo_2>",
+        "<@demo_4>",
+        "<@demo_5>",
+        "<@demo_6>",
+        "<@demo_7>",
+        "<@demo_8>",
+        "<@demo_9>",
+        "<@141881090913599488>"
+      ],
+      "comp_label": "2/2/6",
+      "role_targets": {
+        "Tank": 2,
+        "Healer": 2,
+        "DPS": 6
+      },
+      "bench_choice_steps": [],
+      "status_buckets": {
+        "sign": [
+          [
+            "demo_0",
+            {
+              "display_name": "Windbonk",
+              "class": "Death Knight",
+              "spec": "Blood",
+              "role": "Tank",
+              "status": "sign",
+              "timestamp": 1775441489.8488102
+            }
+          ],
+          [
+            "demo_1",
+            {
+              "display_name": "Sneakstab",
+              "class": "Paladin",
+              "spec": "ProtectionPaladin",
+              "role": "Tank",
+              "status": "sign",
+              "timestamp": 1775441490.8488102
+            }
+          ],
+          [
+            "demo_2",
+            {
+              "display_name": "Pyroblastz",
+              "class": "Monk",
+              "spec": "Mistweaver",
+              "role": "Healer",
+              "status": "sign",
+              "timestamp": 1775441491.8488102
+            }
+          ],
+          [
+            "demo_3",
+            {
+              "display_name": "Hexella",
+              "class": "Priest",
+              "spec": "HolyPriest",
+              "role": "Healer",
+              "status": "sign",
+              "timestamp": 1775441492.8488102
+            }
+          ],
+          [
+            "demo_4",
+            {
+              "display_name": "Leafhealz",
+              "class": "Shaman",
+              "spec": "RestorationShaman",
+              "role": "Healer",
+              "status": "sign",
+              "timestamp": 1775441493.8488102
+            }
+          ],
+          [
+            "demo_5",
+            {
+              "display_name": "Clawbert",
+              "class": "Warrior",
+              "spec": "Fury",
+              "role": "Melee",
+              "status": "sign",
+              "timestamp": 1775441494.8488102
+            }
+          ],
+          [
+            "demo_6",
+            {
+              "display_name": "Thorgrim",
+              "class": "Paladin",
+              "spec": "Retribution",
+              "role": "Melee",
+              "status": "sign",
+              "timestamp": 1775441495.8488102
+            }
+          ],
+          [
+            "demo_7",
+            {
+              "display_name": "Totemlord",
+              "class": "Warlock",
+              "spec": "Demonology",
+              "role": "Ranged",
+              "status": "sign",
+              "timestamp": 1775441496.8488102
+            }
+          ],
+          [
+            "demo_8",
+            {
+              "display_name": "Darkmoo",
+              "class": "Druid",
+              "spec": "Balance",
+              "role": "Ranged",
+              "status": "sign",
+              "timestamp": 1775441497.8488102
+            }
+          ],
+          [
+            "demo_9",
+            {
+              "display_name": "Glimmer",
+              "class": "Mage",
+              "spec": "Arcane",
+              "role": "Ranged",
+              "status": "sign",
+              "timestamp": 1775441498.8488102
+            }
+          ],
+          [
+            "141881090913599488",
+            {
+              "class": "Warrior",
+              "spec": "Fury",
+              "role": "Melee",
+              "timestamp": 1775441503.087667,
+              "name": "Yes",
+              "note": "",
+              "display_name": "Hekkipekki",
+              "status": "sign"
+            }
+          ]
+        ],
+        "bench": [
+          [
+            "demo_13",
+            {
+              "display_name": "Stonepaw",
+              "class": "Mage",
+              "spec": "Frost",
+              "role": "Ranged",
+              "status": "bench",
+              "timestamp": 1775441502.8488102
+            }
+          ]
+        ],
+        "late": [
+          [
+            "demo_10",
+            {
+              "display_name": "Arrowqt",
+              "class": "Warlock",
+              "spec": "Destruction",
+              "role": "Ranged",
+              "status": "late",
+              "timestamp": 1775441499.8488102
+            }
+          ]
+        ],
+        "tentative": [
+          [
+            "demo_11",
+            {
+              "display_name": "Shieldbro",
+              "class": "Hunter",
+              "spec": "Marksmanship",
+              "role": "Ranged",
+              "status": "tentative",
+              "timestamp": 1775441500.8488102
+            }
+          ]
+        ],
+        "absence": [
+          [
+            "demo_12",
+            {
+              "display_name": "Bonkadin",
+              "class": "Druid",
+              "spec": "Guardian",
+              "role": "Tank",
+              "status": "absence",
+              "timestamp": 1775441501.8488102
+            }
+          ]
+        ]
+      }
+    },
+    "attendance_snapshot_created": true,
+    "attendance_record_id": "1490534384091140198"
+  },
+  "1490536929152729179": {
+    "title": "HC Prog, Alt Raid or Off day",
+    "description": "What will happen?",
+    "leader": "Rhegaran/Hekkipekki",
+    "start_ts": 1776015000,
+    "channel_id": 1445169144377901107,
+    "guild_id": 1423706462773051542,
+    "users": {
+      "141881090913599488": {
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "timestamp": 1775461387.0458627,
+        "name": "Hekkipekki",
+        "note": "",
+        "display_name": "Hekkipekki",
+        "status": "sign"
+      },
+      "771806222525267968": {
+        "class": "Rogue",
+        "spec": "Assassination",
+        "role": "Melee",
+        "timestamp": 1775461485.7396286,
+        "name": "Shadé",
+        "note": "",
+        "display_name": "Shadé",
+        "status": "sign"
+      },
+      "489526528309460993": {
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "timestamp": 1775462219.2711742,
+        "name": "Nickfury",
+        "note": "",
+        "display_name": "Nickfury",
+        "status": "sign"
+      }
+    },
+    "expected_players": [
+      "710915046200574073",
+      "489526528309460993",
+      "369109810311987200",
+      "251004817844076554",
+      "248796420880990208",
+      "239532428073500672",
+      "141881090913599488",
+      "771806222525267968",
+      "321966396864987137",
+      "260495039686246400",
+      "344496860855009280"
+    ],
+    "missing_signup_reminders_sent": {
+      "2880": false,
+      "1440": false
+    },
+    "signed_player_reminders_sent": {
+      "60": false
+    },
+    "missing_reminder_message_id": null,
+    "signed_reminder_message_id": null,
+    "is_recurring": true,
+    "recurring_interval_days": 7,
+    "recurring_created_next": false
+  }
+}
+
+
+================================================
+FILE: data/signups_dev.json
+================================================
+{}
+
+
+================================================
+FILE: files/Fojji-ToT-Personal-Assignments[1.0.0].txt
+================================================
+!WA:2!S3zcqY1XzbypEXeN1bisX6WhK8IIJpIIwjTA1kjxuu1o7H21EVQzMvIkjUg9M3RN590(Uu)63mEv5cxLkGkLHkuiahUXSaHG4iWYD4YiiagcKgragUbbyUVe3HdZ)F)ohTJMzxnpfz70vzRDM(939)R7(R)7U)7)3BkCQD6x7OJm6Hg5y70EN67u)9FIInOUTko1sNEXRwZLQtOfv1wvN6659MlAzE(ZRs1vQ46AXm9Q1sTH7CtDrwRtWo(ylXo(vudygU0L8yMUo(dtxBP619jSzFr1N9t9SVYR8jVqdQPEL18i7R0ux0NyvFzxth2OvwA5nc11KUwU0NOqHcdDb4UOSNQgzOrdOw3jvvtuMJxYNPszdxRUPJPVXWfH)Wg(cmQzJgeQ)9)W0Op(LTUoPwq96O2OZo98lpZkZxKbFPKAavD0l47rSSMt3F4R6huJ0K4WkdsB(0BuDYjkxPA5ktuQsYLwMsGlvQ8Ytp)8fdanwZZsDncTK4Q1MLOAXmk5OAt8h(Ibor3cdVHMRvGTty14AqnLqDuTofCFcvLpYfc8jZBABc5u1YSHtTjNEXktxI(0HnAV7DxuN4R5zUGQorP2Ak1Dp7znv(cwmWM48foSbJ55)4h8GEQmkX1zenx7dkKOLBRKlQB6RbTRJ0OXMVgRLjtZyewZKlrHMw8(UaTz4T4DTo0auI0q0zwJQQBg4)L8MUMVlLn7A1WUs1AwKD79aV3LNUu5LwCI5FQ3Bf3kpLYe((qfcUpz(gfTCv1NPOV55j7UKDaWndxeA812n)OdxsZs13h)unMQfio(XlQs1MN40GzC3FfVWvQfrFHKXqdn0YdDOroAeUmNd0qnev1X0wLrmQP56u3SXWL81GsBO11iytUG3MVuTWSySE4FNwVbXBhLpxGkLOmtGLLYPnmzKl6ZiEt40WI82IeSmCJFxLSWoQ75IWyJaV5a1uB8XgF8Jp6g1PqNEzgvLPo06urtfQVlRVgqdMAc5Vis9N2uNzCpxfYk0k7WMb4zxATstm1CRugyDMkI3fUCOodjG3ynFIn0vu6WJCOro86mxTO(L7(JDY9zQ7TVzeeXbuwgs2fiRST7kIEIIyFvrhxha7T8muh6AQoAWi0zWBB8gTw5jln90lwZ3nGQrQzA7bzy0at9ng9rx9uJQF0tpHnD96q7ZKMunlYz2iSaedC5pwjFKTpW6q1s3mCq)gMo1DP2I6d0xk6AGpooFhZCzIQp2yj6CFd89Yx5k6WGr8YvXHMuFcwq(xaLdV74Ru0w10zgUMqAUoNWRd)DNxFk7u7(F)f9ERaVJdmRqEAw1WBIQS0pZxzDtO8llQQp4DWV7p6mfXlFzSdvjYOfFV1miWiokfgEUi0kDMsTWUUHEE(ElbKgm(aUWuWitJrTvF6DvebgbtYDgAuBtNcJUkzTR6rjNwL6y60OIPnb6tRRcO)BOiAJW7nd2toq0LvWRdLn3L7zWp39WPXfg3VaNDnpxFwMsI38U4T82XYqQDucZWp7gvQuoTwWT42NbkL6qfI52aaAEZZWzRZy(t7GdB1HYzxHFubBWoaZ9aL9iend8grKr(ZKKNLdRpqE2tNcRexxcZ1PGCv9knvPMyblG(ZanOMnmydDrOHBwXhbjVR068lXPdjQVdXzxe01PqRMWT7hK3ADSof(9puO8NHFUDf2gDyrE(4qMOqMkbga4nxEOddTDTUgMTO7pXf2V3rUUKuE0zH7ecvX0xPUk0jsF3kZ72kmbFl8tpg0O6T7KbxltDRBcnwLjSaV0g4xgnsg1S)4iKy64fWeTgH3nSlOzOsruI38Act8vNC2jkvDXjwy6lkmiAz6agVSedl2fC3pjipyFaUxWC94y7wObrJmDkyHobmPytcVvTOpeQuaFEz(Z9cFy4FUe8)p3PIVzp7gtctCR72Yr5DCyQJ7ceAdc2R1eGey6yIgRwtvRaI)lCoV9mzGpZ1gBZSSoyQLfV79ah4aktruzgkpPd2BQaj49f)mvMdT2whShCqCaL)bf5SQqYvfcwDs0Cpog8Xp8yW)9mmLnNlXeZv1ZKlWCjyePHP25b7yX5CciXdSaMQY7bs27zVfQFQ9AU1zgeir9e9djQ4wxbsgBm09CYRBGWCv2qf6OQIvtrTSSbKAIYxOS3xA(QprUc7pRoNgPOBGJ(mWCbMSa9KgD4c1WlOKCfVw36A3bJP61PeY5t0)cMOUfj55NVk2pS9gMh0Ycnsu9iXzbND3PrGfy0WJDlPtEEZ6KPOWeDXz4uQ2EMuaTHfp5Q75MxA10Pzv)wWsmQEOJfl2uWe64SiLcCikNMO6564TwEPq1AGXn2AD0TwdgU6BysSsglvesrPSiPBf11XhnwSPHL3GM4ZuxVIWAgfwXJWmwJnxqjkRQqS(2PUOklGsQwMb1kiVTQ4Yi2jvvv6Q(RctrCUbrrjnROCvHzcSSaef6fPUQ048njMmrKSsjiDpZbrLtePYIW4Jsb(gXIcJgDoVjrxb2NaXHeUAopTbrvHdiDcBgTWoCCzoj2GCaT0ehm6Kh1hHCvRyI7ESuMwVYb0MMWKHkWEmyMoAm)bJn6OsHwuoxG4giolvstY7m5hBaLMHB64KkHFDWOVil1IYh2mJThrpc9QQPYsnBgFLq6ZihRuWmaU1TaRMPTEecoBmAjn)QC2qMGv8OIBhex6tY0qq6ktN5cdwpwwvAsH9wc2isO9OV7D2CRsHdOCRhaRQvlDEvCzCq73kyQxfnjoBawgcBI90UrOC9v31PWowqlvMo(WYO1izSFqoVyxmuvVCuv1Jk3AuCEJuTbxluvwdKQIbsdHGqJQVUjLi8rvAJAAA9gq2YARLHj1QfSiOKjVjGGGfynI3Q5qthSiiBvNQ1anqcjB1K1Cwese7NkB4YUmsil46SQGp6PXEuQEOxB4YvJREQnjugSTMKzlNatqzwifp9bqjXLVqzAgqw0YyteTzOmPiPEpkB7OfMBGMHB9vHBD1eJuyA4OSNet1ZlV0vDCX41xd6CuTivDiTsO9KlOuKsA1Bez7OXZtGTcQBg60Q4m9EioklKKAVNTSpklKgfQs3SEDy)VI9)Lq9HPPi2yKhjVQv64ewoz5VPePecGQ5LASin8BriEj8hbguHj4vpFAYOqhUBDpIAQv2sidaK3YyI92k7wspXgkSiqUqTrc9TTFIcjIvpfAOqTbzlyOaKAlABhM(W3Wvl52CsxH5nHiEpvoPeX)MzJV4EX0w1ZEGlEbkxfB5iqpvttFtGosxi4cMuQlvzoqmIFFOUERUeQdeRkZ0M0cwgwIXi47kNgsOB7G)MtfnWPAZuNYS62tgEjyX0Px7AiBSSQLkmTs)xNrKG9D3xZ6ATw1jcOQliCQ3APZu20fTlPGxR39IBlvvI4ZCPDyiCkZMMW(lxMcB8lC2FVbtDHCJbQoDrzlokj8ON2SwJ2gTDUPrFIQLBDXQgJZWSQ22qNjyp5jcGnh1VfFSTApldQBP6Nc0jnvDo6OYWLkQ7A3np)mqklTJ661yMUWZLZkTSQg1m7cHJ1zYfUfOsRMQDRAMCHbvLzWgdc110pzM0tgOs1nvDq1nHJMjWUkpjmZH)GIoBIuBbl721Et9KbuCN1o5MYGQduh0j1jWALPPEfgtvzQOKf7KAzQjyJqyHRNtWhk3Go9XmQ6KCrproefpsTWtDm1qtCk9EPxBr9KXSMXA2xV5SzHK6TRd2oQXFn7AUaJy46LoUd0asiZcP1hZM9ttzgXfZ7Lr)4Y20OGWK7doUnu3YW(Qlh4rXLJL2tHPQajhNEFSCUnAifUrfDUAnvkKTe(FzH7vpnCHhxPy4L69gT7Rs9ecunu3wOlBRxx1KzuvnD9ZQEIPhWK7J5KTrvKHtShQR01qGKpE4HltXW)yavw8INIwmnSEfkScAdZ6P(qtGjkIZ(r4O6sUnccxlDpBvfITvhH7qyGXAnlx10fuJFrmZGqeFVA5M2c)dSs0eFymDtvbCwzq0rCB5QMPBl4jHp7fKhLkfLRkJcfOV4KaHEk9moFetp(WaRGxY7lkpuBtvmgNspui8B9EhbBVkKVT7Qjsxg)Isrx7AIzTklGsbQ1txVek3w1X31WZZYkiDyrX4e6T)c2EAHOszgDSdXPXuqxx1pI4MqrjEkRkl7j9eQYPJVy3oyRBw1IrvKWzCDOWtgNQI4eN62zvUTvy4wH9dSTDDAH7GBtUfCbvhvLkM6KiTALFvZq7I0m7anm)M4EoukbP375R3IAlY8RVWwRLzQ3pIS(opKuuL7CdK6Uo79gWYvX(qZuljZgMu22ZvZtv2LPyMqKeUTX6SbuzDosNAAzbl1jDdotQ6PQzcBwoQM1kxRzGIe1KgbM6z16eXxq5KrxzahyCDko(O8WGvOJHJLHAQnuSgHvxH3ooTkfDIKWQApzPib3YlsNaJpn1yyqYQL4dUvCiH2dkr8DTAs6TLVTQkBfkxvDv6Q0mN5BQptPR25HbV2GP2oIHGwq9jCwenxknqe2vHxPd9dR9SbS4xVM5AnoSvgJqsWyFdkHKwPdVKYjbBKTuxlUZMA6s7Fyfej4wOjOwGLfnZHVN9i(Hj3cy9TlElQOwHswTURwGprpRn4PfwKVUZ7)S5RABAIrh7AzRQZf5YlsVDM2wxxnCHPYygb4(01Su9YOitBWsblTrDa79Y6ysFdIFfxXFs2)cyvwPmt1r379nykcd5LgQbomlcZV6HglzxzW83eR8MnaBpmH7EBWmOUTYmhDuYkvW079Kk9xTXbQrKKvdDW5PvtJgUWuuWK69rmS1RJm3GggoWUMtopdOWfhK2K0169s52(nKXXVdj13hIa(h3nrzCt292pbBFfc)vlRNXTDH5hnpFkWBK3dNByALDs5tfNqFnqVTzsefWZ8F1ocwdXqqWKvDRi35sgm9MOVvblY1uXqskHgXKGjGW069(M7VASHPDet41Hgwim1yDyny6qpt3)1POoiJqTXBIXBDuZogVXTUqCmfhgVZh5557TMtGDnqwm4UV794LeU24FoIiS2lIhhfVvXWqA)EAggwZg89792JcjDyIZPm9fFehhKg)XJWzL0Wd8dJf8w8V6WIDmm8W)YXKCgckL9oHE4ZJaSUpme)vyUkWgcBbzMFwEZ7K36AzKaJOD(x5U4Fad(xLrNf0dTutc0cQhExefg)k7BfFIi2S3NsLkLHcDugZxuSxorE4c3GYuKBvLO4RglgL64QIRu(Gtf(ammcgF3Ilhg24qbVrgXVbL7U6OCfpudZnvArHj0rrjsiUO2WaUPlrep(jNb65whFsfcFujkCbnxWaLNViwX3awqWKjF)RfiGDEyoBNh(IIhrMWNAJWNtgXZxIVjSNqcFVLejXhBx3WisFuSWeXIo)55FWx4C8Vo(xp)BG)nY)M4FZ8Vf(3k)f4FB815F78Vd(3j)dX)U4Fy(3n)s8Vh(3l)7J)9Z)i8Fa(piFd(pe)hM)JW)r5)y8FC(pb)JY)j5)u8FA(pd)NL)I8Fo(L5)88Fb(hJ)lY)L4)Y8xI)RW)v5FC(Vg)xN)j4C(Vb)k8Ft(NK)BX)T5)o828Fx(Vh)3N)hW)d5)r8)y(Fc)pLFv(Fg)pN)xWFz(Fj)VI)xZ)B4)T8)o(Fp)FG)pY)N4)Z8RX)x4)R8)n()o))G)FY)V4Fk()n))H))Y))4Vs7c3r7cfAx4oBxyO2f(SAx4UAx4ZUDH3q7c3Tyuv7cVrXaQ2fgoDOu7c3tpgg1UWBcL)ZPJHqTl85Ix5ZRhJpAx4nNmqODHD0DEQDHDILZBjsQ79gj1UqP2DKu75gj1ErPUViPU)ePAx4bqARDHheAz(8X()2fERry1OawnA7cVn(kTlO0UWBhBn2xViOJijijbLLGocqqhz7qqJjjijbLLGgdiOX2oe0rLeKKGYsqhfiOJUDiOXLeKKGYsqJde04Bhc6yscssqzjOJbe0X2oe0XLeKKGYsqhhiOJVDiOtijijbLLGobqqNOVe0LZ8gk4qsesIqzqO9bebd(NUarqUmsZ1zcZ1ze5Y7(EctNhH6UQHYbeVQuuQtDTvwoWYIZ82Xtm3ILw6jNT60loz4l9PUJO4lsJlLIP8VgjB(Pl20B0LCSwtrZGGrz3(Q567Vpf8LWL)ikZHVRvukcjPG(RwH80QAml0)5uhpTqNN7DVjaa6d)I4HdrO8wxyXLNCtUtpUk8sDubgt8UPbFXazXGBAazPOoND53jVj51G2IfoS)ga6PqE7cVdjL)PplWJGICqEZ2foewchERILTlmQajBx4iV2Kg7HF(7GgFijnkPXBNNzqh047usJsA8255p0bn(WsAusJ3oplJoOXhrsJsA8255I0bn(OsAusJ3opJLoOXhtsJsA825510bn(UK0OKgVDE2pDqJ7xsJsA81ahJu4p4h4V7c4pXeC2vJpfPzNEI5Rm7n(iKEo5ri1dypTRnK22V3JoHI4z9aF5kCGdR0Y0Ysj6xxffxhfv4RAQ(m)rcXDKckjEBWTjy(m8ZT334J8Ix)iifmnXGO97nU40bTd8zk1ikEU(M4lvFXZMX0oAHVJ5Whupkl7p0gJen879DhV(6GGEo5bbTTy12fgpfcBx4y3eey7ch)1YW0w751qEoosyk3E0nKhdJeMYTNId5POiHPC7b6qEiisyk3E2oKNHHeMYThZd5rqiHPC7j(qEccsyk3E4pKhaGeMUL5)(hi7Jbs4R9TK3rzCM3EJDHFLzxzXPMU0ClEs4JLw6090z(a1IW715mFON8ZWyxbWcGRaG7b4cDZFaJq8f6Pf472aCbCnKBrcEtGBuzdDgHf9o6g4MCd8wIK6E7g4Mi1UJKApDdCtK6(IK6(7eCf(xpbCfymcqzbkgirSvWyw6682UeMKWuimnAFHPr7cm9qsysctBgMosFHPJ0fy6DkHjjmTzyAS(ctJ1fy6HLWKeM2mmD0(cthTlW0JiHjjmTzyA8(ctJ3fy6rLWKeM2mmDS(cthRlW0JjHjjmTzy649fMoExGP3LeMKW0MHPt0xy6eDbM2VeMKW0MGj0)69HMqr6WB78wE7jJ)1lJ)gWRPumG6ZsDcVWL8BQS8U3ypVxUYevMBYQfxPu5kYqMFqpEibNc923coEibN2zr3LJhsWP3yPIoEibNEJLk64HeCAgPKX0UeM(0cmjJPDjmLBWKmM2LWuUbtYyAxct5gmjJPDjmLBWKmM2LWuUbtYyAxct5gmjJPDjmLBWKmM2LWuEbt3KX0(UY4Z95CDmpV4xJDoZBNX(uFULwCU3ZevG)iJJ9C8iHeCAMdfc6LZTJesaQPhkuCr3jSk40mhku3Kk6qGYCOqDtQ9gYPzouiHuY4yxct3IGjzCSlHPCdMKXXUeMYnysgh7syk3GjzCSlHPCdMKXXUeMYnysgh7syk3GjzCSlHPCdMKXXUeMYly6Mmo2V)m(uFEZggmh81etzMl1UVHY(EID7(8ZDYzRSi(oKPCLLkTGmA2LVSJKVH2LWK8n0UeMKVH2LWKeMKrZUeMKVH2LWK8n0UeMKVH2LrZUeMKVH2LWK8n0UeM(m33q7pygpVpJRwGprp1d8CM39f7D9zwAYvkp9uPEzx(dU6R6(1fw6BDj486wWr6hDj4i9zUeCK(hxcosFHlbNxpcos)ElbhPpULGJ0F2sWr67Aj486qW5M0p133SUuQPURd(ljQPnrPo11wz5all8nVYSlvQ0CtT0IvNEXjXxP5LQCJ9o9LKEN(2dCockYb5nVqCxjwohEthudO5xQd9og3xCRokF)cm7i8MKxF547ljD89TzMSDHP)mlAShEt)ssVPlPXx14I(ljDrVKgFvJF)VK0V)sA8vnhMWLKhMWR9OX)F27oALeiimko(ZqKLvxTVkBRlTclOOfDPyXGkizSSrVt7tJ0JIpbTmoTogRjyNnu6)9dIW(7Q5CMVVtBn(djuuqcfOXJMypki2d04rtwkfKLcA8OjGMccObnEQL6tIz888Pb9nzpBEjFz(QQqFsIdtVpH3JapLgEJcGjE3cGjM)pGjWeVVbWeV5bWeVdcWeZ)hEBeGjEVeGjEdfGjM)pUByFL3fS3zXISL5FuDT6D61BalWwH7cIYVMEBccRsLTliC)2R3eewLwJpR(dCU7uTQZNvN6s3PAxNpRo11UtDdlWwWuZHjwGTGjzyIfylysgMyb2cMKHjwGTGjzyIfylysgMyb2cMKHjwGTGjzyIfylysfMoWfyB7TUh93EAUjy47ZE1S3Tx7fEx3(d3MgpA4JD7ht31)TXazHA5N7gigilu3(NUMyGSqD3NYfdKfQ7(uUyGSq17u0DDW0FcMO76GjzyIURdMKHj6UoysgMO76GjzyIURdMKHj6UoysgMO76GjzyIURdMuHPdC6W0Y)s3NLzcIg)T1bqNUdIhffMMsp2fgjKLPEHcv(rwwKqwNUjuOV(P32QwM6fkuDNYfcKxOq1DQRwZuVqHSNIESdMAimrp2btYWe9yhmjdt0JDWKmmrp2btYWe9yhmjdt0JDWKmmrp2btYWe9yhmPcthyp2pZ7k1JMooBYEBW(MXWEus4G7O66mbJySRdMySRdMySRdMatuDDWeJDDWeJDDWeJDDQUoyIXUoyIXUoy6)5yx)t27oiLggimoo6vOQ7CLxLrRT2gTugBoaJsbdPwcJj3ZEg8KiisyCvDT5Dh(T6J)8((E66xxCN9D5MUd7Vz7WXx7hY7p13DX4n13wV5UD1X7TFDKgXHDXeh2ftCyxmjM4WUyId7IjoSlM4WU9RlM4WUyId7IPPSd7ZkUR(60Hu75MV(NJNAFD4XqL1RZWiWRlMaVUyc86IjXK1RlMaVUyc86IjWRB96IjWRlMaVUyA6cV(LfxzFrkNtTnN67MnEk9fHymuTYO15xe01ftqxxmbDDXKyc66IjORlMGUUyc66gTUyc66IjORlMMYORx(htxoKhEj9XBnNB46fF50L1X6Bdp)WkRxhJrSxxmXEDXe71ftIjRxxmXEDXe71ftSx361ftSxxmXEDX001E9Rko3(8CQTnLB(f66ZJHQQq0(15xe01ftqxxmbDD7xxmbDDXe01ftqxxmbDD7xxmbDDXe01ftqx)NdQhEpDS5VJUE4PWgZwNFrqxxmbDDXe01ftIjZw)FCm9f7D)TAtdfhahNDNGGW0QZlp3Tlev8pGx3LvPLvBlTveVQe7oUgBwY8K0wu8PWb(qCEt8UGx51(i4tGjnBUOstL5zexY37dTJTpKb)(DY3q01bteDDWeyIJToyIORdMi66GjIU(Ao26Fp7Pw3XZpk8lNDG1B1PlhwD6weXwhmrS1bteBDWeyIyRdMi26GjIToyIyRZHvhmrS1bteBDWuvo263kZC03rge6y7kSuVBT5wV2pN2(ongmSv92JS6)so56)Dlb6tNOWjrV9kBD0VJWnsfy6gDUAYV2(q08jjo4APyo2flIo(eStC1bovf4Wjsh4q00boeiDGdXqh4ugHdNGCGdroh4qqZboeVCGtjeoNZqLFBl)zEJDCf3vm05qP41k)df9M56MuRCRUpVJvR2JA0XA0GH17pC1haCnZMUyO59sUK7hn)J7z)EL92VXXl5d6b)Xt8q8x9N)LV4hhfS8N1hgDNLk7rrZLLR5ERzU3fmk)6gVQAPXCgMUMHPJg)Vzc9AMqFbRXJUXGzUIWjsXaBV9hRSx4kvvlFMZIa0SiGc)ULJRwAmNTlOz7cf9Dl38Pk)GqXEoEhiEMTR90PvlDMZkm0ScJc)EL7xT0yo7frZErk67vEZMohmr0t5idcLbbX3VuTTRt1sO5SagnlGPWVFPSAPXC2QJMT6GgVKTQOMsB3W4)dJunw6fgf(Tt3uuZg1BpSjDcYGpYnlzC8Fstd)KzF)qKq1SF0BUsQM9QQTsQM9Q2ALun7vXl1wW0fiMOtqGjJHj6eeyYyyIobbMmgMOtqGjJHj6eeyYyyIobbMmgMOtqGjJHj6eeyYuy6C2jOANnr9DTvtf98xivRTsqx)0HTVB9(7nQx3x0Opnc6F9ffr66tEYfXlkc6geyQIGjAjeyI(cbMO5qGPsmMOdrGjAteyIEfbMkXyIggDzft)G9UdsP5bcJdJFiIgSIlMRsAtAnq4lGZiDzisI2bk0sZiF3cpBEKmTXMu3Ka13II5zFiui)wnZJ)LDncm9hgtNza7x3DC7tTU9)HKoBZ6I3DB9oEI6tJnX)Br2S0KqAyNRdIg2bt0WoyIg2btGjAyhmrd7GjAyhmrd70WoyIg2bt0WoyAm3WUx3HQFyHgFY6khmH92)Zcm)HuTzASjIc2)gxgu9h1dy9sCzq7F31Fj6)YGA(b4nWLb18u(dCzqnp1ekyhm9dGjkyhmjgMOGDWKyyIc2btIHjkyhmjgMOGDWKyyIc2btIHjkyhmjgMOGDWKuy6mly)UtkyFDzvvzHkztUsV1UZ6(si7jrADuywsAaHSl4Dcv)D(TvnUv87e6Z3D9hJEUtO2FaE9DNqTpLFF3ju7tnHq2btxEmri7GjXWeHSdMedteYoysmmri7GjXWeHSdMedteYoysmmri7GjXWeHSdMKctNzi732D26l3L7wP28SYTQC)bSpyp7xD8C313heMUS5G3jPD23igLDWeJYoyIrzhmbMiPDWeJYoyIrzhmXOSts7GjgLDWeJYoyA8ok7(Dh7U5)2kxzHAEUR80dv3SmwBIcZMhyIOMDw4iMLDWeZYoyIzzhmbMOMDWeZYoyIzzhmXSStn7GjMLDWeZYoyAmpl73C6SSBFXwOcQQYFDTBWw2972M94fXHzbADWJjgQzNToIbAhmXaTdMyG2)LJPpyV7EDsLGW4W4HotmXyhXUT3Og)4gGSquckRSZynbHvHWhlUdGnw49GjErm3j2nLE5illQRAujMyyc7t)jhor)v9o)ppaMiq7Gjc0oycmXA2bteODWebAhmrG2zn7GP)X1SN6Bd1AJ70SRQXGwP)(oT2fLDRikuTi7yNahrv2btuLDWevzhmbMyh7GjQYoyIQSdMOk7SJDWevzhmrv2btz5QSN6G6IgdAPgfg1)xNW(BNBp(s7cPN)zSEDYAeTyhmrl2bt0IDWeyI1RdMOf7GjAXoyIwSZ61bt0IDWeTyhmLDBX(wVFSD)GMD7fOuoUTBeDDCo2Z)6r19l5w50scrD3tk4FmfzN4grr2btuKDWefzNLSdMyj7GjkYoyIISdMOi7SKDWefzhmrr2btz6ISNAj7f7OAMCw9fEj7fllso3olzFXEuOhN7V2MBwl)WpZVCj2l5fEwp(hB3zM0owaBKW5PI4wZdZzoRwh4KvGdluh4WA0boS8CGdRmh4SkchwuoWH1JdCyP4ahwfoWzfeo)XfGNxggnku5SJJSt)aNRIc77C(4E9mJgUP0Zx6jQxQQBDHSGV87h(TMltVCG5UX)r2Zm5YKFng)3Y(F5)8dt)CF6dFQhzuZ(h6bMTNbSdntcwTo5TMtEVKf5Z5UpBPXF4o6AUJoA0AooVMJZJgTMl(R5I)OrR5ze08mcOrR5Tj082eOrR5bp08GhwRgFH9UFYj9bcGIJFhmgJlNRslbtnb(bARRjnMQq(bTey6LILEe8eq8ePzyags4pjWtJcF35IjSXpRM3BE9mvJ7jfLzKIcA8xt0mZiAg04FR8EskYhA7B6wm55Is7C7h(4EsAg1klzVJ8dz9W0uXltamXRvamXE6dMat8Qgat8shat86hatSN(eqayIxjbyIxoby6IAp9Vz1TRNwMpE8GYxnXdSfZTV5VC947Zy)85JQ8X)f6M9ZhmjdtSF(GjzyI9ZhmjdtSF(GjzyI9ZhmjdtSF(GjzyI9ZhmjdtSF(GjzyI9ZhmPcth5(5VUQ6nYho0u9IXpYnhAd9VYFz7nIA1Q3I)M6RFQjb5u6IVrcQtcYP0n)P3ssqoLU7t5tcYP0DFkFsqoLgCkQVoy6hbtuFDWKmmr91btYWe1xhmjdtuFDWKmmr91btYWe1xhmjdtuFDWKmmr91btQW0rwF9RxDJ7puN))ctQTA0452393NEAwN2DP96cdcY5ZGOG(6)UYccYb01rbT8NEtK68zquqB7u(OFcIcABN62f(miki3PO96GPVjmr71btYWeTxhmjdt0EDWKmmr71btYWeTxhmjdt0EDWKmmr71btYWeTxhmPctNC71VREYGQ6PM4jf52(hQ96lNH94hBgLLqV1zbJy21btm76GjMDDWeyIERdMy21btm76GjMDD6ToyIzxhmXSRdMUCND919wpTE0OQstCUDAWqWK(u72D(xV4OSuQVo7yeJVoy6mB81)K9U)ATPHcJJJZUtqqOGWuXlY9Ik(N3aLyMTqx7On6TLq3zlfstMPzvq81GGo1xeNl3lbVZ7cELx7lbFfyZjnB(hsMB7GnMZ37pBDm(WHYZZZ53dyIWxNXxhmr4RdMi81bte(6m(6GjcFDWeHVoyIWxhmr4RFUgF9BEAj19fbbw2rHtoC(8PrHNz8RF7IQU3XPxVX2d6B)SrJ6Mv)9bJii2)l7n0hxbs)0xCLnp4394g5ymVrpxn7FBVoDHFgjUwUSxsKxME0k3tORdCmf4WGQdCim1boeC6ahcjDGtteomy5ahc)CGdbDoWHqnh40aHZfCqWVX2I99eXEw31YD6mH1EXrZS25WGG0KdATTZtB7mS9yN(2Jh52EOB5ZcUKAtVEO59YoY9Z(HFq6IJBhpXluy1r4T7F8uiw(H)5F5J(XPZv)1(W07OEWbpkDHOzv5Bjv(UoWYVUXBngnwr50Luo96Gg)0wbEZMgUVzDlzfvRxs16Rh3s(oJrJv0cajTaOw8vj3ko6vIqZ6sYkAWGKgmupUK8iJrJv01cjDTOoOXV8Cry0SSOQ1OUMSIUIiPRi1JRjFVXOXkA1IKwTuh0y8QImBmKSIM4iPjo1Jli)GPOXlFNHw(LBcs8T2repreMKM8TIgd1XPDp3ovMqq0vi2cZ8kgat8Ygat)pJjETdGjEbeGjEveGPgmM4LsaM41taM4fvaMAWyIxzbyAnxF9wNwFD7PH7kINNM89IcRB3T)tCgs27RZySsH034FYEIqNBH5mKM)RUv5BHzfsZp11lFlmRqA(P2S8TWScP5N6wLSsVj79btAdtK9(GjTHjYEFWK2WezVpysByIS3hmPnmr27dM0gMi79btAdtK9(GjTHjYEFWKUW0fm79)5umkkoweMyfTNv3jIZk69pPG7Udgo0PVlJU(LOlqkJwSnM1CxGuiD12yU0UaPmAX2yU0UaPmAX2yU0UaPmAX2yMrxhm9pftm66GjTHjgDDWK2WeJUoysByIrxhmPnmD(gD9FWE3D50GarHHHxgElBaxeudrAlsOa96g0mAjbQg(zd1lNLHRGgxkDfyesQtmy1upQtBFxdZZvNZ38DatGjIUoy6VateDDWKyyIORdMKct)8ORhNv(u2dkJjPh7EtK71EeDDb3cuhsnUbZsUfOoK((nyE4Ta1HuJBW8WBbQdPg3G5H3cuhsnUbZeDDW0VjMi66GjXWerxhmjgMi66GjXWerxhmjgMi66GjXWerxhmjgMi66GjXWerxhmjfMoWORBml9rvQSML1F7mRpk2Zn1pHmRZ9HM8PdCOg1bouz6aNJF4qgZbouf6ahQ9CGdvCoW5ueoKjCGdvxoWX2RP8lMKF502vV1Sk5LkN7RES0jQTOytZ2jJNopCHx4vlssDJt)8eFRzU0wWjV92(xYZMJW8Eg4TMbEBhhH51NnACptrxZu0rJwZO51mAE0O1mVFnZ7hnAnlrqZseqJwZMj0Szc0O1SUdnR7anAn7qrZouqJwZIz0Syg04X12E8vzfnlDIuv3Pw1SP55(T9475gK6V3Y9Hv9WXtMVLayIVQay6ygt89fat8Lgat8nhatNWyIV(ayIVdbyIViby6egt8Tjat)VdxF7UzRpRnVOOE3m1NnFCqqcfMpNn5d(gCtH5dMedtuy(GjXWefMpysmmrH5dMedtuy(GjXWefMpysmmrH5dMedtuy(GjXWefMpyskmDyfM)l7MIEOQU5R6k)19typ0lj9dzu)v27omLejomooo9UGGiiOE7CvgAujkuysr8vYaA5YgJwu5B6we0bQtGNHojRYiUUlSTH8qVO5ZB8a485vp8JV)TrDVsY2Oom9LJjBuhMcdt2OomfgMSrDykmmzJ6WuyyYg1HPWWKnQdtHHjBuhMcdt2OomffM2XaWCYFCE9KwpwC)OFuuU4H3RUKEREP5zNN22A19sjVZp72wRomfgMSwDykmmzT6WuyyYA1HPWWK1QdtHHjRvhMcdtwRomfgMSwDykmmzT6WuuyA3wR(SJ3Cp9SPZltYUV46)7O1NDu1T2Z60F5p5PnTDDPksF1Hj9vhM0xDycMSDDysF1Hj9vhM0xDBxhM0xDysF1HP6BF136w7DlUDAzsEXph)7RP3n9YoThMNErdBxx0IuADysP1HjLwhMGjBxhMuADysP1HjLw321HjLwhMuADyQgxA9TUNEZXJhLmy6JL38z3UEZgnYgoOtV2TSDDjms31HjDxhM0DDycMSDDys31HjDxhM0DDBxhM0DDys31HPAB31FBZP2pRy(MNT0Zs7F1howDNt)FkZxx7TjlUB)tN93CBVkRvXSdw932ZlEAYQV4hwj3Lcy(IxwZAzFbCQlWXzYbh5CbCKUfW57CMw(f7D3SsJdfgghh9wWVWbxK9cko6nqAtMKaTzkTPBMnHICM0aTPL0t6cVi8c5SFUiMDbx5LJ5lgOivfjINX(FtHwslb6VvVpVN8aC2DHdJ1g4WJFfGdpQvao8yvb48feoVZhHkNyLLMnpR8rOs8CHXVtxm3yq2SzLl2T14HJ7po02VB4OaZHbBFY0kMm9NdmVO8sUS8lFv(6Lh28NPCQW4hlsJwiLIKNfitXTXF34M4M8vv33Fp)89l)PUoFT4R1eWvmbCDaOpU3F2z04lmwDfJvhnQnZQxXS6rJAtaakcaanQnPkOivb0O2evHIOkqJAt(hkY)anQnHQOiuf0O2KuJIKAqJ)Ff)JRyYm5uJbI0BfjYC5dnP)4AB2lWLdLav9ahubWehEbWe9tlycmXHCamXbFamXHHamr)0YbKamXHMamXbPamr)0(8PR3loAQ0y0sXTYIpjxU8OMXR3ZZXniC0a7UbfVNIQLoFGIQfmrr1cMOOAbtGjkQwWefvlyIIQfmrr1sr1cMOOAbtuuTGPD5IQ9S)nyDR4vXjsru6ez8IeJoIjZF1gR9BnZE3YBKNFGTZqZaVF6h2X2Sp71o1abDxlyIURfmr31cMatSx7Gj6UwWeDxlyIURL9Ahmr31cMO7Abt7SDx7g71EsKiT4fdNj3j2yV29DShw8sOJ5VSzV2BXiIQe79tRrBlhruLyl)Tl(7yRrevj26BGd2EervIT(QoE7revj26R6u2RDW0hnMyV2btTgMyV2btTgMyV2btTgMyV2btTgMyV2btTgMyV2btTgMyV2btVvm9e7D)0AtdgahhNEtqqO0nlOxEUpurDVbcnPqWS2WtQ0JHWwklyQrFYw9IVle2lGDSVt2oLJ7LZ6ttARZ)0uEqPI579WYO9ZPN(lFtTyIDTdM(tHjd31(txFW69ZuNglYMigNKMw7I2pO6u37pu2ZjCy)WXUEESLDYDenAhmrJ2bt0ODWeyITSdMOr7GjA0oyIgTZw2bt0ODWenAhm1CB0ENnVbuJuNjcUisP3XE7vV(tTK2HbJSKSHDYCeTzhmrB2bt0MD2WoyInSdMOn7GjAZoyI2SZg2bt0MDWeTzhm1OBZ(MnSBhP(GWpsfLNCr8oVHDBl57c9TKwbUJCyd7K2i6XoyIESdMOh7GjWeByhmrp2bt0JDWe9yNnSdMOh7Gj6XoyQ52J9dxFK7JJstZ1zJX9u9k27uDM6JT88c0DHXTh7yNSgrl2bt0IDWeTyNDSdMyh7GjAXoyIwSdMOf7SJDWeTyhmrl2btn6wS357EjNojwyRIs(yTJyV96x)P9DcTLwUdyb772pg0vv(78Ip)OUF6h5xRs7v(l78y9hBFTy25Ab8KsgVqeFP4Bvm)x(0vSagRE6k2s8IkVQdQjErLxv3AIxu5v9mwRoW5VhCyz6ahJGdRqh4yeCyX5ahJGdRlh4yeCyj5ahJGdRgh4yeCyH4ahJGdRbh4ycCmC53p3xLmntDwYL5IxigLmnwmrLnv4FzAQUPk(s3tgkTDFFqOZGEldz(OF)aWNZjuVFa6l1xYRkMD9MVo1)LE9p9aqS4EFZdUZhxKV8F23uC0sS92IzX)FD83Z54V3ZQ8Uw32S04wot95CM6OX)zoO(5Cq97SgVN9UJwjHbddJJFruyPeH3fD8WgSrIt2mpvK1GgjozU6IAxnDjL(5uMXygRhHL9)md(ie83rVVpFpFOXZ90)Zz6)OXwZkfYzLcOXwZEkYzpfOXwZYpYz5hOXwZgvYzJkOXwZAAYznnOX)E7(XjA(ISx7poknmAz22RIqPD)4yBnCItTn)dl(PbV1Y7(r(HZXBTmxxbW0)emXvyamX1AamXvDamDbJjU(dGjUseGjUMeGPlymXvNamX1PamDzoM9PXRdt28jNK00K0pZw1T0y2N6gmWB74298998PO9f2zvB(DUuJvz8RSoRQ4)9UgRY43kK7HVaxvCQRRsUhovNItDtvY9WP6wCQEu0(GPZhMOO9btYWefTpysgMOO9btYWefTpysgMOO9btYWefTpysgMOO9btYWefTpysfMAyr7F)rdyF)FmFr)GS043IozN7FxPjWV)JwdNfmX39jBY4(VDDrg2Q)TyERCnSTU3IzJCnSTU3IzJCnSTU3IzJCnS9h(WEtg3btYWezChmjdtKXDWKmmrg3btYWezChmjdtKXDWKmmrg3btYWezChmjdtKXDWKkm1WmU35OrWB)rYI3ZItw(9xqGPEdFEIR3is2oVgZn(P9MKTdMKHjs2oysgMiz7GjzyIKTdMKHjs2oysgMiz7GjzyIKTdMKHjs2oysgMiz7GjvyQHjBV3rJv3km(L4W(bRIxgT(KPA)2sdE3AG7JUdMfm2DKDajANcqIwBhmrRTdMO12btGjs0oyIwBhmrRTdMO12jr7vJPVyV7GwtBW44440Bdgu2P11r3i3lSY66BGhZczb0KG5XZHmntLgtstI2l9DrH(IWJ7DrV9CCx37K1hThsArl0DqW89UOI(50p)ZxbtCr7GjQ2oyQnuT9JBwT940QcDrzIgwQQYpQEZ2TCL915IrygWDTt8JOy7Gjk2oyIITdMatuSDWefBhmrX2btuSDURDWefBhmrX2btT5IT)HgJRBhvA0jjA0O4Ix8Q2FFTL3nfdcKoMH2cUPDcEevAhmrL2btuPDWeyIBAhmrL2btuPDWevANBAhmrL2btuPDWulUs7N08pk1OQjzJJtnStIshPpR9pv)S296kKoDTc9fYF4zB5YXTt)JiA7GjI2oyIOTZXTdMiA7GjI2oyIOTdMiA7CC7GjI2oyIOTdMA1rBV5k79IRI(zwY0HgDYYkREXdC)J12GVNLu0XRRJzyhpVajh5onqIWTdMiC7Gjc3oycmXrUdMiC7Gjc3oyIWTZrUdMiC7Gjc3oyQ9gU9p3y(DRI55vtthB4pVSAEsS(m3pP2e7w9h4lDCTd9heih01A7x5oJUVr)E3JQCI6Q3Cu(tr5bRf5Am(w9hB3Owmr7IdxJ8hCY1QBFe)mWoWPTahgth4WW5ahgjh4WG4aN9r4W43ahg6g4WO2ahgWg4ShcNxBrw(EuXLgI0PZwTwTC6SyJFvKnZWFEsIQk)DcxNE6zQDnddKI(Ynpp9sMNE3OZVOFiNPw87AFxQFQ(6Z(fBE4f)(gV0xOkx9U9C1PRO23ulI3Vg)EjJFVJz5Fo4VTlnULf1x()SO()yV7OvsGGWO44pdHrzELVkkKTcXQ4i0LIeskeRsUqVtZtJ0tu2NJ2SWic2Xyl(FzWWsG)U67CM5dnIgLoMEpJPhnwBM9VNz)JgRnbk4jqb0yTjLcpPuGgRnrF4j6d0yTjpfp5PGgRnH04jKg04FWKFYMn91Y5Tho7TNNvuUP8JqWpz335XXzCPe4s1WfvamXLxamXlbeycmXLCamXfFamXLHamXlbexqcWexAcWexKcWeVeq7hXEZQJyV7Y1RB7wn99InLRUkmF9UdCUjUHDEkN1BRWnfX2FCJ2tegALTPicF7D7jcdTj46H)bAeo11P46HtDt4u3MIRho1DHt1I1Bly6YHjwVTGjzyI1BlysgMy92cMKHjwVTGjzyI1BlysgMy92cMKHjwVTGjzyI1BlysfMoZ1BBRQtv3Ty18Lf2Fp9Kl32gHPU76pmBq(KV(Ro0L9FASqMu3(79fiwitQv)0jIfYK6XpviwitQh)uHyHmPgDk6Yoy6xbt0LDWKmmrx2btYWeDzhmjdt0LDWKmmrx2btYWeDzhmjdt0LDWKmmrx2btQWKMUSBJBV9OffVe1LDBC6tg1p)b6YUWyHmPgfm02FNLflKr1VdgA)NUkxnPgfmuQtfcckkyOuNQ5oPgfmKDk6Yoy6cHj6YoysgMOl7GjzyIUSdMKHj6YoysgMOl7GjzyIUSdMKHj6YoysgMOl7Gjvy6m7YEYPQ3Bzr5jBYE1zU3Bq(y6XopVr8MSdM4nzhmXBYoycmrp2bt8MSdM(N8MS)j7D3SAtefgghNUtqWvcAXfo7Ycrf)4giepKm1KzsMoswomihnHoFepzskiUQ3ccEb4YZDI7o4kVq8JTMPjcMizekcEiN)l6UwsP9hdTpVVVpH9yhmXESdMOt2bt0j7Gj6K9RWESFNTtCxKpR8CPYRBzMm3un7MBIvxmyy4yrus3W(IbSn7uYr0m7GjAMDWenZoycmrZSdMOz2bt0m7GjAMD2MDWenZoyIMzhm5YnZ(D3oBD)IkPsTyw10Ix7Dsz2FFP2V9M039dIfrrVyySFq3Ktc7ZUTtDhrhTdMOJ2bt0r7GjWe72oyIoAhmrhTdMOJ2z32bt0r7Gj6ODWKd3r778oJAh1085LfEJtpt(BV3N2jYFWPHbjJB)CrJB2o5SVxY(HnqCI5nx7wZ21HhTgHR931R)X27mlNutHBS21ROX5M3VX7KPoWXvGd5NdCiRCGd5IdCidCGZHiCiVBGdzBdCihBGdzwdCoaHZvmF6J9vLfEJw9X99INMl9ELQm3B4ISmt1NhfgKic6KCAC7O49NlTMCP))WYhu)P8W6V4hzwEXV(n5FmAMvVYFARx3NAMF53Qp2CVll3NNywkpSI8wtK32Gj)YrF1z0yd5ORjhD0O1eoVMW5rJwtI)As83g0OkQS18jPN5mKSHzjOzwc2Xdi)MZOXggqHMbuyf)71JwiRA920mNXKnm7dnZ(WoEc53Dgn2Wav0mqfR4pH8zP5Tus3j)XggvJMr1yhpG8hUIg)hm)NEY0SQjEdLQxklQmvFSE(p9eT7h3JJsG7OHdvamXXlaMO8FatGjoYbWeh(ayIJHamr5)WbsaM4OjatCifGjxQ8F(j7DhKsZdfffhNUeQk9dfeYAOTBGaFP0cvnyS4WqadKbvT0k6UWfJRexlUc0CFHsanPs90Qn9)8hHc93O79W5w)W1BxA46JUDwY00IHQp6Sq)XbCdBfEoimF(C2YdV8h)Xk7CqK7t3NUD5p9x4t3RoQQxv4t3R(xvVQWNUxDYYxXnSfmTHWe3WwWKmmXnSfmjdtCdBbtYWe3WwWKmmXnSfmjdtCdBbtYWe3WwWKmmXnSfmPctR5nSTt5okkB(9p5fnlnz(QoDTVLpP9RgE5fxhhfg4Fjzw)hS(htOgx1V(hJO5CTU1)yc14ADR)XeQX16w)JjuJRKzDW02gtKzDWKmmrM1btYWezwhmjdtKzDWKmmrM1btYWezwhmjdtKzDWKmmrM1btQW06EWAlnS9j3nnnzrw6nEdMMCRDWAZNP(KZhh4hnm4)Xdg7FgXyx5gHmY(CMtTI3iKr28V9h)Du5gHmY6(bCy1BeYiR7vDQEJqgzDV6yIXoyAtJjIXoysgMig7GjzyIySdMKHjIXoysgMig7GjzyIySdMKHjIXoysgMig7GjvyAnJX(PvpzDVW(Rkn7Z68fJEpoSpPAFlxQrT(02HArlSdK2xHePzhir7RdKO51bsnmirc2bs046ajABDGuddsKADGeTSoqAxVH1pO0m1dZswK6191hEjFs5Hd9JcI7s40)LRROcD(yl6xDG0(iKiu6aj6vDGeDQoqQHbjcIoqIUuhirpQdKAyqIWNdKO)0bs76DN(NhqEVvL08sJpVhPlFlx)qFNL5qFPdK2tGePlhirpPdKOJ0bs)fH07SZDxkPwuyCC45qFi4DniCceCYCtPgUf8YdhOi3u(b6EC0ytAi0qOrqN9AFZUlmLyzblFUxIaFU6D93F6JoiPn6GusajRlhK0eDqsp0bP0csrBD5D(05X78LRl35Yp8)2h23A9lilW0reMC2CysywGjXzbMsym5e6WKiTatc1cmLWyY50HjbBbMsLOTCEJZQ3TyD5f5Z(36PBkFR6Y6DZYh)38(xM3t6w(L)LsSVj6x(wGPKgts4cmjJlWKuUatjmMKZfyssxGjzDbMsymjTlWK8UatPsIxoRX50Num)(1LlwnBxrE51QBTpjBWFYhpCuF7w)h(xvX((eqs9cmDeHj7whMK8fys2xGPegt2Tomj)lWKeWatjmMSBDyskyGPujhmTAUB9vlQgU(YINEyt57HHRpAy1Y1Vl7MRSC9i(iqbP(Y0ASg5hbki1Q)2))RJT(iqbPw)pWPB)rGcsT(t1A7pcuqQ1FQ2wUomDOXKLRdtrdtwUomfnmz56Wu0WKLRdtrdtwUomfnmz56Wu0WKLRdtrdtwUomflm9nxUE7MlxFAXQNlM)y9e23181xEsy)69YgDB2GRRhYUrSRJrIVomj(6WK4RdtWKrSdtIVomj(6WK4RBe7WK4RdtIVomflm9b7ChCAcdgaggEfkuOfkuWzqCbcKGviMirPh8Ii4pwbjjydDa7eKrQ8tVKd2wVwYZo8E6JpE()HV(qTysd7pmzBtDOV7Z4E6PzjPBll8FDigrEDXe51ftKx3)1ft(VUyI86IjYRlMiVU)RlMiVUyI86IPrT86pnyl98thFRRoEG913I)6T3hhCpFX8x2ueFWog2jAeg2ftyyxmHHDXKyYd2ftyyxmHHDXeg29GDXeg2ftyyxmnYzy)5FE19jRM231(WvMwF3QPE1oGJOYUyIk7IjQSlMetE1UyIk7IjQSlMOYUxTlMOYUyIk7IPXSk7)6(6Z(ZJTF913N5B7GoIo7Ij6SlMOZUysm5B7Ij6SlMOZUyIo7(2UyIo7Ij6SlMgV6S)4GT3Ro9EC49K6JHl9DT3f3vVAX64O6jfZZQ8NDGhrPDXeL2ftuAxmjM8NDXeL2ftuAxmrPD)zxmrPDXeL2ftuA)7n1x2CUlupP8JWLZn7pCBkTVSmFtwXUYxZQYlts9KDGhrPDXeL2ftuAxmjMgVpz)l27oyLghkkmoo2vcccQlCJmex5crLrNxGoTPMcHAPnGOBkv5wtG0KzsVTfh8PqbFaC59XWDU7U0NJ5jWMMkOvAe0fgB(V3qf9hc(DY58bM4kTdM4kTdM4kTZBYoyIR0oyIR0oyIR0(kVi19krcX)eA5DXPPxPHP5PMP(YRtO6Z0N3orDU6)U46)zA0TqI4sW2sX)y7k9a34FVVCIFh5GH6BMGBofmaN8cCiSCGdN4fGdNZfGdNUfGZ8iCiCBGdNKfGdNFfGdNAfGZCiC(GHr)dNHEbgLcd6fgj7zSJHJxxHrNOWUg1777RL)354Q1A2YSwPwnDk2Wz2XtRiE6VgDUB8xYEXp8p1d(DZ(IG3mkMrFQp8QpZFP7n(BZ91Bxi(jpqpqmFL6TIuVZcE8Xcg5gnMsu6kIshnMzYNxr(8OXmtO)kc9hnMzMKGIjjKf04z293Y3l)8FYKYikumIISXFFCZCJgtzUhkM7bAmZmmffdtbnMzMqJIj0Gg)wo2hlrBFPRrDr05IaPwEFYyFSmlA7yXkjq5pWAkaMy1fat0yTGjWeR4ayI1EamXQqaMOXAz9iatSYeGjwJcWenw7ZzSV20zSxU9LA51jbRxU4j0sTu4d0sTGjAPwWeTulycmrl1cMOLAbt0sTGjAPwAPwWeTulyIwQfmLNBP2nMohDBVlCLgHDghO(71tTRMK3UD1dTCADuL4G351xNgFGAQfmrn1cMOMAbtGjE91btutTGjQPwWe1ulV(6GjQP2pjMEI9UdsP5bcJdJFgKQcfXpZvz64msGMeiPUomeh)AHMKY00RHhgpj9iztMUksPGmUqYZsHIi4VvVZFEkyIVMAbt)H)AQ9XXNDxBA6p6UERP2U)y3Uz(lRRfP93vxVuKOkyt7b85Hgu7hR9WnWpp0GA7)DF6Fhx85HguR)pGzx(5HguR)tD)LFEOb16)uZzt7GPFBmXM2btbdtSPDWuWWeBAhmfmmXM2btbdtSPDWuWWeBAhmfmmXM2btbdtSPDWuOW0pCt7ZhFC94k7PFS22DTbTF(7J3yPQuMLOwXy2jRr0IDWeTyhmrl2btGjgZoyIwSdMOf7GjAXoJzhmrl2bt0IDW00Tf7pn(E7PhQ2AnUO4M3TUM2JD7UZFy90xLlvI8Y4uTkpnJbTtVJis7GjI0oyIiTdMatmODWerAhmrK2btePDg0oyIiTdMis7GPPCK2Fy8b2xT5nZ2iDRRYE1gTFJ)07RIFwSSuNLlvSQDQDejAhmrI2btKODWeyIvTdMir7Gjs0oyIeTZQ2btKODWejAhmnDt0E03o6U1423hP9U12OIdnh7(88P1vICIZoDoI4SdMio7GjIZoBzhmXw2bteNDWeXzhmrC2zl7GjIZoyI4SdMM0Xz)FJpRUSDF9MQOfgNZ8)RpN9B93CxMvKellxiYZfVWI2j5r0PDWeDAhmnj60(xS3DmknmyyCCyYMGGBsXnbVbT9c0crRdQft3lziyCqqTH6I3cbpxbprAnfbBTwf(OAtEUcHNP3VF8pkAhMSt7WKDAhMSt7WemPODyYoTdt2PDyYoT)1fTV)s70(1xLx8rg7NF6jdgjJDRBKjzhMmj7WKjzhMGjzSdtMKDyYKSdtMKDzSdtMKDyYKSdtn5jz)OfVLE)S0jfZwhM3pQ(nP3NnzTTSFq1H37h3lz04loU6c8N17Y4ebTVHFBOOLEyOiXSdsnvijKDqse7GKa2bPAgKeVoijCDqs06GundscwhKeRoiTThQERfpU(W80jzh2US4LQlMpCqVK4XTfR(F87(mhPtJeQoi1eHKi1bjbQdsIthKQzqsy6GKO0bjbPds1mijgDqsi6G02Ee6R4o5Dwx45F6k6D0A(g(pR7p5PD())lAwR5GuqGKwZbPGajTMdsbbsAnhKccK0AoifeiP1CqkiqsR5GuqGKwZbPGajTMdsHasHT18UlCL8UFBR5UA(kr6ZZPxE5D7062viVk0T7SpBpwonFga2RcXVbIhkFAUWTilGttboUko4yXvahlSc4yrvaN6iCCvBWXIPaowiLFjCEL9UdYPTbIcJJxXnO0wAqSX7RAr00dqJmwYrefIID2Huekmv2QbNiZyoa9aWbzUjSZlznhbob44iR4QwtrvtBgg)FjsjKiLFREFVN)ao8erb4yXpbu2FGi2jisK48rNW4lfoFlDXLoJYMppxU81d86h47nCQ3q3PbH9g)eT2PIHtVDS5Nw9soC1B(O8R)r1pN)sImfFY3(tFUFj)QYVQFo)d7S6D3n)AHDn3BfZ92em5D781wJgFIHPRyy6OrJzc9kMqpA0yg7VIX(JgnMSeuKLaA0ycOqrafOrJj1dfPEGgnMOuueLcA0yYNrr(mOXxAH(4loFUmYzKiDMirMlVVkZhFVEdc95Ae2Y1ZWMgpU2vZC2R4cfatTzmXvlaM4sgatCDdGjlgtCXdGjUccWexgbyYIXexlbyIlOamzldyF3Ady3DrYfzXYC5dvtw390HhpPFiLk7wUdh2O0cBsXYcMARyIYLfmrbZcMOKzbtwmMOOzbtu2SGjkCwWKfJjkDwWefplyYwkF2o1FeffLLCHi9kzA2SV)NAF2LVRAI7H(tgES34GWXtCpHvy))CRp8CtdIQOfm1IWeRWoyIkPfmrT0cMSymXkSdMOEAbturTGjlgtSc7GjQQwWKTuxTh00u3Dg1nxUSZVD06th1LTAxJbevc3BIwBxnhqujCx9)U4NJgdiQeUR)c8MMdiQeURFv71CarLWD9RAF2QDW0)AmXwTdM0gMyR2btAdtSv7GjTHj2QDWK2WeB1oysByITAhmPnmXwTdM0gMyR2bt6ct)LB1(7RnF9a55Y4zf)1INXsT)2QjVhe2lSV70a)tzN25jCepw2bt6htpYo3XOMWGbGHHVdcbfNCWtqYjqKqBwmbP4QisWMbTssWZPhPoifSy(rWn5)5o8o9XhpyzxmHLDXew2ftIjFAxmHLDXew2ftyz3N2ftyzxm9(WY(0aBUpRk9A)5XdnS(2QupAh5rCAxmXPDXeN2ftIjpAxmXPDXeN2ftCA3J2ftCAxmXPDXum70E411ZE6P2dS9EMFTJ9iwTlMy1UyIv7IjXKFTlMy1UyIv7IjwT7x7IjwTlMy1UykETAFEOL3lo1x3ESPRR5Nt3J2()wzVy1xU4o)JG2UycA7IjOTlMetU4UycA7IjOTlMG2UlUlMG2UycA7IPygT9K7gAV8sD7(V31EO(PVBF0F7UxUjF9YpxS(JChBN9raBxmbSDXeW2ftIjhBxmbSDXeW2ftaB3X2ftaBxmbSDXu8c2(Kb3B)gx7jpoQoS25EeS2ftWAxmbRDpzxm5j7IjyTlMG1Uy6vIPFzN7yuqyOGWWG3cXGDc5I8SqeKyJEcSiiiXg9(BaBKW(m2Q70ThGVQLFgyTlMetwYUycw7IP)iS2R9z95PAp8V7GAN5rGAxmbQDXeO2ftIj7zxmbQDXeO2ftGA3E2ftGAxmbQDXuIHAFD8x3NW0(IGpSdPDEhbPDXeK2ftqA302ftM2Uycs7IjiTlMG0UPTlMG0Uycs7IPKJ0(7tBVC7XW5ld9JhxV)9tBVC4u3MDDBhp2F002PEeQ2ftOAxmHQDXKyY02ftOAxmHQDXeQ2nTDXeQ2ftOAxmLxQ2xv7R7V0AFz4R1b2o7Ja2Uycy7IjGTBv7IjRAxmbSDXeW2ftaB3Q2ftaBxmbSDXuYbB)d)xFEZ2R99DSTtajSTlMW2UycB7IjXKTTlMW2UycB7IjSTBB7IjSTlMW2UykXST3w937tKBVj(p7WBNds)M4T)KDUJrnHHdaJJEhkueek4zqpbH)jsYsAqJZsWgjzrc2490JujdT4suxQl5DhEtF8Xpys82DZDys82HjXBhMeVDys82DZDys82HjXBhMeVD3ChM(xU5E4C13ndtTx2C50x1NF(BUh2eTnDy(9Y0D5XjBCZD1qsc3HjjChMKWDycMCZDysc3HjjChMKWD3ChMKWDysc3HPPBc3F)MT3JRpu112x1xFTV7TF3vpojevKvgvM4p7kGKSTdtY2omjB7Wem5p7WKSTdtY2omjB7(ZomjB7WKSTdtt5STp)2n1BpE8YqPyweAQAp9W7Sp7Vz3ZwVE32SpZ3hsJYY9MD9ps02HjrBhMeTDycM8MDys02HjrBhMeTDVzhMeTDys02HPPB02)y8L3xuS8AF38rMxFFXsVBx4JuRDysT2Hj1AhMGjVBhMuRDysT2Hj1A372Hj1AhMuRDyAkxR97UX(QhEW9XxGFLpUl(rk2omPy7WKITdtWKpUdtk2om9sX0pSZDqknmuuyy0DHqrheWbUoARAtGKubl0HHcwBd03lbnUp7sserAeSADMyotVJ)gD5NdX2fteBxmrSDXKyYg3ft)PeB)QV5)7zXU1pfQF(Tt77Ap)y)ApRCH5UZfjyUlMG5UycM7IjXK5UlMG5UycM7IjyUBU7IjyUlMG5UycM7V)U9017cjnpMmTjewfF40XCp9M8IQ53wnDErX4YRn0DUibZDXem3ftWCxmjMm0DXem3ftWCxmbZDdDxmbZDXem3ftdxm3h17Z751B22fRJBswUTUDFx7zF8A98SzPlkZkNvTmn7oRANhsqCxmbXDXee3ftIjRAxmbXDXee3ftqC3Q2ftqCxmbXDX0qgX9lo6V1pfd3h91pFhH70qcH7IjeUlMq4Uysmzz7IjeUlMq4UycH7w2UycH7IjeUlMg0eUN07773)si0etMSA3UdFIV)a3Nmop)WJ2nWDciHTDXe22ftyBxmjMmWDXe22ftyBxmHTDdCxmHTDXe22ftdz22V8NEX(VAN7F(h8)Z35(RS3DqknoyyCCyYUbgqerWvc5mupbDrvd0PwA6uxwkyGeOgRtYOBMBXaEUYrsJ2otGI2UQqtFUcLNvV9F(9jgsk4omPG7WKcUBN7WKcUdtk4omPG7WemzN7WKcUdtk4omPG7F9o3pRXr4V83fzpKhgpFwrAv5ItxDA9l)zC0ndMg3VB81g3UqiPE7WK6TdtQ3ombtg3omPE7WK6TdtQ3UXTdtQ3omPE7W0HC92pVXD1NK9W8K8YWRMnpj82S87k24S2)3T3NeDt)Edgp9QU975w774VjJGLMnqezaPdri5g7GK4Xaschdi1YGK7QdscgdijwmGuldsULoijsmG0(EGyAUn9O8YKFDFwr9c13(RNhnyCVr)ikUE)66bZo(jeiyTVRIaV5PG0HkK0bgqYBDki5DofKAzqs7xajVVPGK32uqQLbj9EbK8MMcs77VNPN04w6dtNvKe2PQCXXRou(WotJh3D0y5DX)WJjNdsMCoizY5GeizY5GKjNdsMCoizY5MCoizY5GKjNdsTXjNV(zY38tq6)pI(fFCeDhnF7m6llLxA1JF7SfFg8((7WR(NT)u9u6kp)C1FRbX7I(nsCK(NdoTx44O4GJUMdoAyo4Ox5GZRS39sorrqCayCcNaqriZSQteFsqcp8blNinzmciPNHDKqgL2iXMhPPh8a4TPogUZDZsx7rWtat1v3nZq6yvHuILLFBjfdKm)w99VE4JWHO2ahUhYboCNJdC4(fh44HW5MEpOe1BXdZts39OJJd(y6PhhSB)KeDLP)vuRnc35GWDE917slOl9Fhw(m5V0YfkzPCL8E13UJmjMH)D)(y)vxBW55NmIvgCrS8dy1blmPFf8wqWB3rK)yYV6LA04k6cQOJgDM08csZJgDME)c69JgDMHiiyicOrNzYecMmbA0zg3HGXDGgDMzOiygkOrNzWmcgmdA01N2t74EjzFky340peFsMUP98n10EAh2ARUT5iiCl)chBYXKHJKaqYBHehrbGehzbGehHbGKNbjosdajoIdajoYdajpdsCeiasCKias)RhnFQQO5LxU9AQL)tvT8Y79E6LFlZZa5ptj09NGM5GP)xXeDZbt0ohmr)CWKhJjAOdMOJoyIw6Gjpgt0thmrtDWKV0v)EvD13SxwVKGozPh95yTxj(3rvxFZwDBT1bD6g9M3gowH9YN74XlSZRD8V9HBy4xQLpCdM8AhFfwh5bpE)jQ9XBq9rpTMx8y1QMrZlESAvZP5fpwTQMg90zVSSOUbpD23hmbM0HPvKf1natZdMat6W0QYI6gGPhaMat6W0AYI6gGPhcMat6W0ZLf1natpcmbM0HPxilQBaMEmycmPdtVuwu3am9eWeyshMELSOUby6PGjWKomTUSOUbyAbWeysdMKX0Lf1RHtJuyppFEvm9bF5Sgv923UF6HXPN2)8YM7zNnRQQ(27fTry072Rtrz96fl7L9B0yHg(v8idfkNUwBSqfF2QHcLt3AqB1)a3TyvZuhARw1SfRAU6qB1QAuSQMSx2bt)5We7LDWK1We7LDWK1We7LDWK1We7LDWK1We7LDWK1We7LDWK1We7LDWK1We7LDBIPlzV7GCsEGW4W4xbnQXDFoEuMmzc0qTq6GSLmHmInuMsMwUNFhj1weuJgn4OUOp7Byd)w92)5P9BmDKBz)Q93w3SD96kVWy9l3w4DIHvHqv4tx1(fD3F3iZgCBsME(WX55JZzy7F33rulyF8V9FG3rulyF9p978oIAb7h)u7EhrTG9JFQDVJOwW(INIHTdM(vWedBhmfnmXW2btrdtmSDWu0WedBhmfnmXW2btrdtmSDWu0WedBhmfnmXW2btXcth5W2V(ThFxfSlwvw4xkmn2YvUW)B2Cz3b2v5s1O0KSbp1M90r6Cw4oHpIATdMOw7GjQ1oycmrT2btuRDWe1AhmrT2zH7GjQ1oyIATdM6Z1A)FhQhJTXfkSL1IQ7eQGZ2uu5)IFtuv5A50KXzmSDIFefBhmrX2btuSDWeyIHTdMOy7Gjk2oyIITZW2btuSDWefBhm1Fl2(HVqQkBzPqxx78lCh(gOQKPPZ1gJotrP2j6ruQDWeLAhmrP2zh7Gjk1oyIsTdMOu7Gjk1o7yhmrP2btuQDWuVUu7NV)M6sFXARyY92A3NMN9t7o4Uml5g58jdLgnlyNkhrA2btKMDWePzhmbMyb7GjsZoyI0SdMin7SGDWePzhmrA2bt930SF2(RTpRO55JT3S5KUZPplz6URPZ61jOruHDWevyhmrf2btGP)SkS)a79SfBJCDDMKnXjkbioRJ3yNyNoMj2rYlxA(wKgEBkLexj6LsKHKAxBVzd1ioxYzSgoZKzgkTAd2Ku1xb9fq2K0I(rak2cuKpkqbwK(v)BbA)Rfd2Vg0Vc2pAlABsB32M(UUN7R5bFjA5yGuekGv7W75Cp3Z7Z5ENzOw4mT4BH9fp96lCMw8TW(cNPfFlSVWzAX3c7lCMw4mT4PxFHZ0pb8TW(59op9D1SSf3xfroy9t95x)jPh4(U70QD51QvHCY7lEc2x81z0IVd2x4mT47G9fotl(oyFHZ0cNPfpb7lCMw8DW(cNPfFhSVWzAX3b7lEc2x4mT47G9fotl(oyFHZ0p1(DW(d8oW9Mdv0CSVl9G0BUB1DMmH8pI)hTUUUQK(rAcBAQp0W60oV)h2LHpd9G8vmNJoPHPEpfv0SOttrttXJDSpXGJBUNY4cskwgQIh3gDt7o90nhiA3XOJTYauhPJ1ehO0TJTSjYsgw9pKZhmIZx0zfdHPpj6NI48rIUMsxDT9mIpDChOl1Xu0gT3JoaHmkBzG6A3e)hmwzNpKZk3vczjApeJG8A901SBUZWbinNS)kpAOfQdsRR(qn8FSzLKVdEan0Hit57HV8w6AOQsw75u88o5xYzvYVlq(Do8Vnzi0ujDQsfFGLSiOzF9696zHSJz8eajkl9wdTSrsiPTv0KDQ6g9334JXnbyrzdfl8nyrApNMFG)0nDUAmNRFVwOx)GggxrUXXBD3Ek3ejDnfjB5FPpmyXSvv0qM13TDTQ7uX59784n7QRQB(AXGFUNiBXGLkkJzEdkZ8Sp2d4lARJumq7z8eDbu1hGzHDnKaDJZZFFokvK6JKD(y)wVOZt9JCE69Py6CENp(9Ox2X(yd09SSHznKo3FwhHtKWQyfDTZLY55DI78CoFkNp9s7dktnBlJFTRvUZo7Un4u3U62vAk49XYTAvDZDGRA3QtJknBvFNY16CTYn3P6oBoFy1zRQBury3DQ2UZwvkxR9wcv2z967Ut7kn70QD5MTfGF3E3wc1BG)JcCl3O)jgB1BOwxmZUmrkSsiq4ZecjtMCLLeGFmrGlJMGiiuGlYHxNa)gEOtWdPj58jwQzxzu3daz(t68SpIQGUQOPc2QAz8f(YeQHUPHcv70gCyfUKGT5qucciUAl0G2GzbgiULTPIw)4SbTTcn2T5MdzfjutCKGKZNzP7bXjVfr6oeLru7yJZXS0Mk97JmRP3xPBuJpQibb2GBRlH(dFmJp5edXOx4g9pZ5f)JEieY3hIITAPp0Sl6LE2hlQZ(fC(OqzY9nGXr2o9C21P7J7i5GCJ(NFhlvG3ur9SD6JlLUByW3vu1qwSXqvlKZ5a4WqHryTEIsiNKVpNx(npVZt)aRH7VVy3d6dbcAs)vpOVQ(rx2e9LgcXWh34NjvYm5DEAtajmG7J)1gmLBStWFQn42(G9hABRRvhIXbjLqI2YkDpqdeQy3d)rwitK7G)W6Erx3hIM3KpImbZxpiMT6kQIITg(s57I)DnKwFB5NIaSge1A9rjdVMUPeKFPNZtFhS4q(0dO)xhDk9Up7J0q7irIe7HSrouXsb8R27ESpJGivN14FYs5wOyF9pPX5WUpDcLnkYDiJH)L5lOjS8lyazF9gAA5tFiLqi1En0v0SxR8UTRB8KKbfhc(uGUTlj30ALHp(ikP8sy9ly8zM2kOI6l294o9u1bD59jiGtDP07yiFTPooid7eU2o13PIXteqCw3tLySY0i(y1B(aFCdJNzcy77zt8AWanE(PrvW9UlO9bFP7sG6N39omS1as9DdP85UsSbf16kRB6n4NAAlfR23diGocSTxZu04KRXUGQU4EcpWBXXE3Ur)Etqs1yx4S79PSqhdS58oqzeihz76n8jslWf65EaflURZdcZ3F9N1n6)Em3O)nnFb80CJ(JanOB0)o3O)9Ur)bnVm2(7g9F4p2n2JhXn6)OSB0)P1Qv5YTDJ(i3O)ZUr)xbZHB0)fIr0n6)teCy))MB0)Aa5)JxBRp33pvQp3B)2pCRp3p4g34R(2V9pmgG0)jOyDJ(Fby8FhXng8FFp3O)VUrFB3yp2EUXI6SRXZoMqh4AORfO6ivABwDZTA7g799CUXE)aH(B3Z5KDhTsT4nLpHRmwX5nCEZjMz0xR68sroHx7CVhgoYWn6p0VUS4nJU2T01hq769jWjonhajEe7JGuYSR6a557COUsx07Z4z4JXfkaeFvVRKEhgy577nxWjit72TCo3sop5lcL6UzUV6fVOqdG3rMwcDf1emqMysiikOQd5SGSaw24)i7BlJeUgs8GYqotbadHAIshlSbs0w(izq8rMFwlHlBQBzVVUQTWv1vvrhlS)XcdTG6rKP3vFWarnjH9rqIUKclbRmKC1YB8U4)o(JSGL2szWqv4AjAHxbO(3XqjfbCJSDvvi1ITPfNWexuiDQlAHGgbbIGBxJ0XRTUGmYuGn(OSws8YVgcKeergb6aL51SgI)SSOnDbxxw0eQfcKbsAGeaMvrRR6qWnaUGiu124AJl2G6qvfyfTEk95fWX6mcZjKoHawCjRcvVycPImaUelmS2MXRfTkSkqpOizxB6Is4lplbeYHzDlI40whqqXwb0CecJLRea5noMSGgIweabu5qCUoLIDbU5vWe5LLgoWWBbSscvU0QqAtB54HBtlEcH4G435YnR3Q9A1R1UZvRxRwL3agpDk4FRSeV)OKg4x6wO9Ku(db5F1TTvPJUe1zB961RTr9RTtNnAwVb5IwnQuRwNQB0cqJ2SKMIAcbGpxN03czOqJtCjfUIMsFzBcG8PtLpdbuznBLlUTi0IJWBcTMtGMltH8POqnhCm3thiIefCXvtTkf82T4JuIsUQDr7JB1q4Y6M2k2GxbfHvZNPibbOtBSJhcDloKCRwGaPLTPOwFIpoLhZNjBwcKRkoaAge4W1GQFmEOukgb3aY1I9rAouJenc(mmmYKHYtRbYLqlzfKQeNzkqNBLbg6hboYJo3WkpZHk0jMjtX0mskAEG1bkuSZNjvjQ6xweC116tyhDrt(KYrNei1A3sb8yBI6JG9KqIbO4ukDbQsOQga4qUkOq6SzzkNHMhQCi4ouvdhx212IGWQ5O2P2GQ7lnurvX(y6elvmdv3b14K1zlt6ufkwQitzd6uKuionB2ILsZihcHn71u6HyZmt28uHCBrllHkA2GTsfb7k02dbMyw1uxBFq)WxYsmZW2yVpmv310sVRVEoKYElYglPtnxPsC9g6wyofKsdkOSftXHbPz8bKnxUvxLTAwskqdiE640LYuillAawct8FY2ySyPm5OAL1uO5BAjRBpoVTTUgtOsNptAkTkdDfBlSLO5agKcfZr5mSUtyD9UEk)mzYTkZAPpSRmwtCfyEIEKmfLKKiNEhJ5J1mrhXbNMfM8MinHTblNTV7dq6vlYKnLE9GsZcKiAoqaklubS5Ab52szlsT41qGuFecz4lg5iaAI5dGvBGe56R05ZMMkinreNYjOQGkRup70zzXg0JmGufGgfMpx2I8Cg4i7UhWc75osBRyAcfiQoaig1DVyQS5zU14nfEnrto)MQeZ9CtsbtywAK(98djcXFnevfLyHVztxmtAMJXH6K6s4S8SKimnNYHW(reAaPNd4svGXOmObsXuOqjwK5wIdgaSdObFnC76E(Cm17w4koaqSpUel1nelLjeWrxwFAtH3sSRPspFAZ0R(Gvp03zPyH0SK7Bou0usb6VbWPmKef3vXvWfoz60CPy2op(yOjxBcknVses4jUbQhS5EwOByDTPcuZLABls9HVSOFDHI5z6qC)sw(Q2I5Ygu5U1Xd4qkLIAUWdHzRT0n4uB1IfdlATWfoSzP3YKQaZ6d9m0AObE)3(RyMcPPtUbPMaEZdVcorpW(uPAvGc5zrlIgeRMOITmp7clt9giSGGB3OHjUfsEoMsfOwCkhbol8aHqkRM69hIyAyiHbn0rvx8aIHKSfjlwrhwIUkhk6jdqocktCffE00QLYMJLthgZIxmhYyYmbGHSaRkRMIfvAwTqEg1Bnq)ai6uFW(JZRa7anmrdZlY0mKk0Qdz27cqznwLwrtOdeiVkJVatrMaaQqlLa13AdU60WGIPz8WMKdVGuaWdy6cPlLILQrteshiHcanBkE5pkpQGJ8eAYtkvQyQufdAmQPODqqIdtViledjQsw5WlagJvPEHLTG(wuXb)9S9GvGL0t0qSRInKeBeIZMkucIo7nHwme9kibkNc8Y0W(oufTKdqGq2aifOxMtiPYQRsf7D1qunwtKLU6H8edf5fX3aQppEBi40OS6AeeaN)(IkCyG5GNMCGUgOp3eCYps84jYuMk6M8sjPhR5iWpyilJqEiBg1rqZeSptO5OS5sNM1BeKyh66M1EyMC8wMSvgaQpCp)m9xPvzXPq394wD0yzLZZA6TXqiPSklDs2Iz4Uk220np1g6dNw4TiwMHFiWXP3bHJf3wA1CmF4MWqK61RBEmtOlYtcVHccVJpCmxl8btWvkP8uLG9x5wH1kKCVumUQsFfvFxdaaVrACFyTiBQQjQNAWoDsNldRb9whmeGVMiURsoS0Sw13g8BinzeckVlKqCgdLBZ3tcSD5o1VALMnRUrf)DHCDOE4nWN36(d3FFve7myVoUCfzyzCzelXUCa4cveaw8cuEtbyJ8eqMIkschb6xoiscnciBscnpIb(zKHf1H9ZjcnB4ndSlgLyyxlVHb)hVj0djAYbqQtqGyGRtyb1j4GG2)Psyi8X9Csgfnqqc5j3PH0mPzCQO2b(RBQstMrjB7Icc22L3O49wrgvHT3k8bzZTe(hCFW9dsSU9h(WV2VRfO0Hm7dvzByOv767uzZDl3KGn0CwE6YC5k7SjDGu0b2SCZYVw5A4XYbvqOtUr1MvBFLQ7Szl64fOJxPwLnRVdEO8Pyt)A1BxHGd4i6NGGMq1KSlGlJyB74nR3Sw9RqNnd52LFJYSrY5Zo1ORroOnEYyBxP2Rbdtqe3OgzWD3PvD2iLyC9wvUYBwPstk9shMDAd7eaASfZqv0KurKyktVMGA0eKJ1BxVjvGtXiz7w7cmZMukY0G1QuL(5c8LTmvjn6kc5w0ilyB5HH7ychWQa(OyG1n7BQmyGyGOo(DGbCY6HTOskDTxo09EXczpabBmaFNuw(lF7em3b(pD6a7VbDtGT8Uzo2jeoyLqiH)HUESLbqF8fm4pMIhblmHuj4OobSOSidEiWiw(5BtUbrJjU10fLy3Kv2QJp3Ooj8pwinbiu10AzVdsHEmtj53U1veK09wrLE8jMSRSO5oIdqVIkULVLxr4sxkWP8eyCYrffysLjNcfoRU2sJR4cFdJb9N3udbi0mzIe(g1y4lqHNqiXyKjYX0FUesnXPeKtH8pyo8lF7jIfORWNpQhFKKmbIEIFx1gxjmk3biI5kk(j7pq0UR8iumHq8LV(xmXnUWkXNkhZ)H4DNurZc259YubiHGTU2Wb7d2kyvwzLPoFUN2yJRAHM6KaLqyUfl(4784Sf9PYRPpd83ugFu(IzqNnU07kAOpsoQ5Gd8vadC8XhgSMqtENcRqoesCyvWvjWOHOAGXNWAga68V0v7sU3WtA0jqCY4tDPjqNNL2wjS8I)8sNMzC0pZYrgoQpXyPRwA05Z)F28j9HJ54aztjNoDRXYLtbsFkaOpYaTOzdOaA0SI3dnaMcaSXZXIG(91GqB8zYWNx9wTp1jQBzpHz2S(LRwRscHg1k)gKI2Ht)pAXHwDLrsdvrv4pukmsUm2ayEf0X(PgHSeWyRWl1wHDJnuO3edGDuWj1xIfYRPBtHbwFY))Qxsiv4iEQ6oKfyj)CRHvmBGuTfbPbY(jNCG4nxofLDeU4yk5vMir2W)PEGsdfnImMykZpariQcyER3bZjMj3bDe5ILNalMWV3GWPPoL7(XSEEtIh0gmUefED2aT)W(nGsf2lhNBCLe8EMJGndqMm7EhrP6ReAfIp(sGryAlmy6cOXywEA4Y15or3iSHFmOEfq5(b2SC(JIj1OBYA0XZl2l2yKheh)h2gU8xLXSt42iHhEcrYJkASiSj5kl0tKximKdnwxFaousrYV)IqB9y0oSaeHIKb46P1RexZa8kSccjtkeVdqzQ4hFktG)e8HRJXehFvCO5S0ODZeA2tS(9uBOk0CNABkEtN0zfmzLWTYXBHAgD5qA4G2ygSdItVlJ3r5advH6hpDICAL1MGvugjQAlpIDN68gFQOpjZUhHMTDFuc8oZYpYSNQXlyNI05C6Dh)U0x5S4VeizqO8fx3BD1m6IB04gZhTglXZei0u3IX840n1wQpLvD0napRFy2RlnQfmXCtbp)gFAm)tMNg3B1PdaoiPovAC7vw6SQvFplmFFtOFHtRrvA5MjTNFEkTTi2aE(m)Sy7RBzHnXjWzpOI)pUAqzSExPKN63zIgOFiAe)ooZCdg3mLA7bEGB9QRputX2)mnuWNyucH8bd4Pkg8sSlGl54vHRJJZyQ4H0fV44OzlA2hzhNEkxwENool4FibRl5pJPuFMlBafXOHVCz(Cwz0SStrTm5Sia(BISXnEU8kqxWJ)qW8QZkx2ynSCAEVt6HSXB9NYjGrZa0az2fr2DnwOPEK(6aHxoWWBdn27d5LesNA8O3jw25GechgOaWuuKZQWJxNG4TPauC0geVKhgZmNUxTsUu)Q4jopfZc2js4W2dtoXa3zN1IzGXNZY75zVoZPNc1OL1OB1KTHkAr8LgTbbYU)(5WwlYt(M3Ee)kZZ(mP8ZHIQksRZpdp)yHZqFfH6H4IPf4pzEKptpDPXS(Hx(XSuZUeaRbKG0y(e6JgFt1(kVlmHtGbwPXMZRo364tFB8Jr83nBP)OX2p(SO1)VyN9EBWMVPyE0YS3kC4hSsVkM(7PzQHyVZ3LB4ZTF6BRKr8UtEFetL8EtBSWOGrQelNL)Uog9Sdgl7pBYuNGa3ZapAnX6fe0FL1X3tz1r8eMuoX5qVrTNGsBuo(6eE5glnDM1EC(Cc83i6r)W95t9p1911DI7O7SMCF6vpMHZ9SIU885p9ymQHaFQlEiZ1yuICDfPB8olyG(oq1U1O3RaO(e)0WPysEM(QIx6z8Sk7V5mr6dL3ncqbnsdbGjsHE09qFzKNSHQA90xMr(vgDfNXDyqN(SPpgpo9BmaU57UbF6FdO1UuGDrAjRFuO37mYg)Kf1Wp6kJoo7DsZx7bF2hktw94mFiAujZtkdSsbnk8RdSG07SJhst6(3e6z346mL7nWqMW6XF51WVPmK9uGFL5I7dFS3sp)o6VWe8v9NyG3HVPHg94c4v2k3ZouznVANxy8nS9ErLoY7mzC8jGosrTG9P(UjyNSaEr88LHLX7DCm8SDFj4pB)3BpVch9vfLX4Rm3jazVAPHMhJPJh)DFmx8Yssk4veFRVGHIpwCx6SfsNj1ybDX3f2Hej5t8FmfgKDIE9zNHA(os6DObX7z8PN(lXT)7xNXloDSc9IdEc)DJZn6BFp2CW5EC20PHZNpUIKtgNR586gNBOL3rDVTUut8R2OJ2UoBf7EbwPOMkAhcLgr7z69UiEVrFRdD27vEr3O3)QX1nI)QxAFYR(R1lvW5PE2h7KdzV1VSxlxcSMWocgImYekeEK3Ty(TqesPvrJ8YGJvBx25PIrxf3ylFUuUXEXhg2WWh2n2lbOAsDHS(eWNx(84x8Rixhc3M(AqsN6bM4SssQ6frsl1WEXY4HVJmb)KZHcKztk4Tj1BbwASNqbFSjURKddAAZJLqy9oxf)cYTUSODsW9w8aSbC50j40kHqfTHdssqQTT1gKtmIO5swdlw43ho8BsCIjPGW(hteWv1vhIVldaxG)UpWa6()47Ym26sOcmhJOUXEbQlbX68zbdIBSvg3Ecgo4sJwJKE)u9ocB58b3GwobZE0fgZc7RQODasAp3yxWZ1W4bJBjNUPFIwrYT4qOLUUw8FYWG4g7IUXsIJnNII(cVew8b9WfVR1W9tMjj(LXgpu8xqdg8r4bZL071i1r88NiHV5T107l7CPdDg(4o3Ep3O)EFIco)go)Mo3bU(781)UUrx7p4CP)TDJ8bJ58wrDJ8YUr)5DJCE4Qmi3ipd8)Fez3iF4pKBKNm65YoN4LzoXl)CIxU5eVvNt8kmN4vAoXR48Hx80PMpeDJEtWOCif8h(l8yu4Sj(KyubBXSbNz2GZpBW5Mn4vNn4cZgCPzdU4mbd6Wzc3nYjJ4ph5RnF(ZZaVmZjE5Nt8YnN4T6CIxH5eVsZjEfNp8gXFE6i6g9xF6(ZFKOuBXSbNz2GZpBW5Mn4vNn4cZgCPzdU4mbpD)zkC3OV8IubNXubr)LhT02VifFSN5ZW8uNyPTPJxM5eV8ZjE5Mt8wDoXRWCIxP5eVIZhEJwABQi6g53z08ZFJ5m)8DMZ8ZFJ5m)83CoZpFN5m)83AoZp)nNZ8ZF75m)83AEZp)TNE(53ArsMZA)gFNfQUZQQ7ZVq1DwvDUluDNvv3GfQUZAdv)QbuDrMzx8rMzt8rMzp8rMzl8rMzh8rMzd8rMz)7rMz77rMD37tcSBKTx4RDwdt)lwO6oRHP7Tq1Dw96(lxO6oRQUw)0KQ7)JDoBE1M(JcJ33RK0LKKKKCozKbQTB3xfXGBksPm4hdezIiY7tuElzaYpVKKUDhzNKmWi)dijzMbs3rYojJKbo37nzaJoUA3zV657tg(z86m6tpR167ETEwN)TjS7a05Q6UfOZv1DpgkR7qzxpQoxv3wMdDDhp4F9lwu))HC9o6aHrhkm6GHrhjm6WHrhlm6OrrNJy9m8u99)KM6MMELg1ADNWCy0bcJouy0bdJosy0HdJowy0rJI2OwR7W5Fj11CRRT26lBQLOpkAj6JIwI(OOLOpkAj6JI2I(OOTOpkAl6JI2Q(OOXF4uPhsZMSA2KoffaClaSAqNl6wmOZfD7f05o6G3d6CvDRc05Q6gNNKK3tsgQUHHkenmuHOHHkenmuHOHHkenmuHOHHkenmuHOHHkunmurZggAeka4w780Go3ANpd05IUhd6Cty3hOZv1DbqNl6UgOZfDhb05IUZa6CBtmj7PZDpDldvNRQ7SGox0DCqNBBIjaDUOBJGo3e2tc6CvDxf05IUVb6Cr3RbDUO7h136rhXTE0rCRhDe36X0IB9OJ4wpMrCRhtlU1Jzf36XmQB9y2MTt0nqp727EjGo3sbpf05IUnb6CtyVCJ36BDYLcbxkKBPqSLcPwkeAPqMLcrwkMyPEQ1oig7ipJD8osoDRRDh0A5DenRbGLhWUoBZWCBgPpqDn36AVc05IU9a6Cr3JQpRLsXzTukoRLsXzTukoRLsXzTukoRLsXzTukoRLs1zTu2Sdtxo6zx98xbDUO778oX8EN4HrR5Q12kOZfDFg05IUlrfU8QW9FO1CNH8kaDUPPVH008MM8jqR5Q1okOZTc3fzlz5TLSFIwZvRDE0AzP167yO1C1Ahc052n9TGox09fqNl6oaOZTw3UbDUOB(8KK8Ess)O1CRW9lqNBA6obDUOBbuHlVkC3fJJ5Eg8JtAQBZHNZ4YZBRwBdTMBlH7tfo3kC7hvNRQBHGox09asyDtyxjQoxv3eO6CVGIpYR5YZ8d7I0u300nZh4N3h4Vb0AUATLc6Cr3TPBQ7B4whQo3XknjOZfDVa05IUZb6Cr3NQFkNvINYzL4PCwjEkNvINYzL4PCwjEkNvINYzL4PCwPEkNvn)3M1nrp7QNFcOZ9fJZJpSlpRzVD0AYATF3o3pRsbHXHXXtYnG7bzHOKolKYc1BukDwq5pP0CMjxboclSrNBblDdyHu)ssY(3Sysw6gqw5cqz)Bn1Z8S(7TWNEMN58RNPtrwBnYA9lR9hzn3xj8n05(y6aOZn1Dp05M6wb6CPBbOZ9b2FHox6Uc6CP7zOZLU1Ho3xtubDUPUZGo3u3oqNBQ7vOZn1nf05M6wKpRS(9zL9E5AAzX10YIRPLfxtllUMwwCnTS4AAzX10YIRPLvxtl39AAhqbGB35qOZT7CpOZLUtlBrReBrReBrReBrhj2IosSfTwSfTwSfTrSfTrTfTP7)EPpK8SBl6Qm2z)g78fYAUDNpv2DgIDNHy3zi2DgIDNHy3zi2DgIDNHy3zO2DgD3DEj5z388DqN7RD2f6CtDNdDU0nb6CPBBOZLUhGox6(c6CFd7wqNBQBZY7usI3PKeVtjjENss8oLK4DkjX7usI3PKeVtjPENsQ77uMJ8SBE(rOZLUJGox6og6CP7nOZ9N9mp05sxn05(a7gqNlDFaDU09d0521ng68OR96tAV522jdNE5Lg0EXmZo(Z9))d
+
+
+================================================
+FILE: files/Fojji_-_T15Raid_Frame_Throne_of_Thunder-3.0.2.txt
+================================================
+!WA:2!S3xc8TX15DYbWN0hXMj2rw(qW0w2K2suaGe8WXYkaKaeqceKga8qwwgyaWqmJ4GzgnZarsL4CO6M172D7MFkzZ2C0ux2w3M20CW042K0MKvTnB7UP7(IAA6K20KuLeNTPPjButA2DBs0(99MbadoijejLSHmO(jsG5DmV579(()D8(EFdZ8DPLXxFE90NNUoXv90DvORCDL7z39QzKvZXPoQSOS6bzyyCUswzPCc6cYsADUIkxE4djxwHlEEv5IkzGcNxiFNRy2QG5YZPCRjoErwvoxHkkk6AwEbDUmMLYREcovnO99Q0f0oDvzrrUCJYliMtLt656s51gp0JCKKtM8OhjPkRg)rDn2YsSfeYQChLl4GcsQYlyRODwUOWYQQc5KLAuZgvUOuwbXkfTJk3kzvDzTg1Oj4YZYPYwPOBX2WyVhQO0rT1nwxPb3GXkQwSqXkLC)1xcR6cUMIfEMbILlzjxXdPCxLR1uQcfa6NqrBdYD3WsNOOolDIYvsHSlWPABq4xsOG9oO76kzcwDDovxjwKvXAiCBLRZJBNQABwArbjTgnveLtWvcEUgsoIZU3C2k5SSf15LvNuXAfMUCwRvjx3F64Qlp58ZRXPZKrJRaC5493N7(8QUK1vppRuwOTHuzlWHRjZKy04bdg7SzyZUqovzfZfXoD6CkNU7Z3QZJ1lHUkRoRZttx(gbwgUJBCFh98csWZUeR4mM36pQ3IQIk3fVUUI2JSV9TiBE5(eK3xwPmHMnL8u87ZRBv2S0r8GX10zv17mGGKGENzMh(JgFNNXCfV5486JRLLvKZz3c5uE4qYh7ycU2RRJK0JpKyiKZfD8Fuxj5vLLGP)5HpvucATfRyejOpCEkDvH85HH3oFGtxuY6lDQA9H32k54YuC(5rQGA4GrNk00rpLMcNOyKCADgN7eCs6zcZXkQZhqh5EzlQY6nqrymNrrKDzo1ZPvmdTAtPYnVWsXtmvWOrJdtrCADwUSeWTqyPvtnQ)ejtLiP)4jpN5ymGffx5wcikCYtYQMZvszzrDbLaIYS5cfpRiRM2ThVqr4ADgqt4KC3ojsNz0b6IKo(XaWOnl(H4SIk8SoZGe9iJD6Y08tZcluPlVhKS3qNHJvdNl5KYRZFTNnh84GfLcF4u14qmlTtH1bPibKacl5rjthOaRGuiYJFTK4KeKKKPXls2xTx50ACIZpLmSOiZObJLmyCVffYTAIflWfpP0jsimEgn5IQz5Yiuqbqpw1CziTbK5SGctapIx9kaHlofYuRZvfKMxw18jOtsmYKDL95E7p7JDEnOhcVCga6kjBgrUND3k3DTWGJYlVGGuExtiOPRXxpmjaHvaiJ8k7Q2sOyIZVm244YSQ8k3xT1yce7bwZPZZ5AkygKNd6N6gbbf5Yc41UMQOOgxdUp27LOYS82qrTQrcE5SlSi7j44x7NVeSWSgVnOVsLdZMfb2TtiOVCdU5rfYZRlHDqGIQA6nOdsWdRZWFRI9FDJTqQYA6zGLR82LlyjcI7eWCnxoEL7P2IgxKnRaRi0CoUt2ONRisZdKnUCUca46nyGNayk4XXDswryjsdUfbnHLGzgbnzPguHk3crzzyqEN1FpekW5c(IGydgbZcYfZrj9aqYcCnG0r7xroDDOwnyP3uf1Xfyn4HpHSKqwxjYceNS882eouQCDyvBwr5InAupUe7IWd10k4d9D1WM6kOeNA(LBWuwq1IuPjnOLHkkLhenbCTCa5(2RFHwwzSD35ATcDC2g1SWqVQUCdEgdjxu01mCsYf4vU36lmBrn4HS8YxEfx1pGuH1McNGZvavowD(gvfwvjHtidIZ0SwNv)OxTOgVl)QGIcnyIYpOzeGEynoJRPWMLJH4(6pfm6IkuqqNN8qKhM4GQniXzNKR6m5mLDtLHsUMopLQSPIhmKRNhWVfYlrM7CagmiAuspeiPuwntC)Jfz6eKo7fe9kKBwHC683a5(j7w5wG7JFteuo1PbjsPjpqzH2zuavjbyvVKB452nPaPi5uK3azzYBJKLiqKjNG8gjCK8KJroozjYttYq(5iIevYpp5ntEtejIo5KK3cjhHN8wjkenYIKNHmpzbspz82)q(gEeYtD1bqeyq2a80S4kHNmEKNyYyj9hnUi(SFdRMvwSybPeivXjzxGsjepojUyi3lPBY9XCAnDof)s5f52fzcNKPqzt1kFzMnwIdOAa5gjP6eGVyr55mKdVQyVt654UNAWrJQrUwY1rEqNRmpOs9OcQzf5st69JUswouTfucx3rJtUhQufs6oj7bgfDs6RtY(WPMfTg797KmWoFaIVojd(2idrgMmsNKhH86GB)(jpg5aKxpXpjqNKrjJrcscDAw1SrPsxFMBNmEisyu2m5G0FFi6VJI)w5wTPd2u05k(ZYAF280thlsYqX9prqYSK5ofo5thXXhJCeYtsokzovtj7C8Rame6YfghgZoYOYIk1(m34Zo1PweKOoRkRYPM16dRYM7yqv5Ynb7sowbujHZCb1ZCJXxe)BVk3FobnuXMKClPNYuUBkp9HQZKIntgvUtiG3qLUBq1qLIIHv087bWhcLDT29xwultsyvCebqHbIgmusyz(z14zZjV4CM6a68SaYIi8DPelkOatFVDYnQ8qR3DVYWmvb2LU1vTvxh01Hk3761CRrLYd3GkPKshekKYIloLopIgcJULHLWbYXPL1XkapPLcC8Kh8gwpYjGljwif(X4sCOo6zlP1TtY4FUvHok1jb1Va9qtBUW5S4L4KYcIEGvV8NVQVkKJFvBFXraSToOR(gmt4PrLXsNzQ4rcMiz6mjc7Fc)XsFAShO3BEvRBLxFUh(uLU18Mlvnx8QCFRnbrrLlRaQ)VtRvIyD6UZojd8lAY38SUwfQEw(u0byxUb(MR(C4THf0iunZeY54sJKUu8uvTtVkfHSCTbURHud7p(eG25NMh05qqe0Or18tCkVAB99KGASSaSzxp2Prv1P6HVZmE6FWr85fVJJxPJ5v6QYqa1XNomOp94QH0Nb(u4s3mk5o4saKCctRd4bzdC4kM0iNFgZb(odmSp3UpV5xsjBnw2z3p6(pdoAOgwiagwqXpqCJr6u5vB7zT0OV7hB)kDbsdaXTJjObceKOkRaIqXrx9fKgF0MOcvGhbNabjfYiiXzHNWVIv74yZXFoB9d890RaRJxCuqzkoT0a0eQZixsttKqQItLUSMynVwu58czDGSwhROeTYEzLwwX1AVeX8BmK3pVYTuznY0k5a(uYJOS3gYNyrhZiKpLuXcz4uTks5w9xMjpgTanvbj08xynRf445uuLZd8NAjOMC8q3vhipHCbu6y)wymh2eJ5U6OeibAxRdYvfqa(RYRPeYdoOaQnALrU0WKLUiqvvNC6KrJelyG5LL0JdJcoPZVahitdThtpokwNheTa2xQXQJwzbOMuj2wiWagSGeVLarumwbQ2c3p55of2JOzq7Mkq6DTAEr5ftzA2CaCEIo5rVifYi9kv(8bDg(a)LVJ3XZ1rhocFGZE2Z(17OJ7Z55OLRZlKDby(v7Qn)(8QChViazSmsr8QMtM2L8MDg(eQDBN2SHODVtbYkepVvdr4l8QKNJ0xOtdT0CgLpJ5FDCgZ)oPeystoLFBCPpGuDI(e0aYiYdWP6A)UWfLu2X4YICA(10G1JC56PBt7Q7Uxx7F)U6oCq)rdgV7oT1hOT)rHfTL7KiA0UX8AvAV92G9UME1138AGIwvAY5k)SKcn)onzF3(54fYbGeIIuYJwAGth17Sxs6hqzhMCqw(GjiAPFqqVtvn(vHfQz5OxrJh00t5oBiRH5hIJCi5u6Pze9sLPrsbqYp6zbJKrp2G4hs5M3YRhPqFe40YpkwlkqfqpR1vKnDbe5rpn2C61S8frQtay4WA80L6jUC55ix3ZEpk3TooK0RAOtVPMRnMhm1rv5(BqLOS(IC5zZUCkAT4vE10AWweOXapswQ6hb8dFv5ExRoOI4fL7Ob1X8dgm3Qsx0cQI3M5m0RzPJbzUvOF1MO2hvfOd4fTATPoyZvYtzM3QYkk9wvUfB3Jko7TQBDPgFgZ(kLIPdoolTkL0jJ88k3ZA9aBbwEwRImrdUJtx(RKFCdP25aYubwXk0lgfxR1TOGCUuiOu6gqs1S(az6txUSU3TIsVRvNvNcroRIywAQ4SvtBpB1LEotkyjpifW)0jNScfav9L8JwHAWehYHei2KXcAo5wAD7ZEpgm70G5onyUlEdM72Gb((UCAW4cwByWCVmgmDtMZG5(qqYV39CpV(o64bbdZEudM73Gz33KbZd8wnyEq60PbtpqT79CrIfly8ujNeuCA8WjnyEiYZBW8Wqr75omy2l5hBW0h8L9L2GXnzAdgpDVBndgVqZ7h6UbGI8b)FqdMHmygM8JmygXG5rmyEDuJqqzmMYMa5p1UEAtBq0Pkj0knX5ohunlpRuEqdOhi(jyflY9Ui)eYpL8ZstUWbdFGp)7799z7OdHWh4F8ih5T0rh94eg3DC1MsBePwWaKWRH8CgmoHN2RYG5QnyyqHfEofiBf0urF5ZGvgMcOoBjdi0ybqjL4z55YUqOtDcwvbuM5QMiQ0R2TSIddg)kp58u9gKL6P3oDb)OYbYiLC1qjfYQUAm6F1fycN3jNuoYG3vhOntn0kLYAvy(9thqiVPkeKZNUwb0SlXxXIjbqZa0oXdVAHh)jwAYd9etouCFuvih1IKdAkfhzPotP5aCBD4vEGMZAf(1WyHAmRcMMVpMgQPLLScRQ9bpx1ySa3W6psQypc5t8Str(nipp530b536zUrYhOxYVnp53H8bj)UKWKpe5ddwPr(iojFuQ1yKvVvYhZ0YkYVhu(hhTgI8coi)(OfqK)aYNG8jlzvd5tzzld5pKN8hXt(0oiFglJuiF20K)lPjNjn5pMN8Nq(tjFUQm)G8F1j5pRktk2f5phmn4)wAY)90utX)8W3gI8xq(Fq(FsiD9yOrdFbqZ)bC7EGriFX0KVrAYFjp5VMNyKM8v6K8L3j5VHAZ(FlQEUnfYj)DG23KVkp5RLM815jFjE0yfY54j)vPjFZ0KVLtYl6G8Tj)Vi)dO2SKVd00)rY3L8pvwZtY3dv2K89PAAs(FdRf)bGoLKZt(Ntt(HKFe5FH8Jj)FqDdj)F5j))SRcyXsQas(xT09Rc)AJuSd5xT4j9AW4aMJDEBL4uVgu5ShWG5AHREDoafzmyUraN6MqfxmyUz4QVkuXedMBHIo2LLsfgmV65nyEnqxFBwiH3odE1xRbZoGMFhO(anlklv8Qj6ktdqxXATXaQkwaQmRlG62o0VbZJUTc3BWS)7QddMhBRHUBWCG0ONeNfFyoObZHaqldMOWJ8eLaNg5Gh8WjNCYJpvrGYnju6uqPpo8)4uKddMeKpObtskfA664033lN40F)MC6FoZ9qttj4S(tLmU)eHtfAYrNorWXsffflhlsSXt5FQPIgj4yUwNQep4etotWXkZQdm)gmHiWm01TKZ3DzbsS7Xf3EC1xF9zkzsyExCulrMCQKrMmwIUX9QrIwe(d7rMLJDb)OX99vy5XNoYyhfSY4nuUC8h0Mn4I6Qf52tvfykDoxdlRK5ROIpqf6MAJq3vxNs7EhuE)vxc3skcMLLe3gJ97ACoD8t90RRhU26IYjcdg50WHbkEaV9wwivPWNU8NSKDJTLEnqcm9Vvt(245UAOSIYzzfDzUHHiDDpUYxui3EknIGjiBtcyrxrs4X)0ueDrnUMHwBXe0qAnseRHYcDzjIBvnWgvVplQ88SWqOHvOAQDvvP2hd7RFW)c)3s9rQPMRQHQ)x00Rraa91rDapiZg9qizyt8IxOmhoQoGb1)CL0gO)r86EqQaDOrOwdGe9xuP3Ym)6vPoAp6hXZrr1m1pI3J2lv1sq8)3gVVxec)3HZV8n3CY)pvTY))CX1qZSDyPcav8ekYpWDJI9VkqvCFwQO7i9PYjNIwB(kkStvFOSwaiOAz9a23ARhWd1u6bSDkuJFdeQ57WzNl7Wh8KNC0zB1fQv2J4u1xXvIMQW(5T8ZTnnynxW2VxVOIRGgSGcOFPsAWIRPPQWAQ(6xPZ1wdwCz(FppQb73yZRb7oC(C3wZTi(nu3IydMuwRGzcFGVZo35bUWfErNRZkzdM0B51WpsRRUSxo1wmE)h3J6OcfMDIrB1zS(qwmw3kWmCM550ZYxEJ4aMfCVUsOZMDbnEl(QrC7oJg9kD1VftLfl05mVSTnJb5mn3UxQGdKj9BM2s7uCBIsLJttNUjlKhzLrLlKHv3vu58wcHg(uL0xOR(pvPAsoaDl(SI1mWe2tNL2orOzOqTrpRv0In9OJgmrIY3f0wDEvRMTZD4O7N2ACyWiKgvM9yLURgml0v)gmIKdyWuinU6vQup7F64(lP2LbJcmFFCSREJKV1hSdqE4Uwd5HO4qQuWlErGnl6XYVSa9O11sy(N92TcRUuSQCSE9hnQYTNvqnBrrwv0Vpfv5MXYFP1vG1FuoqeCxKNNnl3t6pxUjL0EYYg58KtWLtG9jTQP2tQrJz5uw7yGpLL6tppl5d4hOV(v2rn9)OIySSjOXXtFOvUJAkFmB7v2Dwtz4DpEPWLPUEoGiSSe3PY4bIgm2yRGUrUKF3jECQ8AQDKuAZYk7mGsuTcqNeajD1n6sGXRknKvyuUTA7pvzLulJRehWJYRTMcdkLJ2SNbwvP0LwXmLkx3IExBVnHaUls8n(USK5Db4YU6ZvT1g1DJltVUCQRwUPIoYKtDOdpNyWnHiLl)UAu1N7H3Jp3JSD5WX(hz4HhUfXHJVT2oCSTdh3IQqMF(ydNi6qtMm8jAj43ny(f2(y195ZDlcRE22S6Tz13IS6ch(G9Vy0LxuiV)wcwDVnJy9M1rmdp0aVCWrmnj7UW2n7EOsS7gmxVbdWBFdPBZ4FfeJ)oHBXRFNWSO)MiirmT8UHXgIbZOgmJzWeeizHGfnJBWe2kQpmyIuk0mwleMPxKFUi86d0Z0sTeimgmV9TpaMbhEOwhag52amTbyA9aygi7mzx(q5N)XhWDlHdVBgaMM1ALHhCK(BrSw5exwrxAVpsBw(xyU47)z(mFTlCHFgZffF7mM8TzObfQg214xTXcpioUXVHS2RB8onH(eQhwjo7at1um0CidDjpVUsqXtmDexXKvlyYGV7lgg87JbyWXZ9P6c8vyYpd9cLCLEpvCL(OSA4HboaR6toDK9w5B7nb2a6c(TkWa9P260xyE0qvgTXrA7OPWnsAkrwDU(gNtV8xcjtpSq90ToRAEo9UnJ6bkd(5OpyL90Ux)Jnwn87Mp6MXZ9CmNL(Tk(G2eg4uzyTssky4mOCRvvjSFHfYB6vQKGbIjlXDAmIXdjYMxdaz(4ldC47Ev69jSqUCCsXJfCMGXjxvaCvGDSi6XNLbHKSqDEb7sQ(Qp1tbcOMl8b(M)WFuha6tjjv42nrxXNYrTqpw7nLj8dS286uIvoILn3cVX0kh1shbrO9n8rlfoqU27ElFKS78PRCAwWyU2k4I8uhAgnSYTF(gsTttemGvj6JpQ7N449QKBHbPNcxGRYISqpsl7)8vonjLJe9Wh4RDHFkO4rFMO02NHpmdIu)grGBaAFfAjLZCioPmE2XvljU6lzWmNY9mA0Gt)i0CLrQX8pH)XdA9LjIKiHTy0JUnMhXG5jlhPEogYwK6XTNu7rRyg65Sb(yP)H7tknKXkTHP0RATNPLdRVsnKgYu2hk1eCuymqv7K2rS6SgewuMXsLTieRUjUAcsQsdY6JFTAc1SsFCp1vP6I6SYT6HReaA13SMju32WavZwWQ5VqgH8fbuKEkt4D1TgGcb4i13O1m682Oi07PP)EZghz455celxB4JHkar39BtvAUFKH2uU55aG6SlS8ywKuEuXaumdQWJPQcNVuIZjIuiva6HFvzvm1aqRVYTaGnjJmQ)OPIed(yIGMcMzqbyMCn0a0)2wtvK)(FnqhNoETGS2V478Dc698QrGhNBjvKX9XZuqkkv9SLsyo0rF6a48DAuAkOmujDw)b7WrxCG2SOW1ttbz0aczC6bJbvCdfmFfPD5d4Ea3UBDSlNRTD5TTlV1ZU8PE8jkm9XZn1sZf(kgh)107IOxpTk2LNV9Ui2gtzRUlI9p3H7zajUzog)R8y195Uvj2GowBw92S6Brw9ihoo)XwEMLNSWJ3sWQ71Nh3BB86doKVwfX6hVnVEBE9TiV(KzvND5jN4XpSMClbVUbZF822w3dS6EADCrWsTDrqB((wpxeeMvlw8EsOlgo3R0aygW9GEBH8b5t3gGPnatRhatUJpxsFJ07qZMV3xbcWmClu0nNPnatBaMwpaMrI6F8btuSxVfUYrdMMonSn4Wd2I4nKFU2EdPnMYw0BilYEizFJDCHPvN7vGS6EAvy1fBZQ3MvFlYQpw8yNC4f5Z7l7XFfiRU3wLKRQABBgAZ036zZWmtPuCKJFIHdT4qVceDXtRs0s8Z3wrI2ykBrfjgV)eQIdV4CJVSqlbRUxFE8S9fzudmuRsQu5n3MxVnV(w1ObL(x0tYdEWasIBcE9rEjqS(xC7AVg84D4bgO1zVgEtxg42h5LtjJ5nAP7JV0X9nuW55JQSzsgZT0lD7FGb84R1zPR06Kmvx)KjEtNevhP9rNFlYonZWZoZXI5z0tgBZKcMFPWaVnMDQzv6BG(hzOweL(0BR0xBL(2QHil7Xz5NO)CNSWinfRUWMk5ZyW8Pmy(dnZofgmVhBPMcdM3RbZ7BZzPN3Az6p8Qz1JoJ7yfxyXrwg5qoj5pZXMacyWbVK4JhdMFzdM3pcee0G53aqdmy(vmyEUAWdmy(vzQctWG5xJkA8sel(VoMDl(NP5CgdMNhaCSs5e)R72G530G53IIfDnDIyrgmFC(Mwi6DuHfPrmz0v82y9lX9ISwnMFhzKqogKdIYDnaJflPjpKj7dY8cSqaI5MoJDaWRgm)oMRibUhq4eGZs5imy(D3VbZhQbzHctMNpmdGqBWScdGsBX68yw0aGterQrUo6H0)Jy9upfpkh0exfr)nyEbdMF)sNhFkN7FWTHmT2bIX0QcYpBW8jG76NmnYqtbL)bWYxVUhzeAkg53ZIv(xYG5DdC(OKKlJSYVydyLnzwxlH4)Da)8k5eMFEHSff1x(bYOjG5O8m8CQYczjrGfSaljLvpGQSihqpoxgZ3gVMC)(9fBSCtgwB4j7b5(Fl25()xWC8XToR)uHNo24XpCLx1aMPYJpgs(TLIpaWGk53J3tv53JQsLhyMPPjFRC1D31NonSLkn8TbV1M8T2joJMjPzS5ELATUjfJ1kHyylzySMV4TQEwOoAvjs7l3PyvNErWr8ALEr2kuXgLorSsHiubs2YBigml0Tx3N3mXImJ1R7unLdzsePVj2XNxZ3D5wpW1r4QmqWxUvfX8bu3A6Qa3i0INE7vGMD7)aLT(0F6V2fUW3l8b(BFVV3pBhDC4QSh0CNRAcZbBlC7ktHBgmF9MrW2l9MJUDge0d1FRJ3DY1oGgABBARxanCYJjg9WZpwKLD3A8khZuv5TPxMFEBLCFm)64(4kzLmQBKV2lE3i7OD(xD7ZZsfgpXXtCSfKwWZ4TiorEJzQA6ihOFpTkroWBTTi72IS3gez)f(cFHVoMhidFGZPQ(MVWf(BU0kYU)rJmAUJNKDPLAvIbXTv0LbArqxuAVfvTXu2QzSPqh2RehRBUNOWR0y1hWTBFEAry11UuQiXsm3B5CwTG2yc0CDnNQR97c9564QYfvIllYP5xttiVexUEk5k7EPoC2Ctc62fRuox9GTyurwnTaSAC1uXjMm2H6gF96VEvAk)r9pwKyBC9IhjyIKD3BN2g6XzfYfLJnx5XEen6O38Av6a7TbFO00RU(MxJvsVstARP1vyOIRHMwFLN8jFlD0XWWt434J9X(SD0XDEPvtlj3r8EOEhA(zd1CriWvqWVOMwTkhB0fBBhxB0LxYE55GOkE9hBmtyL31dv3BphtyN8q5ahcC5U8rg0jzW9S((LnAMbYeAypzIUzcR3xso9j9VDH9417id6Tfb75zABLxBeNTAk4ESJFSz613tSuIbBj41vbE994ZZaBFVRn92Fl0gXmFB1nAZ836TtVzgzoEpJk3RKAMwcugdMFY237AtpJ0QymZcTrxAJU06HUCOdhi6CZ1ty3Cd3uOlpgHDELUJh6rosYjtE0JCqbjv5f4pQRK8fLYXHXBj8rv5f5vUN6Ruc8D5wwxbkQQPZRC)1xHGICz1vfMxGlNRzz15u14vUR6RwezjHtA(AKt5(QV4qYzlQb9qu89XOemKwVbZS4lQrEY)ggI7RN8SMbRHdZ5xq7VRI8VfJ1Y)DmKRNN8la4d)7j)hqi0FXBay13n5)yAZOZeNi8biQEj3WXmCCvgoUAdhomCCngoCA4GH0ZoUX9ksEQRMCAGO(oiVtY)PBG8UCAI76XPficgF6)N3fcaVzxxHWq3ejvNKFjg8CL0FHClVC0jomVpY1sUoYd6K8EW1WK3B3rJJiy4cG0DsXQ6K0xNK91j595K0VtYa70eM(TrJQ8rmvFdHPX41fbATEr)fKeI8l)m3oz8qu5aLq7nLsyI)dGS)kaygSaK8R2D8XkdZUcp5xZb5x)zUXlIat6MUiex9cKpfV1a5pkn5thWJVHgAnKx5ynLw9HmjdVigg(pCY4rgF8GXFeVps)7XvWyJo50XsgmEQej9hpP9lemMva6x9BFZpgfcZk68VU)8krNVOigWYCA7Xfh99VPR(6RVkrNF53SMRre6xQ1hPKl1Rp6ZVOJI7no66zNVXryUziAx1lRto9y0lwXN)x8r1UT4NVF3Bqa0xo45D9W1v51m64F61nK1R6WauEcPMLa0DwPrLcRhQDsReXbjYjvfYNhW5WPTnZWWAzzn3cZ3EQ6M9nmbSNsFobD1cCZGvz2F1SkjRxtvQ7nYQ1yAEwrT6F7GwvC)d9xLBnok9wFVnpqUsThAW6Z5sqYLcRGQwpvne61vo56EJMA(KzT8K2AkzSU6bJbALQ7gxDhXZQfsSOqob9LH(Bw)PG1p4ww5hMJ6Pi9SraAH62T394Q7W(JprOPJ2DVUEt73LKG460Ts4ZDJ4ckw(S30GbmojuHJUi9SKSMJF6kPAQCJEZ3A)hlOatYglaaDIg8oJ1(pRherT)ynNqjAR)OWe(aFATr(x)2ugzb(W6xZM9TXR9FSbW4DG1VQRlGZg14n8naCPFE6gwcNDoV667Qxl0xdMRB(22WzOMU52NSA6gv9sTg)8BdSzTUwTFVHVsJb6yDyu9V9HrHVQRl)0vbJADyMBy1TpnSHtJnUh2aI6MI4v97dAuxq7VdOb9cny(huUDtGiRNGUZillINdllZ)Vx0UFuds0E)VOP)fRykp1gEtR3Ho0YrbG5)vC74q97fDjWFnVPNa(kWfD7ZZqEqZ8)7ttv6cvxfgAuxbSQch91Xp99TpqOqViy5xa0PdFZ0Btdlqmr1dldh30AmKmCCZgoEv1nqOEOWGrJ8Trs6fHtk2HJxDSMYpfG1j16OIN3U5NFMDTlWS6VRtMApgBLCsXDu3UEqFJ8)PwhTA6SK2URVertrNQSc5IaMsUuPGhrcJ)eBvZsqzL6HCvLwQcILRwzjRR3tpvQ)ED5Pxx72LpeX2dDnCZec9xMDRYzIelgO9yGjtMCYjS7dJBBd8Wc6FI1Zfl7QrdqL7rNBj9u0FbOEfy1tzcIB9n8ESUoHPYOV0tdE)PpjEto5u2EaOdEpQ72S)R55WCusFoI2rDhOq6dYE2DfFXWSn5kMhcM0F9punUIHX56UFYwhrd03lydTQ(Ok3IwXm9nqFuszwzrz4rmeU1YbqSqOIojd6SSNFEat2OFsaZxN(woYbOgHGsgFfwXfzxwdHF3q34mT(XYYpqptRVzEfrEjYQBdhx3fTn3VFtS4xWM1Z)fL2tjQxHnyokfZeWGra1sG3Fo0i9iGc8hmsS4tEOWPcn5OtNi4yPIIVA9Jfj24Lo42Uw3kfp4etotWXkF7PYZSmB35722HQ3fxnMQVUhK(z5yxaTPqRVclJhe)TjZ0VyTE(IX45TJZI)fHfTLoL9B48xdn1npOI6ECjXwaMvSgn2TWL9iyfA5i67DVndzVAlUwhsUPAVnbL2IjynP017)Gse460W1QGsMJuT3dSxH1rv1MqnulxUzxtu6gwpmQo1tr(wFWoU4vPY5x(MBsvQU6l9ziU99YPCBi)geyeQIX0xEiHefNp728wwEzwA0f9(v2)aTijYFdhoAhbuT3MYTyeqDOfcjLziT(NPOAlRANBIST2qEAvIZrdhxZ6jBQkl4UukJQjpa6DxIXczNUxgL7UoZsZMsf3W2u6GYx0AwIBh5CkXW49ArEyL7VbTohxwHcSIPuuHpObAHzXi96s3O0JdLnC9ZpovJUG8Uu2vKb1KJezrPm)k3rdgpMFayUA4OnJq(Ame)7E5K9oye)UDRPuiXYjELe79WUD3Ie1rgoCUvzV5VYufu3h8jKNxFM5Mz6GVsAPlizQf5WxIXfZLILUHQS0Trbo32Umkdh37gihYWr3x(eYy44(W8qMJ7FBxsXAD4BoNP9bHpWFYR51SRlCHpcoF5CTDAQBFvfWAZu6u38U2zLdGJYhOSJ2SV1acAH5yV4pcTv1dn9Hz1MJhkFFLvRQhO7Da6y2brImgTDyC3TEOsYs5gB24XMYTY8nB0298kUkh7AHLvvfYjlDuxtiRQdppj0vfwGJVHvzmymkUSRPezZxKZE02vPkZWjjxWvazrDxZilkYTmVY92GQfhEoXa7BuEw18qxD3nOoj0LL4Cno7jHY7UbLNuvqrKZ1u48ArvOs7Qrdz5IzGkLyrbL16HsqLZviHLQl4)QuLaISNehTjkkjIbaiVYdUXJhxZYQkTngfGFsL7Ob3utcOHdpgogWWX(mC0VHJ(mCShdh71WXdB4WRHd3KEYm0id7ZN3lpXl4nxoEbvMmKQYYrNl(S9)Y54fKdfuBLhfPYQ396iR(MRvw9ANdGXz8gf2G(AEj2wPKYsjy01j3IstjLvNzrTs8NB6KKjMotnZxOy6M8MkNSqny(a2LfBLmrbrYwcDFb77(7x9PEQ3shDmx4d8n)H)Oo6OdhLc(yumlfmpLJAD9JLm5nsWRv67m1onfYcR3wkCmbpzcn00E0OlNPWMRD688dZqvAWhQebnTCwkHDcqM2LPxsLPVeUHq3bM2ENmE8iJnzSuJg2F8XdMkj(7KvhDMMju5s5o5p86eDM6ihS(Mjan3UcnZRG2ZNYeV1CAAnjNMZdxrssnF0AwckDZpOPc8A28deXf33dlf4VFK9TuYVfZgTDDR0KDln53AQe8hNV6KDla4Jj721w1VV0mZKM6J4V478D(CyM0QsomCtEufql7m1zQ60P7KPrbWwMv9d2HJU4adUmvDIMB3brIOYwv0C6YPycdhd3wirZlKGgVqXlhkq08ItKX0kZkFep9p4qd4(OL4rCT39wLMHD(0vY0m5fLx0IRZttj1rA2GHgoX4NmS8yxesD8CXi1XG5JU2sxmyw9Lm21)PF6pZvhD8QcFGVZo35bUWfEX1ZsTlZSR5V4zxbdJPmSkpqobnukusBUovjfIHNsKlpB2LtnVOSSAP79HxvDo)INC(ezYoHSfBUs3RDFuqoxkaENlDdXcqLI3EyQn5nbkNj9IMGWBehknPVBJdDVBb76n5pOlXhOcxcnFRJj581IVW(k)TayiMA2n5NQKE2)WmRJgCtnDSrtoD8GPM1F8yRNgCV9QcuNER)v5qd7XgFikyLwO8LWicMkLwqcdJOi6C4kdQdeMGdDtVwp1frWL88qsOJq7snD7WyC6ScIC5sYRYXQNqqVivdcRZCq3zK1080D1Nua4bOsV0WqjghRwbesDLLbUplSMr77ADooONleSxxJJdY63bShbB727rsc7XlfAMTLE9ASTRIg1zqiUQDiFZxmb2H8r)TEjXio8qhd))g4TeLsTi3zNu1gQgQVRB1cQ3(EDJG9hWY1wOWluJJQb8BE)TFZBf)TFrOy2Mmhym4qUhULjhyy4yFxwpM6Ttj5Tmhe8IAZ6)4h8etD4aU3MJzRx2Za7zKwig4(3UzGNPcd8nKw5wYjNY8nXuQIsIYS54n5RBhtxxbftxV8aXHpuWPZxCGdFIHp4RWqCg0xRZBUDdh91oqrBdQSfJKSW(oPu)GHxEp0cVcJxFipUBH413ZLwZd(HLmp4)p7D1fBBBD2o6SToSmm0uNS2M2GbIa0a7T2bA9l5aYYN(X2YYs2owYwYQ1nMsIsIwsu08NylF1WUPTPnTafydddf9ICXwlgqtrb2qx3(qURa7oJT2Itagqrt72aggqX2LBaZ7CO(JwMrrwsuHuH3KBidLP0559959CEEFETr9JjOEZHHFpBGGjDgoofBHHTh5z2dV4HYNfk8YZypWf64(Ih2Fm)lApWfSJ)AaSUc6uXtLPVSlLYbEalSOxFwjwxFpJmSO2TX3gZp2J5xMMj0IYztvlCQrbMhVgKYSG7Dts72Rfc370CG7nFDVZwZwyRArkS6oZT34rIREU1Z85LYQ0)oK27lOD2QbmB1CPshyHWjIlKWDV2qm)un9FsWQk8z5kVbraoz1ouPA5CffEYJE9zfRkjNHt(qTvIMRYvGlhbQEjgLYY6(aMHxwKrqGv)hFGQ5QreMLr))VxwHlBjjuDLA76LwxnErMCv3Hnhr8QkLlk8e69zlXZiI)OFQ71F7eXLvgM9XYphcwfcwhcEoiifeSbeKecwdcsdbpBZovz6rtNQ8WT6uLO5ZSxIkRkT9K7yM7uLExIlp8G5S1KgF9u00oTq8Qw1wKlwcrUG(T4FCUZHsV91r)wmXeeN4eHgCnj3T0nsZKCp3sZwsXD)4xjtzmqyiytdha7JKYkDKZRBokmYg(2tK4IW5oIFP5JxWx)41cMqu151yeWqhSyyd0rbGogcm0rr9Sfym(RDYtkFuhYxGpPkcdHdB6gWyKzDwiQ1UbnEa2Zzx7MDTBdiSF7A7gVc52Ro9o9ZM0yq8Hhfjt9s5XkDORPSzdB2sNAoeGPq(DcS(UUdLjCblla(y6rsNuZMRU5(WIQZoau5TttAo3J1nS9ijBpssxpsccM6y69qCC(skh3pFK(XI4hRzPFsv65B2EAIGIiq66EXsVOHJ(tAZs3ML(aYspvIsBXKHpSYvNYYMKVp3ZANwP9SEnZcl9rmQhcMWWhVnqWPhKjydeCMJmaBuH6h7zxZuJWDwVHBF4WyRHiozW9wM05UbwQFKBK5i8sF4ZQE940Y4ZQPTRHyCOgIgTur4lD7BF7do4GF99JAi2oTVDIE1v84YFSrrne4f706J4)qeIh64lqFnDhOJ)spc81E(99wrfBwVOIj80N79VpVEinB79)ZAxvHDvfdyvfvDLmYS1ILCTR2B9U9pCFMliCHwQxkb2(IL2GiOynjvFmUiB5YeX4KK6yA9JVXQDEJdr9n9DHaziqQPuM8nAKY0PAjLPTvOIvysAkQkfmZszQOM44VEggXG4bBOt03LOV3V7X0p1Dy5zYuMDorMCCS8YfRhJ)pINXfkISXRQiML1z04XA4mBD31fR70Ai2A4LI44IAIW0fdx7qbkBB5An9XpS1RPRdYjP7W3ahA9F(4Gh6xw3vM(wxSP)SPg5v4j19b1AgFOgvE93lK0I1OwUyssYzWXOrRy)ppvlVkeVEtnmTClHzFvOdzNOV1Vh6Zw1220yzB)Hpobk(9B20kdF)Vnot6)UOWPl043JLeX)RQ)yHwU3Wc22)FvSvaevdP6M19SU3(IQMrLUjkXmHrjU6(SYf6ixXoto6YLMKJnMjU1hBU40T4vXFw9SJ1tvIws)XTMyU)P67)wl7ZQDogTEKfoC4sB2)oMjMkck76DzjYrMMmFLgbmvdDQ6jGOqMgrow9ecO3E2RQBWIc7Mx4G2)SBKV6wBXfOmdFPgb)7pwCNsxwCi2OuE0Ng3N06L4oksSxjhx(8CzvklxBZg85(XD5vc64ZEuv(FFE3kPBqMQZqWpQd2B31X58nu4zYNNnRmBo9hRZdn(CB2bFoP7V85mFDpcFGvZ5Hk1so93BMnHQOYBRm7ySfyyfz2GWVywzUSeZkYYIhRbFNJEhZxGNtMLy2YSsf1oIf0)ruxC2AuiERBleADVIK6inG4Oxfrcse7u2vZtmFwwDFaRuvg9zvPQO2PZqRRgxrqa7THQFaN9OxpihFowrPIcNtNxXS1iMtDMBnCLv(lbbVke8YqW1HGxdcEbi4AqWlcbVcIlgfjjLt6rdxShPfxSa(NpAus)ZwwoJzMlwVVdApYGjR8Jv3onuohEAk3UnN7H2lzVhAJd7HMz4C4lovspHPxy3qf6hBpZGW7qWRB4hihnLL6a5EvZYbYzlBoZLS5wkwIDNpmz6GK(S2a43Soa(dB6Z6XMzo)ZSI)RKyPvwzMft05KYbbuB7W6F(HCy9Ngpp47WM11FG4u3n0XdQFIlsKKLPKFfrgPVFfwnMgo(Q3FMSluhd)dN64pzx8xjdxbfgz2jXVIpnX5rVtIYAS59JXSZPPv2R)pAD7BDTJUF7VS7QPTJNQaDAA7ik(1Xn)M2tGGabwkr4MjZAEgX0yzIJtlI()HZCHsy9xHoEE1TS6VHFMhJKwp(dD9i9yERxUZ8w)IEjVfoZKDUR7dna5Tp7zV0bh8jHV0FUENqAS5UMR2K74KETvsp9Ud5dW1Ct(0n50(SsU891hPKpTpTwl)P1AoOgpL3KU8xEQOHs2B25X4s4fx00KwPWlVM5O)QnFhDq55ZuANmUwlJW6JhlGhOnJ1L5CZyFbdzZyVq7nJ1oZ4yuMXUI3f5N0dLGqKD8oSTUatmEVEclAxwfbmFnBYW2q(HrT2FXh9rF6bh83dFPV8trluoXJHOf))Dc0R6x1qnDOzIKzXy01ko5c1EWkgJpFUSmnjXlAZPWoaZWHtr2T96mCaFv3E3kpyH3rvmqAvW7VInE3gVpKW7BLm(KlsNVqQO9eE)I7Z8OAS51iCpZck8BqmllBoILRwf3EdrDGvzh534OIS7N8nXISdV2TTi7UrrSg7WsTtvCDpbe8wAvCxD905JULy6E(VgwmDR)EP3ElVRt7BA20C6PQo1Omxdpa83FcSc5UYj7FzuFyT0Hvx3OqmDyTiQRA6qreo2QPBIbtnDUm4osLY100MGGVTNt9Dl67BzYKtxZjF)izp5)YBDluvi)xClD(gVXTA0jNg3EY73ZQReXPW0vQnFVQgAVAuHCZWtZZxxC7ejykxLxsRkKBElQxHyfMsSffESJC14LXYbyikI4Fae8oqWnHG3D)jHG3E0ix4t3sUWXCxJV6mRM0vCARJCH7g7YtpiSl)vgn7s3KK0onbb46j2LVJn7sB2Ldh2LXMB3cRm3AbtRSWqUAsZnE3LBxE9AvW730gVBJ3ho4DMOPdlDzHTDfB5HS6InX4D9pbA3o941CI3F3rhE384ux24DJaVF5iuPd6Dp)R6lFVwEwEHZ3Q6QqkIkvu2GikxEwIqImC8eXLzYwssB)Q28MIZkYvvrIiPA7CQPtrBEd(fLr3ctzIGkYAhwrT)u4lGUb(ceZXGBj2ZDK7ieJyjILlZuq5qJAjD)ZCOoPI2cc(ai43db))qW7db)oi43wFNVWJUMrsPHNPvPHKPMmv50LIMKl74rPHNzW27lNgozrxwO5M3hmYfOV5JZ4)J9(AJTnosVFtUNtVkaFxIcKp7e34nkXoso00IuI0scwwhffLOCSEjKuYVvdYLIRi34LC3S7sjzN3oC31lPFRqajFPOnb(BgOFYfT4ABkA7b0ROf3HY0MRylqV286D9q)FxU)56BO5svFEM99LlPOKOCSILrCS0UZoZZmZZ8mZ8B(98m7nhYUs3hiwLlpyV55p)cd2U9D1THfgv))57WyR3FKH21yD5nDBDPJDCV35UaVm)R8zIxMFCpX3)hVYkFT9TVNm5OV3AR96RV(h3YCUVboyU(WYw2bZxQ)u9gEObMrSqM2mIr35gK2M2b5PpD4tF35W0)0n7W09MdF3)C4hVb3bIp)Zd2j(pto6p4vF13WAfF3PSxCUXVui5bsn5KHh6ED7f9FAyI(7kTx8T3a7fTUt3S71ArP7PSw0uuJoF(O9xuPASi5JFV0cXhiA4DnNj0FYDfyeV3s436dY6p8urYKmuVZ9SRCVZeJ6OPD6DldZ(J27Ox3Bj4TNX75Jn3yJNj(kNEXzBDI8(in4iqyKyK5uyjNWX2IlVFFNC5nu)rd1)G1XL3fdXMQu(Zf)sssBaxE76ZTC5Dwh2FpPB7VG9bd7VDrS)kDmzYrL1aZWhOUiv8AsmCfYkjWZcd()GnT94NYWQSrK36voIyxvLzNMrzXsZXknFfoLSlkufJu6)tqjuGCzsCBj2YZkYkXOiib2OF3C2HLKCp0(x3ziBXBGVxNHcdFI)8qoNITCjd70IDwUUYXVPL7A6XbzsNZyy9u8HQp9gYbMyO38dYPvp(hu9DX1YKAQjNmrQHdzfwKQnOwiuYmSH9R(Bzf2W45tRWOWkhGMDz2kkbOvK4kwKvAgsix38x1sKvSfdtBtIVyMz7v6gdx3SsD3McUv6rvkJC15l10JGxdnzLckXuPGq5EcfisVotwr(guWOePvV981y45Dv7reRa00N8K0LuueLh(uNQiNsPQ5dUOq5tzgr1S(PWNItwUkR8PgisF9VfI0yveuC2x4Sbx)ZxIHx2JVhKYy6rfBslOmnJel0CjibpaAoYd9xxNwwaZtATGTVmDbHkpHIENbkbYcLzfQWsxGJvoOr2MIvMvHEfquOzORWUIwhehua6Lxa4LClwIUmltfz90qIJXyCuUaB(QlTKEUTKGeD2ayNOcuEvOfz4KK7XP(hiuUIMA6keKVki(lMVhezYlb1asRhd0nKLTYYKujFf8)FvNnI4FwHtKThNjTxhjiVe0LA(eJM56AUluahey2mO1SB2SLgAlX4YgmSJ0K7rJcPruuKNd(yg6YWhaJ4YZcTsSKVrGhsn0DSetbiBmYyOpCfO1RyfmzAD1Ra6L08SYOgddOHTIaTm7IcvkidpDjLG0ZiOWgGg09xMmGVeJcPaiFTr(c6lO2ayrtyzsTHKH27olXitxefiHQkA1t9WDhzWM5yMDKUAT3dchdxfKwegjYvWS7KUed3AjwzWzPdtunODfV78qdAeRXSntHiTGe09DD9XhfO7bnUptVKMcOZqMtwb7GLHKHcatzHkfLvO1SZj3HZwHPqlrSOLUN7fmBqXxeGoRv7PlTy7nOGaLyvfjMf16QjYI(aFAfbq4LRkP94q0NH8VH1)3q9fa795UgA)GWbfDr2mVHFrMvsPhBckOvjOL7KNoSC189eP3E71rlfMp2)OED0(fNNLrIMDvODIuOeLKMOmzodKJ6TMAH(mpwglTELZ5E8SNmoyaqHvV8QIxvo6TFWaaYdp51yVo2kMNf6zllc6F55z1ggIn2xigD(QC8kNKRIHfD6qM1eUaw9WyTHtR6yVDPHJm6gLJUPdg0kl8ygzd1223SXenpVNjMZZPEn1mbn)L4kguqehJguZYxqmrYxH7QnzY5MNbysR773XM92H(HPGz2EJsRXpBLo7t3dzazjJoJWLQ((jIJP1hz2AA1dO3q2DEbbE9vb5ObY4fVagSlLDeSlBTiDP)h8VP(T(ls719Vcr6mUCEMV2JCJfwdw0BswUILuGTTDayBQ1E5)ULzK4WRHOlWvqPuUA3IAIAFskEgPIS1U1(v9DlXF3NpZuvuyLwIzr2tnfAt8uXwSehSutCQVSKf9d9r4DKq2RbJ6go0aW)98k0tG3AkGX9mLKiZ)Se8tKKbB)BXRrFL4vHv6uM7gKjcUk9wSyQDMBdt0UOehrvBbv))ZM1nv))l6vO8LzlWvTSEns8c4uiLzWSrFCeyke(DW6bAF96cvHPnxwB(8YmWmas0fHztfP72OoDLmHIC1RKcek6jKiXi26QLDdtNZtwKrqqfY)75TOPwc(hqO8x7m5lXcRzq6hTgPSWWeBEzUYI8Ssq324qDS0yySAnV2oPVjySEwsDwEypY69)Ju9d)3pw1))Ajv))eXJhNmIeREo2bonXN0mQgYQ()3g(1cxMz1rWpCmOQlsjvGDjMQ8khnmyaDnZjJb5gKzTPpWsGonAQACqrKLNgvePhJfhnmUEmTD4WL5QqTm2hazn0TvgYtoT2iIe6uUGPMjVIEg919cwUNeYpv)F0W5YLl)Ym8Wa)H7muNH7SFv))8ueZtwzVQ))Jwmxr5wpxv9)FzLJ1(0BIT3Axex(GhKxZo2A8CL5uW(hyu1TOKQimnlmCb3D4()6lkWZZikZM72L4ka7WuaA9KYv7CDDBOtmUXl9Qdt1))dPq0SzQ6)xsYDv)FkjJv9))cs36yoPsTVC1J0333ePV77GQu(oOQ)pjQQ)))DP6))gRz1(us9thNiOOpzTCDODDqH40z)qZGu9ffFqNRsHSKM6o49AzFMwdzVFTnni41DndBduprA8oslRInJDHd6YCN4JuxACLcnq1rm30ader1th9E3xpXAWT9Oe483u1fFjh9JE9x)pB91)qsDkW(CvPU9SZNjrQSPMAYKzSqfKIcKoQVarepPUiU2XmQI6s613yj9rnpWc9MtXhVUgLqbvGzKu4edLvKPq2Ycfyhd3(HE5FQCIp2g(nmR(aOareeXUBwYnVR3AYbJiEYMLdECTZ5PsKdSTdD7JzLf6n95hB2mzMDABxehATDd4t8OBqnUKrRDe9(kOtBZQw8)7nFZ3bKoIAX(B2nQTDLHdRRmKF8PspxIZBtty)nttOKfmXJUnUS3OohHHgWi)41G2TjqsvCtRv3O6lMVAr3VxS4aQV)0RE1xA91)ze2E9R0y2Be2K9gi7lhdTPdzf8rV2jiC4G6bWFfkgnYz(SDli29iJaplFOqNEG(Jwlk(st2GECn()(lv9FitQDcnGtCC8R9FyKfiMYl884IDcZQgmAqsF)YCY4oeCWKKtyXKKv91PjCD9ABJGABaX2AH12tezNSUE2vcDv74iP9LWMnm)f37uEtGT0wCV36zQ13DMnAv9MjLSGzOfvRR5vGUMopl0o1zFKofcFBw13B4QntVQBwe8WYTWMaNp4m2c39NKoKlqnDK0r8ambxBlBl0dT17L8SNYEVLhc4wcXKTtpNH8a)f62(otKk20jYo)CJhltcYrk0rVn6uHEQ49Lk)fl(0XMlCR6GolyZbDMtIRmSejUQYxLEIQiANtxfRWfkjEmptusgPYlvLxlzKBSTt4z6gJhMR8utZWJwWHTjpgVGqJZuwErNz6X9mDliWdVNNfwpPsjHISTtp05YQupKk1HuPoIkytK6HjUNtOq9h6oJ75Cqt3Zj(qxu4CPwDU0pt1pF4EohC75EodSLjuWJUzVeyTUaypbEsM9fPpKLU91xFivbmUMnFFcBdgt7QshzsG1nalYyH)(s3ErHY55QWonSwUBJZpNe2XpRScs5G3DhNYbup0Euoypkh0EOCqHmZKS0Qtp7mxUDZvFpTjGk7d2A0mI6O783jhrgi6UNGMp1H2P9BVwNdVUz1xYr)EAU)vYrF)FXVy91x)JtoAT7)(P33(E8Dj2ekTJX1ERD90V7D9yBD8qTmw3HjlKVjdxd1)cx86LU4n4QMSnt72TXu43bgQ2F0WHhCx0q1JS3DG1UP7aRp6OhD01x)hMC036TElO)4b3zDI1lvrQNNovXfseP1UdSs5yq8tSHdIx7yHc2uILzoAo5OVT29ql8dV9Bd18X3mJUX30OX3F77JYIAwIh1GBwHhU)Hhy4i0jMj(SZpdcmB6mXsLPjm26((dSZylzNm2YXL(OjXSCL5D3aSm0AIg76ZRDuUpNBgj591EiPuErOu0RsDV5rmQz8mZ21J42L6tMiXyVw6zT3ohlelGydmV5jsyLF6Snqj9wG7k04r4MUr0xX6uE1sI(VdLxFUsjdOjSmRvk1(96b5XGBl1HtK96N30yX6yN1ACmtLhpeKqBQnoKaDPqxGRto8UuUIdvJRAWNVYmR2JwIdqhYjNSyTJ31MjJRWX7mJSHvMxvKkWkx6P(mUxCehKxTAnCdkzp5qKbfFS05S3l6HkNIGc8)hXM2dsIV6LL6Kzdc1yvsEvJTvEg)XOe1(3NKwEdRHUvx1(YZs3x9sLlivnSc2qDqhu9XlDBVz7JRp3CmjkyEKaBmGXjvXCjF64R2rd1yXrjU(gpvMCLiV5YuJsCtQVU183qLwpvsBnATCqpP1Yl0a0SWfdVbWzblj2AnYHgmeU4wdySGvddRv(DZrMzfx(lSWAYYHv9)Lu9)LX1pR7Mm4YTn4sDBqk6)UcPiYDfsXP3(sX3cxc1dDHyzNl1utpBQXNA(0zhpXyZpXezJNmr8NcjtWrnxLeBVEPpQ67AHHfUsujv997J8ravm1wVfuziuKYKWuB7qU9nAalHu9)oAmes1)72ek7aP79ns3h0Au7r1)h6Kpo306yfqk30ce45y2iWJghBq2Wixp)DoXs1U1CuHG9baFvNyIW0mgtb6yLrVuO2zYRiuSiSfF)FuoTC)N)X5zkO92evqYG9AQ()PJO9UFgfKU9dPznZ0G5FFbJIvRpglKUsZQqkGXjNRKE5O6)FNsNtlQ()KnGplnHqmQu(AbYWCPBZn2umJlFUbJn2LX97IBXLwB7k1(KEjhuYJJ7w6apHfbzoUk1W7xLAOCAeHzUsKThFyJTNQVRo3X)CXJ7bB7cfK4piXXAUfN7Axxhxek58qnEZbWEUf)lnFnNSMgcpHYHyIMezuwkbEw5yYYCfRWwOhdx1GSgPUtMi25HTl0HT8a1QopHrA6zYuYKSr7zwFV9VbZDYzWAl9ApJPIIxFIh1etCde72Z256OXZO502Okz)SKD2QVH2Tmth(4CAhYLjMf4oGRrDID(Br2v9fU(diVhp7zTFi5o6TC(cTMFT8YXbC75rc7Yoq9FLZJf37xP3frsHxBjSHFb9z3OJS2u(SFK1iKg27Au9FOTFFtoDgUO6)WKqeccBcc)rkuLZc(JmBs4puPobb3dv)NTKdSpu9)vZ5a)dFu(2rW7qL6jBcIgFXxDpen(mhrJg7Ho7H1XEyDShwh7CyD0u0m2SqJ4GWynQBHuqU0DX)SrivSHQk2hrh3eGHECaGYlQ3q1BJZMnhEnolohKKdZI2juoUBQBsr7I9CW7885NzeIn3g3tfuusOOeRSms(F0BEqFfTq3niXf0D8b7tdy8Sg8jUein55jB5pNPQIqsUcSBeqsOTkTwmq7dxdNTo56Q9nX388sdO1mH3MqSkKgIv11Sz5qw7yGz13Dfa4e(UcPyG7kKIOThWSuPcJWqr1VQVRPsnqRakf1NlWKsLksRHfLkvu34m94g4m5GeV0PmjJmoWektQbTH6K4blRLoZK5n6tDHP9(DNw3Oq1jIcLZc8okeueSJEye6j74lnvovQZ1Ljsux62lhRYqcjNFfUOLCak1N0lczfccfb1O)WwLsgA3NFMmN0c8iniLQfCjd8Jcx30iGzXqH7RjOX8Els8rZzRmFfEbMcWMuNOeYVdQrDWVJDWRkqQVQb9ig(ob6lV0NPOV49WHTiimoNuSEWyQ3vd2WmPf97GnzT8ZcOCm5)gsyiFOhn9hBQnueDQOZIovuNrQfLYdGfDcoiHdniaKpDjteIOgXjmrbi2(rOIqNdaT)FFDOz)x8(NqI7g0pDvMcqdndDMmAHJPdJahHEgWJ0HjZ3Si8p6eb56adpTfgm9ux(stZp446EY5t4aXAco4D0lXMYXnSe8742RBu4w8AyiMWq)W9lgHoEwSBxk4mSRKH8SEcfG21GfJ)y6E(btVitLeieoY90DJpIOUnd4e9s0bcAkOPWnU3Ic5WXzQSilVUSuFnaxYjM7NYi3vPsBsAWL8WhemWBJ4JcOps8vqW6g4lPTuHVlUcKHVzCHkf4iEHTHhoal74TZ9EvLzZYWVcZ1LXfEIbuWZAS0v05iWf68H)E7JGciS2H)kkc(H46hUGk1biybULrVgx2bOHAO(PzbgD8MjeFCt3AjwfUYOlTKyvrEbzezK08mLPJZiRy)Yl1iz4)YqpHqLM82uWyz7xloExeTrxM5CQulOsblydAZUe6Vm9pu0q9DNXFzoKP)YSQs0PkDHNMF1I5394VmrAcq1hA75Vmr3Q0T97INK8JbMjInZutdMiMow60tTqISto75tmD20Np20zZel1KjSiKh04ycCTVx2c46a0SbOLj(T)KZp14bOlWkRy9t4YBSWXMGHDluQUX1(kgzvBkOT4n2cotJTfUfo4aoFxDBc2YLjFY6tTlOc8m(Xyubd0IXfn8V4IrXduW1M1jA44H3V5z18HO(TFGwKyZl0Cxp6VLqK2VrYr)bD11rxF9)Ig7cs5AzxqkYNhDbPsVciFkQ(QQ6Bz4Bxr13Q1UvmO2c)96L0lRNx13lO67fXF858bMxv991u9bc1nGe8sexCxlW9JRt73ekMV53eAZ(gy78aHep4ICslwLNrcpB3QsStvzzwjzCEsvF)gQ((wqE8YAjf0icSpyX5FDFTt6wxAd88Ol3)sPoDI(MyOEt3M98OTH1vvQF9TSRm8yU9fXsUqx57aRyXKMa50aA5MKirdjKEEWXYeBMNkhc9cgjtWn8GjSKdVwSdccm50qGr3zjE3sMqW8oL0D4bYTjq0HIggHW5owWqM6I394Is7ETnSN7jADFFD(bsnTy4bMKx5ZhgjAv)DAWOdfAxK)oDH9g3V34(244(bcpz)ptQZTqHBCJ7Xg3hj6q7Ig3FP9g3V34(244(NLpDKzKkFjHk8T(nGWrQdpSPzuWikz6vye323)buxZX9FWH8)Glx3LFqIzImDMHMI98dm3gC5hC47rU8dI0Kl)GdRrtt)1A579av)VLTl8Gw3mS1fEWm28gvgx0PmaTo2uXYoDSmKhFHyZLn2CZD(PsmEdEBQetp7c6V15ZtNOz(Z6x4FSj3abfRYviangsm3TCFdeQHONfk8Ma8m3jUvqQRH4R16xTanHHTcs2ERx9XnIeULj2EiEPGdA516YsZ03CvQA(oNUcaQ94br)CLGgZZi3jSjmoYDLXEfAtwX0hM1AnN945ZrYZs0IQN(GUBDANdnIvopxXQqM3doInaD3qMjP0T77CdOCHetgA79yiVQt76gw1qgKPsfhxdQ(cqB1qW9Y1Vauv))qmgB7XQqVMvG5TdBXF3iEg)Dnp5Zd1OHSMHE3lVde6Dto6h9sV0BOhEUQpC1QsTFVdmPJOhysHPnB9Wt7r8sYSwzzJUy8qjQ(f5IHIvnz5HjYIwCzLupdFG2QS4DWBT(a3QnrQlJMhQVSUGHTpeHZtH6)R9oB(TTnVJJh7NB7Ysh6sxCIlush6SlwXiLejf7Heujzz5yjR3TDmqXcnfTjJLeP4lYsoDB37XDOTjfyfO)rS2M26KmemGEQP90dqsq3cWgApSCO3B94JOEZowQkruk8rIxmGfF4JOT0NNNFp)E57VovT1PgqrB916sB19)9J)KNtCIF5u)mcYA72PBJmOOv70TPuSc6IkQs1D9eY8uIOSRGUHEc1d5Lm5gZ5Nlbv6eluUFLxY)UYVPLj3Pqcl)AsLY7jJUSArrLtF4lTaslWvL2scj4KN5WxlTHMikDwq3U2tCN1NppHkiByENZE4Rf0C9h0Dgc1BdunV3x8WxpIQGWEcpXTfdjm)1VXgpSN6iVL8YQ8ION0JmFlvuHRG589Yh(LFtvE0K1AAfvM5OphY7juQH0yAFHL)MqW1GGkqGgeSle82qWEqqviqhcQbbgqGQvS69spI02YzAfR(eIsQ6egbJVdf(eR(E5WOzgOy1tXo0BwM0KS(WKMLj4AUkxPRRIShxfTAuMm1ceF(W6C2SlIhaIhc(ldDENHMoaUW7vC5DxE3E49KrycVTr6CAv6p7uD88EFl9L0KuyuiH0okYBhQZrxL9sxQh7P(zg(vDsFikN0xwwj4YvuQkoHzobfPFkCXCIDhkMtePZY8YnIZJDlW0tZkiwlsTWLwLtilZKf3BEmc)4c3)2dk33)zBUlVpEZ7u7qmhjz1c(4gtogr)Y7(rzukMW77z3NHOjQpTlOpPa6j2suJE5e0g(PT5wLXOd0N(zkAaEXfmVAp2wp6f)UQvnP8t2koQa7y79bVnzC(MawJg)60NR(V1KSrust4OrVUD6Z3Gi6Adz9NlG8hEzceewN7qKMfAHynlkE6xb17xN(3A(z0ie2QzO7pBkA91ycpjbBm0uyJn06JGZope6kntQ4w3AvnpYYKNOx8UwDUf0NxGU4vmZp(iOoKBXA3MDNPDB2fo9819oMvdKfo1s1LWJEr7(iQKFo2kzwHAsZgA)m4cVxZn0BUMsBp7UZUsI9Mx4Y58Uy8jlENHMMfx4DJNh7V7s(yp57Kn0GyHDZwi6ojtSw)1P8gWfEquhJd5Of0umyJPgQoctnET(AbNrPeNeZ7Af4IXez7OP63uRElLxPvgeNDxPsO(SVaNMUh5T8ScknJlYPkO1zIn3yur4kHgtKcOEuJOY5EIRx)cOHKKttREh4)31hVtEsQkCmZwizvvdfK(JgvGRq9mF(Lp6yYuOUaS7jJIm6r2(Y(5RcbVleCDi4gqW7bbVpe8bwP7Spw2rt6oFMwP7mNgb1AzwmDPefXN0DMThlmEMbkDNPjgIll(l6y9W6YRtDrUHXNFsN5YIV7OBzr2b2pl)kl5OAtvzu5Yj(p0TunQqYfKvrpTF5PpT5t77e9I)ZtDktZb(AWMfLuvLvfFuJr2qMPuojVCXIYLEDjEZFOkKhPRvFtJXK2AYTK5Q6MS9NV36kNSXvdwqOu(4Y5fGt9NAoRRAvBlx5h6Cgmx9Y8X)J0m2SXR2sBSA(gf36zt5fA87Hf040rfrNGD3NV75gaf02wpAUDI7n3w2SBrhamfc(Bd1do1nmLHYzIPxFKMWIo1(09Vgh6t3p(cx4pEWb)3PgUPc4MeBetXBC)X4TBLPZbtTwmQ5(3yYzoUHJ4mhUo5apCYrV3LMxozzMamP2y9jmE3pb2ujrVNlV7Y72dVVC0sxI1ifr8YRnPX7KyJpfFFxE3L3ThE)sHkCPSleAPGxwdhofo6k2wTdY41lgv7GFG7rXhyUFSS68ujmcTQXCeLdl1)Iut7iPetqYtgrHsVLNqQCwAotwrdK0X0zClApQeveu5f5u3gjfmN7ygqBHKjOCbDrLZFmJjQqHIOGPesUyrUs57SVT0EqrmqXIb12w0e7mQoThrybEofP6(n9yFuAFDRy1CCVlijqtI38xK53ru5v7YFXO(pMqEpHq9najDnXJ9FGn0ZhuJTQX0nBp)hO9Q6nFme8fqWNdb3gc(miW8v(ui4oqWNab3cc2hfgi)e(i8nAcd0zBfgOqz4xyNalgzprE8jmq9Ys2ZoyDOMNkvV5zi64uKuyJM38XoLcI)5saYF(6kxzMC7OKopZcPtBZM(naaceC3rEus9Zs61zIhFrplcKVVwnt6WJ53x2F)V9GdESBrG0mR0FjhxrGSC1qzNJvB(fL9AZ(vb)GnANjS952fSzlExbFGnNxfxLMkrzd981UAq7w3cgDW2ZMChYsIn1C1TDDIPRtmTPYzwSC2TwSCmJ9YnHX7(zWMGu(zU8UlVBp8U38HvV665midXpPCYveTZsqInQuYnhD0(yXjwDEgrNF3lNtJjK3iPS76lYPVPAa8X)PFQ7MQUBQAp8E40ZxDPTKkjBWooSPAFNfa(8sJrzbWDWSSaysDRvNrQbKBDLnstgvAxYvghy6(EhCVSyJS9(jUgk78P5E7TzE9sY6RMn)CtmH2PEcZsYqJlq2TCeMj78kcF9GRijenwYALV0K0(du04Z(d77U)aMV)W6bnMlCo1m8r7V9hUW94O7itftZ965rPnyUsA6CBwqWdQrEZ1z(o2CeRkPZ5jJqjnjDPks616m)nFIzbnyBm)dFdi4bqWdHG7JYZqcIabign5z4STYZW47uQsS81cp)srgpYZWzF6wd9knxdv8E7)xjPcq87n)bzxwk1lfjLnTAAaFmyJQ6(GH5XN7)UJHZZsG4BePsYKPM7nnEwKXU)WW5BXqW)QR1bY)2U(2RxwSPUVEOB6aoMytq4vkNtIi1Qsj2Dsd3cGnzSW97TP3T8L3x9HF4To4G)JlU5yXTm0652oyaLQl3xsW()p
+
+
+
+================================================
+FILE: logic/embed_builder.py
+================================================
+from logic.embed.signup_embed import build_signup_embed
+
+__all__ = ["build_signup_embed"]
+
+
+================================================
+FILE: logic/roster_builder.py
+================================================
+import config
+
+def rebuild_roster(users: dict) -> dict:
+    role_signed = {"Tank": [], "Healer": [], "DPS": []}
+    bench = []
+    late = []
+    tentative = []
+    absence = []
+
+    sorted_users = sorted(users.items(), key=lambda item: item[1].get("timestamp", 0))
+
+    for user_id, info in sorted_users:
+        status = info.get("status", "sign")
+        role = info.get("role", "DPS")
+
+        display_role = "DPS" if role in ("Melee", "Ranged") else role
+
+        if status == "sign":
+            role_signed[display_role].append((user_id, info))
+        elif status == "bench":
+            bench.append((user_id, info))
+        elif status == "late":
+            late.append((user_id, info))
+        elif status == "tentative":
+            tentative.append((user_id, info))
+        elif status == "absence":
+            absence.append((user_id, info))
+
+    final_roles = {"Tank": [], "Healer": [], "DPS": []}
+    final_bench = list(bench)
+
+    for role in final_roles:
+        signed_list = role_signed[role]
+        limit = config.ROLE_LIMITS.get(role, len(signed_list))
+
+        final_roles[role] = signed_list[:limit]
+
+        overflow = signed_list[limit:]
+        for overflow_user_id, overflow_info in overflow:
+            overflow_info["status"] = "bench"
+            final_bench.append((overflow_user_id, overflow_info))
+
+    return {
+        "roles": final_roles,
+        "bench": final_bench,
+        "late": late,
+        "tentative": tentative,
+        "absence": absence,
+    }
+
+
+================================================
+FILE: logic/unassigned.py
+================================================
+def is_user_assigned(info: dict) -> bool:
+    if not info:
+        return False
+
+    spec = info.get("spec")
+    role = info.get("role")
+    status = info.get("status")
+
+    return spec not in ("", "Unknown", None) and role not in ("", "Unknown", None) and status not in (None, "")
+
+
+def get_unassigned_players(signup: dict) -> list[str]:
+    expected_players = signup.get("expected_players", [])
+    users = signup.get("users", {})
+
+    unassigned = []
+
+    for user_id in expected_players:
+        info = users.get(str(user_id))
+        if not is_user_assigned(info):
+            unassigned.append(str(user_id))
+
+    return unassigned
+
+
+================================================
+FILE: logic/embed/__init__.py
+================================================
+# logic/embed/__init__.py
+
+
+================================================
+FILE: logic/embed/comp_embed.py
+================================================
+import discord
+import config
+
+
+def _player_line(user_id: str, entry: dict) -> str:
+    name = (entry.get("name") or "").strip()
+    if not name:
+        name = (entry.get("display_name") or "").strip()
+
+    if not name:
+        name = f"<@{user_id}>"
+
+    spec = entry.get("spec", "")
+    emoji = config.SPEC_EMOJIS.get(spec, "")
+
+    return f"{emoji} {name}".strip() if emoji else name
+
+
+def _group_value(players: list[tuple[str, dict]]) -> str:
+    if not players:
+        return "-"
+
+    return "\n".join(_player_line(user_id, entry) for user_id, entry in players)
+
+
+def _add_status_section(
+    embed: discord.Embed,
+    *,
+    icon: str,
+    label: str,
+    players: list[tuple[str, dict]],
+) -> None:
+    if not players:
+        return
+
+    embed.add_field(
+        name=f"{icon} {label} ({len(players)})",
+        value=_group_value(players),
+        inline=False,
+    )
+
+
+def build_comp_embed(comp_data: dict) -> discord.Embed:
+    title = comp_data.get("title", "Raid Comp")
+    description = comp_data.get("description", "")
+    leader = comp_data.get("leader", "")
+    start_ts = comp_data.get("start_ts")
+
+    summary_emojis = getattr(config, "SUMMARY_EMOJIS", {})
+    bench_icon = summary_emojis.get("Bench", "🪑")
+    late_icon = summary_emojis.get("Late", "⏰")
+    tentative_icon = summary_emojis.get("Tentative", "❔")
+    absence_icon = summary_emojis.get("Absence", "❌")
+
+    embed = discord.Embed(
+        title=title,
+        description=description,
+        color=discord.Color.purple(),
+    )
+
+    if leader:
+        embed.add_field(name="Leader", value=f"🏳️ {leader}", inline=False)
+
+    if start_ts:
+        embed.add_field(name="Date", value=f"<t:{start_ts}:D>", inline=True)
+        embed.add_field(name="Time", value=f"<t:{start_ts}:t>", inline=True)
+        embed.add_field(name="Countdown", value=f"<t:{start_ts}:R>", inline=True)
+
+    group_1 = comp_data.get("group_1", [])
+    group_2 = comp_data.get("group_2", [])
+
+    embed.add_field(
+        name="Group 1",
+        value=_group_value(group_1),
+        inline=True,
+    )
+    embed.add_field(
+        name="Group 2",
+        value=_group_value(group_2),
+        inline=True,
+    )
+
+    bench_players = comp_data.get("bench_players", [])
+    late_players = comp_data.get("late_players", [])
+    tentative_players = comp_data.get("tentative_players", [])
+    absence_players = comp_data.get("absence_players", [])
+
+    has_extra_sections = any(
+        [bench_players, late_players, tentative_players, absence_players]
+    )
+
+    if has_extra_sections:
+        embed.add_field(name="\u200b", value="\u200b", inline=False)
+
+    _add_status_section(
+        embed,
+        icon=bench_icon,
+        label="Bench",
+        players=bench_players,
+    )
+    _add_status_section(
+        embed,
+        icon=late_icon,
+        label="Late",
+        players=late_players,
+    )
+    _add_status_section(
+        embed,
+        icon=tentative_icon,
+        label="Tentative",
+        players=tentative_players,
+    )
+    _add_status_section(
+        embed,
+        icon=absence_icon,
+        label="Absence",
+        players=absence_players,
+    )
+
+    embed.set_footer(text="Composition Tool")
+    return embed
+
+
+================================================
+FILE: logic/embed/player_formatting.py
+================================================
+import config
+
+
+NOTE_MARKER = " - 📝"
+
+
+def get_player_display_text(user_id: str, info: dict) -> str:
+    """
+    Priority for signed players:
+    1. explicit signup character name
+    2. fallback to stored display_name if present
+    3. fallback to Discord mention
+    """
+    char_name = (info.get("name") or "").strip()
+    if char_name:
+        return char_name
+
+    display_name = (info.get("display_name") or "").strip()
+    if display_name:
+        return display_name
+
+    return f"<@{user_id}>"
+
+
+def _has_note(info: dict) -> bool:
+    return bool((info.get("note") or "").strip())
+
+
+def format_player_line(user_id: str, info: dict) -> str:
+    spec = info.get("spec", "Unknown")
+    emoji = config.SPEC_EMOJIS.get(spec, "")
+    player_text = get_player_display_text(user_id, info)
+
+    if _has_note(info):
+        player_text = f"{player_text}{NOTE_MARKER}"
+
+    return f"{emoji} {player_text}" if emoji else player_text
+
+
+def format_unassigned_player(user_id: str) -> str:
+    return f"<@{user_id}>"
+
+
+================================================
+FILE: logic/embed/signup_embed.py
+================================================
+import discord
+
+from logic.roster_builder import rebuild_roster
+from logic.unassigned import get_unassigned_players
+from logic.embed.player_formatting import (
+    format_player_line,
+    format_unassigned_player,
+)
+from logic.embed.summary_helpers import (
+    get_summary_icons,
+    count_signed_melee_and_ranged,
+    build_time_fields,
+)
+
+
+def build_signup_embed(title: str, description: str, signup: dict) -> discord.Embed:
+    users = signup.get("users", {})
+    roster = rebuild_roster(users)
+
+    embed = discord.Embed(
+        title=title,
+        color=discord.Color.purple(),
+    )
+
+    leader_text = signup.get("leader", "Hekkipekki / Rhegaran")
+    start_ts = signup.get("start_ts")
+
+    tanks = roster["roles"]["Tank"]
+    healers = roster["roles"]["Healer"]
+    dps = roster["roles"]["DPS"]
+
+    melee_count, ranged_count = count_signed_melee_and_ranged(users)
+    total_signed = len(tanks) + len(healers) + len(dps)
+
+    tank_value = "\n".join(
+        format_player_line(user_id, info) for user_id, info in tanks
+    ) if tanks else "-"
+
+    healer_value = "\n".join(
+        format_player_line(user_id, info) for user_id, info in healers
+    ) if healers else "-"
+
+    dps_value = "\n".join(
+        format_player_line(user_id, info) for user_id, info in dps
+    ) if dps else "-"
+
+    icons = get_summary_icons()
+
+    embed.description = description
+
+    embed.add_field(name="Leader", value=f"🏳️ {leader_text}", inline=True)
+    embed.add_field(name="Signups", value=f"{icons['signups']} {total_signed}", inline=True)
+    embed.add_field(name="\u200b", value="\u200b", inline=True)
+
+    date_value, time_value, countdown_value = build_time_fields(
+        start_ts,
+        icons["calendar"],
+        icons["countdown"],
+    )
+
+    embed.add_field(name="Date", value=date_value, inline=True)
+    embed.add_field(name="Time", value=time_value, inline=True)
+    embed.add_field(name="Countdown", value=countdown_value, inline=True)
+
+    embed.add_field(name="\u200b", value="\u200b", inline=False)
+
+    embed.add_field(
+        name=f"{icons['tank']} Tanks ({len(tanks)})",
+        value=tank_value,
+        inline=True,
+    )
+    embed.add_field(
+        name=f"{icons['healer']} Healers ({len(healers)})",
+        value=healer_value,
+        inline=True,
+    )
+    embed.add_field(name="\u200b", value="\u200b", inline=True)
+
+    embed.add_field(
+        name=f"{icons['dps']} DPS ({len(dps)}) — Melee {melee_count} / Ranged {ranged_count}",
+        value=dps_value,
+        inline=False,
+    )
+
+    # visual spacer between signed roster and optional statuses
+    embed.add_field(name="\u200b", value="\u200b", inline=False)
+
+    def add_optional_line(label: str, entries: list, icon: str) -> None:
+        if not entries:
+            return
+
+        value = "\n".join(
+            format_player_line(user_id, info) for user_id, info in entries
+        )
+
+        embed.add_field(
+            name=f"{icon} {label} ({len(entries)})",
+            value=value,
+            inline=False,
+        )
+
+    add_optional_line("Late", roster["late"], icons["late"])
+    add_optional_line("Tentative", roster["tentative"], icons["tentative"])
+    add_optional_line("Bench", roster["bench"], icons["bench"])
+    add_optional_line("Absence", roster["absence"], icons["absence"])
+
+    unassigned_players = get_unassigned_players(signup)
+
+    if unassigned_players:
+        embed.add_field(
+            name=f"📌 Unassigned Players ({len(unassigned_players)})",
+            value=" ".join(format_unassigned_player(user_id) for user_id in unassigned_players),
+            inline=False,
+        )
+
+    return embed
+
+
+================================================
+FILE: logic/embed/summary_helpers.py
+================================================
+import config
+
+
+def get_summary_icons() -> dict:
+    summary_icons = getattr(config, "SUMMARY_EMOJIS", {})
+
+    return {
+        "countdown": summary_icons.get("Countdown", "⏳"),
+        "absence": summary_icons.get("Absence", "🚫"),
+        "signups": summary_icons.get("Signups", "👥"),
+        "dps": summary_icons.get("DPS", "⚔️"),
+        "tank": summary_icons.get("Tank", "🛡️"),
+        "healer": summary_icons.get("Healer", "➕"),
+        "tentative": summary_icons.get("Tentative", "❔"),
+        "late": summary_icons.get("Late", "🕒"),
+        "calendar": summary_icons.get("Calendar", "📅"),
+        "bench": summary_icons.get("Bench", "🪑"),
+    }
+
+
+def count_signed_melee_and_ranged(users: dict) -> tuple[int, int]:
+    melee_count = sum(
+        1
+        for _, info in users.items()
+        if info.get("status") == "sign" and info.get("role") == "Melee"
+    )
+    ranged_count = sum(
+        1
+        for _, info in users.items()
+        if info.get("status") == "sign" and info.get("role") == "Ranged"
+    )
+
+    return melee_count, ranged_count
+
+
+def build_time_fields(start_ts: int | None, calendar_icon: str, countdown_icon: str) -> tuple[str, str, str]:
+    if start_ts:
+        date_value = f"{calendar_icon} <t:{start_ts}:D>"
+        time_value = f"🕒 <t:{start_ts}:t>"
+        countdown_value = f"{countdown_icon} <t:{start_ts}:R>"
+    else:
+        date_value = f"{calendar_icon} -"
+        time_value = "🕒 -"
+        countdown_value = f"{countdown_icon} -"
+
+    return date_value, time_value, countdown_value
+
+
+================================================
+FILE: services/attendance/__init__.py
+================================================
+# attendance package
+
+
+================================================
+FILE: services/attendance/attendance_image_service.py
+================================================
+from __future__ import annotations
+
+from datetime import datetime
+from io import BytesIO
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
+
+from services.attendance.attendance_report_service import (
+    build_attendance_matrix,
+    get_attendance_overview_stats,
+)
+
+
+STATUS_COLORS = {
+    "attending": "#179c32",     # green
+    "benched": "#a59b24",       # yellow
+    "late": "#1f6fd1",          # blue
+
+    "absent": "#c32626",        # red
+    "tentative": "#c32626",     # red
+    "no_sign": "#c32626",       # red
+    "not_selected": "#c32626",  # red
+
+    "unknown": "#101010",
+    None: "#101010",
+}
+
+BACKGROUND_COLOR = "#0a0a0a"
+HEADER_BG = "#171717"
+GRID_BORDER = "#242424"
+TEXT_PRIMARY = "#f2f2f2"
+TEXT_MUTED = "#bdbdbd"
+ROW_ALT_1 = "#050505"
+ROW_ALT_2 = "#090909"
+
+LEFT_NAME_WIDTH = 210
+PCT_WIDTH = 78
+CELL_WIDTH = 72
+HEADER_HEIGHT = 46
+ROW_HEIGHT = 34
+TOP_TITLE_HEIGHT = 42
+BOTTOM_PADDING = 14
+RIGHT_PADDING = 12
+LEFT_PADDING = 12
+
+
+def _load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    """
+    Prefer clearer Windows/UI fonts first, then fall back to Linux fonts.
+    """
+    if bold:
+        candidates = [
+            "C:/Windows/Fonts/segoeuib.ttf",   # Segoe UI Bold
+            "C:/Windows/Fonts/arialbd.ttf",    # Arial Bold
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf",
+        ]
+    else:
+        candidates = [
+            "C:/Windows/Fonts/segoeui.ttf",    # Segoe UI
+            "C:/Windows/Fonts/arial.ttf",      # Arial
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+        ]
+
+    for path in candidates:
+        if Path(path).exists():
+            return ImageFont.truetype(path, size=size)
+
+    return ImageFont.load_default()
+
+
+FONT_TITLE = _load_font(20, bold=True)
+FONT_HEADER = _load_font(16, bold=True)
+FONT_BODY = _load_font(16, bold=False)
+FONT_BODY_BOLD = _load_font(16, bold=True)
+FONT_SMALL = _load_font(13, bold=False)
+
+
+def _fit_text(draw: ImageDraw.ImageDraw, text: str, max_width: int, font) -> str:
+    if draw.textlength(text, font=font) <= max_width:
+        return text
+
+    suffix = "..."
+    for i in range(len(text), 0, -1):
+        candidate = text[:i].rstrip() + suffix
+        if draw.textlength(candidate, font=font) <= max_width:
+            return candidate
+
+    return suffix
+
+
+def _format_raid_label(start_ts: int) -> str:
+    if not start_ts:
+        return "?"
+    try:
+        dt = datetime.fromtimestamp(start_ts)
+        return f"{dt.strftime('%a')} {dt.day}/{dt.month}"
+    except Exception:
+        return "?"
+
+
+def _cell_color(status: str | None) -> str:
+    return STATUS_COLORS.get(status, STATUS_COLORS["unknown"])
+
+
+def _attendance_pct_color(pct: int) -> str:
+    if pct >= 90:
+        return "#4ade80"
+    if pct >= 75:
+        return "#facc15"
+    return "#f87171"
+
+
+def _draw_centered_text(draw, xy_box, text, font, fill):
+    x1, y1, x2, y2 = xy_box
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+    tx = x1 + ((x2 - x1) - tw) / 2
+    ty = y1 + ((y2 - y1) - th) / 2 - 1
+    draw.text((tx, ty), text, font=font, fill=fill)
+
+
+def render_attendance_report_image(
+    guild_id: int | str,
+    *,
+    finalized_only: bool = True,
+    limit_raids: int | None = 12,
+    title: str | None = None,
+) -> BytesIO:
+    matrix = build_attendance_matrix(
+        guild_id,
+        finalized_only=finalized_only,
+        limit_raids=limit_raids,
+    )
+    stats = get_attendance_overview_stats(matrix)
+
+    raids = matrix.get("raids", [])
+    players = matrix.get("players", [])
+
+    title_text = title or "Attendance"
+    subtitle = (
+        f"Raids: {stats['raid_count']}  •  "
+        f"Players: {stats['player_count']}  •  "
+        f"Avg Att%: {stats['average_attendance_pct']}%"
+    )
+
+    width = (
+        LEFT_PADDING
+        + LEFT_NAME_WIDTH
+        + PCT_WIDTH
+        + (len(raids) * CELL_WIDTH)
+        + RIGHT_PADDING
+    )
+    height = (
+        TOP_TITLE_HEIGHT
+        + HEADER_HEIGHT
+        + (len(players) * ROW_HEIGHT)
+        + BOTTOM_PADDING
+    )
+
+    width = max(width, 560)
+    height = max(height, 180)
+
+    image = Image.new("RGB", (width, height), BACKGROUND_COLOR)
+    draw = ImageDraw.Draw(image)
+
+    # Title
+    draw.text((LEFT_PADDING, 6), title_text, font=FONT_TITLE, fill=TEXT_PRIMARY)
+    draw.text((LEFT_PADDING, 26), subtitle, font=FONT_SMALL, fill=TEXT_MUTED)
+
+    table_top = TOP_TITLE_HEIGHT
+    header_y1 = table_top
+    header_y2 = table_top + HEADER_HEIGHT
+
+    # Header background
+    draw.rectangle(
+        [0, header_y1, width, header_y2],
+        fill=HEADER_BG,
+        outline=GRID_BORDER,
+    )
+
+    x = LEFT_PADDING
+
+    # Name header
+    draw.rectangle(
+        [x, header_y1, x + LEFT_NAME_WIDTH, header_y2],
+        fill=HEADER_BG,
+        outline=GRID_BORDER,
+    )
+    _draw_centered_text(
+        draw,
+        (x, header_y1, x + LEFT_NAME_WIDTH, header_y2),
+        "Name",
+        FONT_HEADER,
+        TEXT_PRIMARY,
+    )
+    x += LEFT_NAME_WIDTH
+
+    # Att% header
+    draw.rectangle(
+        [x, header_y1, x + PCT_WIDTH, header_y2],
+        fill=HEADER_BG,
+        outline=GRID_BORDER,
+    )
+    _draw_centered_text(
+        draw,
+        (x, header_y1, x + PCT_WIDTH, header_y2),
+        "Att%",
+        FONT_HEADER,
+        TEXT_PRIMARY,
+    )
+    x += PCT_WIDTH
+
+    # Raid headers
+    for raid in raids:
+        draw.rectangle(
+            [x, header_y1, x + CELL_WIDTH, header_y2],
+            fill=HEADER_BG,
+            outline=GRID_BORDER,
+        )
+
+        label = _fit_text(
+            draw,
+            _format_raid_label(raid.get("start_ts", 0)),
+            CELL_WIDTH - 6,
+            FONT_SMALL,
+        )
+
+        _draw_centered_text(
+            draw,
+            (x, header_y1, x + CELL_WIDTH, header_y2),
+            label,
+            FONT_SMALL,
+            TEXT_PRIMARY,
+        )
+        x += CELL_WIDTH
+
+    # Body rows
+    start_y = header_y2
+    for index, player in enumerate(players):
+        row_y1 = start_y + (index * ROW_HEIGHT)
+        row_y2 = row_y1 + ROW_HEIGHT
+
+        row_bg = ROW_ALT_1 if index % 2 == 0 else ROW_ALT_2
+
+        x = LEFT_PADDING
+
+        # Name cell
+        draw.rectangle(
+            [x, row_y1, x + LEFT_NAME_WIDTH, row_y2],
+            fill=row_bg,
+            outline=GRID_BORDER,
+        )
+        display_name = _fit_text(
+            draw,
+            player.get("name", "Unknown"),
+            LEFT_NAME_WIDTH - 10,
+            FONT_BODY,
+        )
+        draw.text(
+            (x + 8, row_y1 + 8),
+            display_name,
+            font=FONT_BODY,
+            fill=TEXT_PRIMARY,
+        )
+        x += LEFT_NAME_WIDTH
+
+        # Attendance %
+        draw.rectangle(
+            [x, row_y1, x + PCT_WIDTH, row_y2],
+            fill=row_bg,
+            outline=GRID_BORDER,
+        )
+        pct = int(player.get("attendance_pct", 0))
+        _draw_centered_text(
+            draw,
+            (x, row_y1, x + PCT_WIDTH, row_y2),
+            f"{pct}%",
+            FONT_BODY_BOLD,
+            _attendance_pct_color(pct),
+        )
+        x += PCT_WIDTH
+
+        # Raid status cells
+        raid_statuses = player.get("raid_statuses", {})
+        for raid in raids:
+            raid_id = str(raid.get("raid_id"))
+            status = raid_statuses.get(raid_id)
+            color = _cell_color(status)
+
+            draw.rectangle(
+                [x, row_y1, x + CELL_WIDTH, row_y2],
+                fill=color,
+                outline=GRID_BORDER,
+            )
+            x += CELL_WIDTH
+
+    output = BytesIO()
+    image.save(output, format="PNG")
+    output.seek(0)
+    return output
+
+
+================================================
+FILE: services/attendance/attendance_queries.py
+================================================
+from __future__ import annotations
+
+from typing import Any, Callable
+
+
+def get_reference_guild_id(
+    attendance_record_getter: Callable[[str], dict[str, Any] | None],
+    current_raid_id: str,
+    signup_record_getter: Callable[[str], dict[str, Any] | None] | None = None,
+) -> int | None:
+    """
+    Resolve the guild id for the attendance panel.
+
+    Preferred source:
+    1. attendance record for the current raid id
+    2. signup record for the current raid id
+
+    This allows the attendance edit panel to be opened from a current/live raid
+    even if that specific raid has not created an attendance snapshot yet.
+    """
+    record = attendance_record_getter(current_raid_id)
+    if record:
+        guild_id = record.get("guild_id")
+        if guild_id is not None:
+            return int(guild_id)
+
+    if signup_record_getter is not None:
+        signup = signup_record_getter(current_raid_id)
+        if signup:
+            guild_id = signup.get("guild_id")
+            if guild_id is not None:
+                return int(guild_id)
+
+    return None
+
+
+def get_sorted_attendance_players(
+    record: dict[str, Any] | None,
+) -> list[tuple[str, dict[str, Any]]]:
+    if not record:
+        return []
+
+    from services.attendance.attendance_rules import get_attendance_status_sort_index
+
+    players = record.get("players", {})
+
+    sortable: list[tuple[int, str, str, dict[str, Any]]] = []
+    for user_id, player in players.items():
+        display_name = (
+            (player.get("name") or "").strip()
+            or (player.get("display_name") or "").strip()
+            or "Unknown"
+        )
+
+        sortable.append(
+            (
+                get_attendance_status_sort_index(player.get("attendance_status")),
+                display_name.lower(),
+                str(user_id),
+                player,
+            )
+        )
+
+    sortable.sort(key=lambda item: (item[0], item[1]))
+    return [(user_id, player) for _, __, user_id, player in sortable]
+
+
+================================================
+FILE: services/attendance/attendance_report_service.py
+================================================
+from __future__ import annotations
+
+from collections import defaultdict
+from typing import Any
+
+from data.attendance_store import load_attendance
+from services.attendance.attendance_rules import (
+    is_missed_attendance_status,
+    is_present_attendance_status,
+    normalize_attendance_status,
+)
+
+
+def _safe_int(value: Any, default: int = 0) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _get_player_name(player: dict) -> str:
+    """
+    Best available user-facing name for attendance reports.
+
+    Priority:
+    1. Stored Discord display name
+    2. Character name
+    3. Discord user id fallback
+    """
+    display_name = (player.get("display_name") or "").strip()
+    if display_name:
+        return display_name
+
+    character_name = (player.get("name") or "").strip()
+    if character_name:
+        return character_name
+
+    user_id = str(player.get("user_id") or "").strip()
+    if user_id:
+        return f"Discord {user_id}"
+
+    return "Unknown"
+
+
+def _get_status_priority(status: str | None) -> int:
+    """
+    Higher = better
+
+    Priority requested:
+    Attended > Benched > Late > Tentative > Absent > Unassigned
+    """
+    order = {
+        "attending": 5,
+        "benched": 4,
+        "late": 3,
+        "tentative": 2,
+        "absent": 1,
+        "not_selected": 0,
+        "no_sign": 0,
+        "unknown": 0,
+    }
+    return order.get(normalize_attendance_status(status), 0)
+
+
+def _status_counts_for_attendance(status: str | None) -> tuple[int, int]:
+    """
+    Returns:
+    (present_count, missed_count)
+    """
+    normalized = normalize_attendance_status(status)
+
+    if is_present_attendance_status(normalized):
+        return 1, 0
+    if is_missed_attendance_status(normalized):
+        return 0, 1
+    return 0, 0
+
+
+def _build_raid_summary(record: dict) -> dict:
+    return {
+        "raid_id": str(record.get("raid_id")),
+        "guild_id": _safe_int(record.get("guild_id"), 0),
+        "channel_id": _safe_int(record.get("channel_id"), 0),
+        "title": record.get("title", "") or "Raid",
+        "start_ts": _safe_int(record.get("start_ts"), 0),
+        "finalized": bool(record.get("finalized")),
+    }
+
+
+def get_guild_attendance_records(
+    guild_id: int | str,
+    *,
+    finalized_only: bool = True,
+) -> list[dict]:
+    data = load_attendance()
+    guild_id_int = _safe_int(guild_id)
+
+    records = []
+    for record in data.values():
+        if _safe_int(record.get("guild_id"), 0) != guild_id_int:
+            continue
+
+        if finalized_only and not record.get("finalized"):
+            continue
+
+        records.append(record)
+
+    records.sort(
+        key=lambda r: (
+            _safe_int(r.get("start_ts"), 0),
+            str(r.get("raid_id", "")),
+        )
+    )
+    return records
+
+
+def build_attendance_matrix(
+    guild_id: int | str,
+    *,
+    finalized_only: bool = True,
+    limit_raids: int | None = None,
+) -> dict:
+    """
+    Returns a render-friendly matrix structure:
+
+    {
+        "guild_id": ...,
+        "raids": [...],
+        "players": [
+            {
+                "user_id": "...",
+                "name": "...",
+                "attendance_pct": 90,
+                "present_count": 9,
+                "missed_count": 1,
+                "raid_statuses": {
+                    "raid_id_1": "attending",
+                    "raid_id_2": "benched",
+                    ...
+                }
+            }
+        ]
+    }
+    """
+    records = get_guild_attendance_records(guild_id, finalized_only=finalized_only)
+
+    if limit_raids is not None and limit_raids > 0:
+        records = records[-limit_raids:]
+
+    raids = [_build_raid_summary(record) for record in records]
+
+    players_by_user: dict[str, dict] = defaultdict(
+        lambda: {
+            "user_id": "",
+            "name": "",
+            "raid_statuses": {},
+            "present_count": 0,
+            "missed_count": 0,
+            "attendance_pct": 0,
+        }
+    )
+
+    for record in records:
+        raid_id = str(record.get("raid_id"))
+
+        for user_id, player in record.get("players", {}).items():
+            user_id = str(user_id)
+            status = normalize_attendance_status(player.get("attendance_status"))
+
+            row = players_by_user[user_id]
+            row["user_id"] = user_id
+
+            # Prefer stored Discord display name if it appears later.
+            candidate_name = _get_player_name(player)
+            current_name = (row["name"] or "").strip()
+            current_is_fallback = (
+                not current_name
+                or current_name == "Unknown"
+                or current_name.startswith("Discord ")
+            )
+            candidate_is_display_name = bool((player.get("display_name") or "").strip())
+
+            if current_is_fallback or candidate_is_display_name:
+                row["name"] = candidate_name
+
+            # Merge multiple characters for the same Discord user by keeping
+            # the best attendance status for each raid.
+            existing_status = row["raid_statuses"].get(raid_id)
+            if existing_status is None:
+                row["raid_statuses"][raid_id] = status
+            elif _get_status_priority(status) > _get_status_priority(existing_status):
+                row["raid_statuses"][raid_id] = status
+
+    players = list(players_by_user.values())
+
+    # Recalculate counts from the merged final per-raid statuses.
+    for row in players:
+        row["present_count"] = 0
+        row["missed_count"] = 0
+
+        for status in row["raid_statuses"].values():
+            present_add, missed_add = _status_counts_for_attendance(status)
+            row["present_count"] += present_add
+            row["missed_count"] += missed_add
+
+        denom = row["present_count"] + row["missed_count"]
+        row["attendance_pct"] = (
+            round((row["present_count"] / denom) * 100) if denom > 0 else 0
+        )
+
+    players.sort(
+        key=lambda row: (
+            -row["attendance_pct"],
+            -row["present_count"],
+            row["name"].lower(),
+            row["user_id"],
+        )
+    )
+
+    return {
+        "guild_id": _safe_int(guild_id),
+        "raids": raids,
+        "players": players,
+        "finalized_only": finalized_only,
+    }
+
+
+def get_attendance_overview_stats(matrix: dict) -> dict:
+    players = matrix.get("players", [])
+    raids = matrix.get("raids", [])
+
+    return {
+        "raid_count": len(raids),
+        "player_count": len(players),
+        "average_attendance_pct": round(
+            sum(p.get("attendance_pct", 0) for p in players) / len(players)
+        ) if players else 0,
+    }
+
+
+================================================
+FILE: services/attendance/attendance_rules.py
+================================================
+from __future__ import annotations
+
+from typing import Any
+
+
+VALID_ATTENDANCE_STATUSES = {
+    "attending",
+    "benched",
+    "late",
+    "tentative",
+    "absent",
+    "not_selected",
+    "no_sign",
+}
+
+ATTENDANCE_STATUS_LABELS = {
+    "attending": "Attending",
+    "benched": "Benched",
+    "late": "Late",
+    "tentative": "Tentative",
+    "absent": "Absent",
+    "not_selected": "No Sign",
+    "no_sign": "No Sign",
+    "unknown": "Unknown",
+}
+
+ATTENDANCE_STATUS_ORDER = [
+    "attending",
+    "benched",
+    "late",
+    "tentative",
+    "absent",
+    "not_selected",
+    "no_sign",
+    "unknown",
+]
+
+_PRESENT_STATUSES = {"attending", "benched", "late"}
+_MISSED_STATUSES = {"absent", "tentative", "not_selected", "no_sign"}
+
+
+def normalize_attendance_status(
+    status: str | None,
+    *,
+    default: str = "unknown",
+) -> str:
+    value = (status or "").strip().lower()
+    if value in VALID_ATTENDANCE_STATUSES:
+        return value
+    return default
+
+
+def is_valid_attendance_status(status: str | None) -> bool:
+    return normalize_attendance_status(status, default="") in VALID_ATTENDANCE_STATUSES
+
+
+def get_attendance_status_label(status: str | None) -> str:
+    normalized = normalize_attendance_status(status)
+    return ATTENDANCE_STATUS_LABELS.get(normalized, "Unknown")
+
+
+def get_attendance_status_sort_index(status: str | None) -> int:
+    normalized = normalize_attendance_status(status)
+    try:
+        return ATTENDANCE_STATUS_ORDER.index(normalized)
+    except ValueError:
+        return len(ATTENDANCE_STATUS_ORDER)
+
+
+def is_present_attendance_status(status: str | None) -> bool:
+    return normalize_attendance_status(status) in _PRESENT_STATUSES
+
+
+def is_missed_attendance_status(status: str | None) -> bool:
+    return normalize_attendance_status(status) in _MISSED_STATUSES
+
+
+def copy_player_entry(entry: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "display_name": entry.get("display_name", ""),
+        "name": entry.get("name", ""),
+        "class": entry.get("class", ""),
+        "spec": entry.get("spec", ""),
+        "role": entry.get("role", ""),
+        "note": entry.get("note", ""),
+    }
+
+
+def normalize_player_map(players: list[tuple[str, dict[str, Any]]]) -> dict[str, dict[str, Any]]:
+    normalized: dict[str, dict[str, Any]] = {}
+
+    for user_id, entry in players:
+        normalized[str(user_id)] = dict(entry)
+
+    return normalized
+
+
+def build_manual_placeholder_player(user_id: int | str) -> dict[str, Any]:
+    key = str(user_id)
+    return {
+        "display_name": f"User {key}",
+        "name": "",
+        "class": "",
+        "spec": "",
+        "role": "",
+        "note": "",
+        "user_id": key,
+        "signup_status": "no_sign",
+        "auto_status": "no_sign",
+        "attendance_status": "no_sign",
+        "status_source": "manual",
+        "manual_override": True,
+        "edited_by": None,
+        "edited_at": None,
+    }
+
+
+def derive_auto_snapshot_players(comp_data: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """
+    Build automatic attendance state from comp snapshot.
+
+    Priority:
+    1. group_1 + group_2 -> attending
+    2. bench_players -> benched
+    3. late_players -> late
+    4. tentative_players -> tentative
+    5. absence_players -> absent
+    6. signed but not selected/bench/etc -> not_selected
+    """
+    players: dict[str, dict[str, Any]] = {}
+
+    group_1 = normalize_player_map(comp_data.get("group_1", []))
+    group_2 = normalize_player_map(comp_data.get("group_2", []))
+    bench_players = normalize_player_map(comp_data.get("bench_players", []))
+    late_players = normalize_player_map(comp_data.get("late_players", []))
+    tentative_players = normalize_player_map(comp_data.get("tentative_players", []))
+    absence_players = normalize_player_map(comp_data.get("absence_players", []))
+    signed_players = normalize_player_map(comp_data.get("signed_players", []))
+
+    def apply_bucket(
+        source: dict[str, dict[str, Any]],
+        attendance_status: str,
+        signup_status: str,
+    ) -> None:
+        for user_id, entry in source.items():
+            players[user_id] = {
+                **copy_player_entry(entry),
+                "user_id": user_id,
+                "signup_status": signup_status,
+                "auto_status": attendance_status,
+                "attendance_status": attendance_status,
+                "status_source": "auto",
+                "manual_override": False,
+                "edited_by": None,
+                "edited_at": None,
+            }
+
+    apply_bucket(group_1, "attending", "sign")
+    apply_bucket(group_2, "attending", "sign")
+    apply_bucket(bench_players, "benched", "bench")
+    apply_bucket(late_players, "late", "late")
+    apply_bucket(tentative_players, "tentative", "tentative")
+    apply_bucket(absence_players, "absent", "absence")
+
+    for user_id, entry in signed_players.items():
+        if user_id in players:
+            continue
+
+        players[user_id] = {
+            **copy_player_entry(entry),
+            "user_id": user_id,
+            "signup_status": "sign",
+            "auto_status": "not_selected",
+            "attendance_status": "not_selected",
+            "status_source": "auto",
+            "manual_override": False,
+            "edited_by": None,
+            "edited_at": None,
+        }
+
+    return players
+
+
+================================================
+FILE: services/attendance/attendance_service.py
+================================================
+from __future__ import annotations
+
+import time
+from typing import Any
+
+from data.attendance_store import (
+    get_or_create_attendance_record,
+    load_attendance,
+    save_attendance,
+)
+from services.attendance.attendance_rules import (
+    VALID_ATTENDANCE_STATUSES,
+    build_manual_placeholder_player,
+    derive_auto_snapshot_players,
+    normalize_attendance_status,
+)
+
+
+def _append_history(
+    record: dict[str, Any],
+    action: str,
+    *,
+    by_user_id: int | str | None,
+    extra: dict[str, Any] | None = None,
+) -> None:
+    history = record.setdefault("history", [])
+    payload = {
+        "timestamp": int(time.time()),
+        "action": action,
+        "by_user_id": str(by_user_id) if by_user_id is not None else None,
+    }
+    if extra:
+        payload.update(extra)
+    history.append(payload)
+
+
+def _merge_snapshot_players(
+    *,
+    existing_players: dict[str, dict[str, Any]],
+    auto_players: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """
+    Merge fresh auto-derived snapshot data with any previous manual overrides.
+
+    Rules:
+    - Auto snapshot remains the source of truth for current roster metadata.
+    - Existing manual overrides keep their chosen attendance_status.
+    - Manual-only players (for example added via attendance editor) are preserved.
+    """
+    merged: dict[str, dict[str, Any]] = {}
+
+    all_user_ids = set(auto_players.keys()) | set(existing_players.keys())
+
+    for user_id in all_user_ids:
+        existing = existing_players.get(user_id, {})
+        auto = auto_players.get(user_id)
+
+        if auto is not None:
+            player = dict(auto)
+
+            if existing.get("manual_override"):
+                player["attendance_status"] = normalize_attendance_status(
+                    existing.get("attendance_status"),
+                    default=normalize_attendance_status(
+                        auto.get("auto_status"),
+                        default="not_selected",
+                    ),
+                )
+                player["manual_override"] = True
+                player["status_source"] = "manual"
+                player["edited_by"] = existing.get("edited_by")
+                player["edited_at"] = existing.get("edited_at")
+            else:
+                player["edited_by"] = existing.get("edited_by")
+                player["edited_at"] = existing.get("edited_at")
+
+            merged[user_id] = player
+            continue
+
+        # Preserve players that only exist because of manual attendance editing.
+        if existing:
+            player = dict(existing)
+            player["user_id"] = str(user_id)
+            player["auto_status"] = normalize_attendance_status(
+                player.get("auto_status"),
+                default="no_sign",
+            )
+            player["attendance_status"] = normalize_attendance_status(
+                player.get("attendance_status"),
+                default=player["auto_status"],
+            )
+            player["status_source"] = "manual" if player.get("manual_override") else "auto"
+            merged[user_id] = player
+
+    return merged
+
+
+def sync_attendance_from_comp(
+    *,
+    raid_id: int | str,
+    guild_id: int | str | None,
+    channel_id: int | str | None,
+    comp_message_id: int | str | None,
+    comp_data: dict[str, Any],
+    actor_user_id: int | str | None,
+) -> dict[str, Any]:
+    """
+    Create or refresh the attendance snapshot from the latest comp data.
+
+    This remains the public integration point used by:
+    - comp posting/updating
+    - lifecycle cleanup safety sync
+    """
+    data = load_attendance()
+    record = get_or_create_attendance_record(data, raid_id)
+
+    auto_players = derive_auto_snapshot_players(comp_data)
+    existing_players = record.get("players", {})
+
+    record["raid_id"] = str(raid_id)
+    record["guild_id"] = int(guild_id) if guild_id is not None else record.get("guild_id")
+    record["channel_id"] = int(channel_id) if channel_id is not None else record.get("channel_id")
+    record["title"] = comp_data.get("title", record.get("title", ""))
+    record["description"] = comp_data.get("description", record.get("description", ""))
+    record["leader"] = comp_data.get("leader", record.get("leader", ""))
+    record["start_ts"] = comp_data.get("start_ts", record.get("start_ts"))
+    record["comp_message_id"] = (
+        int(comp_message_id) if comp_message_id is not None else record.get("comp_message_id")
+    )
+    record["snapshot_source"] = "comp_post"
+    record["snapshot_version"] = 2
+    record["players"] = _merge_snapshot_players(
+        existing_players=existing_players,
+        auto_players=auto_players,
+    )
+    record["finalized"] = True
+    record["finalized_at"] = int(time.time())
+    record["finalized_by"] = (
+        str(actor_user_id) if actor_user_id is not None else "auto_comp_post"
+    )
+
+    _append_history(
+        record,
+        "attendance_snapshot_created",
+        by_user_id=actor_user_id,
+        extra={"snapshot_version": 2},
+    )
+    _append_history(
+        record,
+        "attendance_auto_finalized",
+        by_user_id=actor_user_id,
+    )
+
+    save_attendance(data)
+    return record
+
+
+def get_attendance_record(raid_id: int | str) -> dict[str, Any] | None:
+    data = load_attendance()
+    return data.get(str(raid_id))
+
+
+def summarize_attendance_record(record: dict[str, Any] | None) -> dict[str, int]:
+    summary = {
+        "attending": 0,
+        "benched": 0,
+        "late": 0,
+        "tentative": 0,
+        "absent": 0,
+        "not_selected": 0,
+        "no_sign": 0,
+    }
+
+    if not record:
+        return summary
+
+    for player in record.get("players", {}).values():
+        status = normalize_attendance_status(player.get("attendance_status"), default="")
+        if status in summary:
+            summary[status] += 1
+
+    return summary
+
+
+def _ensure_player_exists_for_manual_edit(
+    *,
+    record: dict[str, Any],
+    user_id: int | str,
+) -> dict[str, Any]:
+    players = record.setdefault("players", {})
+    key = str(user_id)
+
+    if key not in players:
+        players[key] = build_manual_placeholder_player(key)
+
+    return players[key]
+
+
+def set_manual_attendance_status(
+    *,
+    raid_id: int | str,
+    user_id: int | str,
+    attendance_status: str,
+    edited_by_user_id: int | str | None,
+) -> tuple[bool, str]:
+    normalized_status = normalize_attendance_status(attendance_status, default="")
+    if normalized_status not in VALID_ATTENDANCE_STATUSES:
+        return False, "Invalid attendance status."
+
+    data = load_attendance()
+    record = data.get(str(raid_id))
+    if not record:
+        return False, "Attendance record not found."
+
+    player = _ensure_player_exists_for_manual_edit(
+        record=record,
+        user_id=user_id,
+    )
+
+    player["attendance_status"] = normalized_status
+    player["manual_override"] = True
+    player["status_source"] = "manual"
+    player["edited_by"] = str(edited_by_user_id) if edited_by_user_id is not None else None
+    player["edited_at"] = int(time.time())
+
+    # Keep attendance record finalized after admin edits.
+    record["finalized"] = True
+
+    _append_history(
+        record,
+        "attendance_player_updated",
+        by_user_id=edited_by_user_id,
+        extra={
+            "target_user_id": str(user_id),
+            "attendance_status": normalized_status,
+        },
+    )
+
+    save_attendance(data)
+    return True, "Attendance updated."
+
+
+def reset_player_to_auto_status(
+    *,
+    raid_id: int | str,
+    user_id: int | str,
+    edited_by_user_id: int | str | None,
+) -> tuple[bool, str]:
+    data = load_attendance()
+    record = data.get(str(raid_id))
+    if not record:
+        return False, "Attendance record not found."
+
+    players = record.get("players", {})
+    player = players.get(str(user_id))
+    if not player:
+        return False, "Player not found in attendance record."
+
+    player["attendance_status"] = normalize_attendance_status(
+        player.get("auto_status"),
+        default="not_selected",
+    )
+    player["manual_override"] = False
+    player["status_source"] = "auto"
+    player["edited_by"] = str(edited_by_user_id) if edited_by_user_id is not None else None
+    player["edited_at"] = int(time.time())
+
+    record["finalized"] = True
+
+    _append_history(
+        record,
+        "attendance_player_reset_to_auto",
+        by_user_id=edited_by_user_id,
+        extra={"target_user_id": str(user_id)},
+    )
+
+    save_attendance(data)
+    return True, "Attendance reset to automatic value."
+
+
+================================================
+FILE: services/character/__init__.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: services/character/character_service.py
+================================================
+from data.character_store import (
+    get_user_characters as store_get_user_characters,
+    get_character_by_class as store_get_character_by_class,
+    add_character as store_add_character,
+    remove_character as store_remove_character,
+    update_character_name_by_class as store_update_character_name_by_class,
+    update_character_spec_by_class as store_update_character_spec_by_class,
+)
+
+
+"""
+Character Service
+
+Thin service layer that wraps the character_store_dev.
+
+Responsibilities:
+• Enforce guild-scoped character storage
+• Provide a stable interface for UI and signup systems
+• Prevent direct store access from views
+"""
+
+
+# -----------------------------
+# Fetch characters
+# -----------------------------
+
+
+def get_user_characters(guild_id: int, user_id: int) -> list[dict]:
+    """Return all saved characters for a user in a specific guild."""
+    return store_get_user_characters(guild_id, user_id)
+
+
+def get_character_by_class(
+    guild_id: int,
+    user_id: int,
+    class_name: str,
+) -> dict | None:
+    """Return the character saved for a specific class."""
+    return store_get_character_by_class(guild_id, user_id, class_name)
+
+
+# -----------------------------
+# Add / Remove characters
+# -----------------------------
+
+
+def add_user_character(
+    guild_id: int,
+    user_id: int,
+    char: dict,
+) -> bool:
+    """Add a new character to the user's guild character list."""
+    return store_add_character(guild_id, user_id, char)
+
+
+def remove_user_character(
+    guild_id: int,
+    user_id: int,
+    index: int,
+) -> bool:
+    """Remove a character by index."""
+    return store_remove_character(guild_id, user_id, index)
+
+
+# -----------------------------
+# Update characters
+# -----------------------------
+
+
+def update_character_name(
+    guild_id: int,
+    user_id: int,
+    class_name: str,
+    new_name: str,
+) -> bool:
+    """Update a character's name for a given class."""
+    return store_update_character_name_by_class(
+        guild_id,
+        user_id,
+        class_name,
+        new_name,
+    )
+
+
+def update_character_spec(
+    guild_id: int,
+    user_id: int,
+    class_name: str,
+    new_spec: str,
+    new_role: str,
+) -> bool:
+    """Update spec and role for a character."""
+    return store_update_character_spec_by_class(
+        guild_id,
+        user_id,
+        class_name,
+        new_spec,
+        new_role,
+    )
+
+
+================================================
+FILE: services/comp/__init__.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: services/comp/comp_message_service.py
+================================================
+import discord
+
+from data.signup_store import load_signups, save_signups, find_message_signup
+from logic.embed.comp_embed import build_comp_embed
+from services.attendance.attendance_service import sync_attendance_from_comp
+
+
+def _apply_signup_metadata_to_comp_data(signup: dict, comp_data: dict) -> dict:
+    updated = dict(comp_data)
+    updated["title"] = signup.get("title", updated.get("title", "Raid Comp"))
+    updated["description"] = signup.get("description", updated.get("description", ""))
+    updated["leader"] = signup.get("leader", updated.get("leader", ""))
+    updated["start_ts"] = signup.get("start_ts", updated.get("start_ts"))
+    return updated
+
+
+def _persist_comp_data(signup: dict, comp_message_id: int | None, comp_data: dict) -> None:
+    signup["comp_message_id"] = comp_message_id
+    signup["last_comp_data"] = comp_data
+    signup["attendance_snapshot_created"] = True
+    signup["attendance_record_id"] = str(comp_data["raid_id"])
+
+
+def _sync_attendance(signup: dict, comp_message_id: int | None, comp_data: dict) -> None:
+    sync_attendance_from_comp(
+        raid_id=comp_data["raid_id"],
+        guild_id=signup.get("guild_id"),
+        channel_id=signup.get("channel_id"),
+        comp_message_id=comp_message_id,
+        comp_data=comp_data,
+        actor_user_id=None,
+    )
+
+
+async def post_comp_message(channel, comp_data: dict) -> tuple[bool, str]:
+    data = load_signups()
+    raid_id = comp_data["raid_id"]
+    signup = find_message_signup(data, raid_id)
+
+    if not signup:
+        return False, "Raid not found."
+
+    comp_data = _apply_signup_metadata_to_comp_data(signup, comp_data)
+
+    embed = build_comp_embed(comp_data)
+    mentions = " ".join(comp_data.get("mentions", []))
+    message_id = signup.get("comp_message_id")
+
+    try:
+        if message_id:
+            try:
+                msg = await channel.fetch_message(message_id)
+                await msg.edit(content=mentions, embed=embed)
+
+                _persist_comp_data(signup, msg.id, comp_data)
+                _sync_attendance(signup, msg.id, comp_data)
+                save_signups(data)
+
+                return True, "Comp updated."
+            except discord.NotFound:
+                signup["comp_message_id"] = None
+                save_signups(data)
+
+        msg = await channel.send(
+            content=mentions,
+            embed=embed,
+        )
+
+        _persist_comp_data(signup, msg.id, comp_data)
+        _sync_attendance(signup, msg.id, comp_data)
+        save_signups(data)
+
+        return True, "Comp posted."
+
+    except Exception as e:
+        return False, str(e)
+
+
+async def refresh_existing_comp_message(channel, raid_id: int | str) -> tuple[bool, str]:
+    data = load_signups()
+    signup = find_message_signup(data, raid_id)
+
+    if not signup:
+        return False, "Raid not found."
+
+    comp_message_id = signup.get("comp_message_id")
+    last_comp_data = signup.get("last_comp_data")
+
+    if not comp_message_id or not last_comp_data:
+        return True, "No existing comp message to refresh."
+
+    updated_comp_data = _apply_signup_metadata_to_comp_data(signup, last_comp_data)
+    embed = build_comp_embed(updated_comp_data)
+    mentions = " ".join(updated_comp_data.get("mentions", []))
+
+    try:
+        msg = await channel.fetch_message(comp_message_id)
+        await msg.edit(content=mentions, embed=embed)
+
+        _persist_comp_data(signup, msg.id, updated_comp_data)
+        _sync_attendance(signup, msg.id, updated_comp_data)
+        save_signups(data)
+
+        return True, "Comp metadata refreshed."
+
+    except discord.NotFound:
+        signup["comp_message_id"] = None
+        save_signups(data)
+        return False, "Existing comp message was not found."
+
+    except Exception as e:
+        return False, str(e)
+
+
+================================================
+FILE: services/comp/roster_comp_service.py
+================================================
+from data.signup_store import load_signups, find_message_signup
+
+
+def _get_display_role(entry: dict) -> str:
+    role = entry.get("role", "")
+
+    if role in ("Melee", "Ranged"):
+        return "DPS"
+
+    return role
+
+
+def _sort_by_timestamp(players: list[tuple[str, dict]]) -> list[tuple[str, dict]]:
+    return sorted(players, key=lambda item: item[1].get("timestamp", 0))
+
+
+def _empty_status_buckets() -> dict[str, list[tuple[str, dict]]]:
+    return {
+        "sign": [],
+        "bench": [],
+        "late": [],
+        "tentative": [],
+        "absence": [],
+    }
+
+
+def _split_players(users: dict) -> dict[str, list[tuple[str, dict]]]:
+    """
+    Split all signup users into status buckets.
+
+    Important:
+    - Only `sign` is used to build the actual raid comp.
+    - The other buckets are preserved so the posted comp snapshot
+      contains enough information for future attendance automation.
+    """
+    buckets = _empty_status_buckets()
+
+    for user_id, entry in users.items():
+        status = entry.get("status")
+        player = (str(user_id), entry)
+
+        if status in buckets:
+            buckets[status].append(player)
+
+    for key in buckets:
+        buckets[key] = _sort_by_timestamp(buckets[key])
+
+    return buckets
+
+
+def _group_signed_players(players: list[tuple[str, dict]]) -> dict[str, list[tuple[str, dict]]]:
+    grouped = {
+        "Tank": [],
+        "Healer": [],
+        "DPS": [],
+    }
+
+    for user_id, entry in players:
+        display_role = _get_display_role(entry)
+        if display_role in grouped:
+            grouped[display_role].append((user_id, entry))
+
+    return grouped
+
+
+def _build_comp_option(
+    grouped: dict[str, list[tuple[str, dict]]],
+    *,
+    healer_count: int,
+    dps_count: int,
+    label: str,
+) -> dict:
+    tanks = grouped["Tank"][:2]
+    healers = grouped["Healer"][:healer_count]
+    dps = grouped["DPS"][:dps_count]
+
+    selected = tanks + healers + dps
+
+    return {
+        "label": label,
+        "tanks": tanks,
+        "healers": healers,
+        "dps": dps,
+        "selected": selected,
+        "selected_ids": {user_id for user_id, _ in selected},
+        "count": len(selected),
+        "role_targets": {
+            "Tank": 2,
+            "Healer": healer_count,
+            "DPS": dps_count,
+        },
+    }
+
+
+def _build_groups(comp: dict) -> tuple[list[tuple[str, dict]], list[tuple[str, dict]]]:
+    group_1 = []
+    group_2 = []
+
+    group_1.extend(comp["tanks"])
+    group_1.extend(comp["healers"])
+
+    remaining_dps = list(comp["dps"])
+
+    while len(group_1) < 5 and remaining_dps:
+        group_1.append(remaining_dps.pop(0))
+
+    group_2.extend(remaining_dps)
+
+    return group_1, group_2
+
+
+def _get_bench_choice_steps(
+    grouped: dict[str, list[tuple[str, dict]]],
+    role_targets: dict[str, int],
+) -> list[dict]:
+    """
+    Returns a list of manual bench selection steps.
+
+    Example:
+    - signed Healers = 3, target Healers = 2
+    - signed DPS = 7, target DPS = 6
+
+    returns:
+    [
+        {"role": "Healer", "count_to_bench": 1, "candidates": [...]},
+        {"role": "DPS", "count_to_bench": 1, "candidates": [...]},
+    ]
+    """
+    steps = []
+
+    for role_name in ("Healer", "DPS"):
+        signed_count = len(grouped[role_name])
+        target_count = role_targets.get(role_name, 0)
+
+        if signed_count > target_count:
+            steps.append(
+                {
+                    "role": role_name,
+                    "count_to_bench": signed_count - target_count,
+                    "candidates": list(grouped[role_name]),
+                }
+            )
+
+    return steps
+
+
+def _build_comp_payload(
+    signup: dict,
+    raid_id: int | str,
+    status_buckets: dict[str, list[tuple[str, dict]]],
+    grouped_signed: dict[str, list[tuple[str, dict]]],
+    comp: dict,
+) -> dict:
+    signed_players = status_buckets["sign"]
+    existing_bench = status_buckets["bench"]
+    late_players = status_buckets["late"]
+    tentative_players = status_buckets["tentative"]
+    absence_players = status_buckets["absence"]
+
+    bench_choice_steps = _get_bench_choice_steps(
+        grouped_signed,
+        comp["role_targets"],
+    )
+
+    # If manual selection is needed for any role, do not auto-bench overflow yet.
+    if bench_choice_steps:
+        overflow_signed = []
+    else:
+        overflow_signed = [
+            (user_id, entry)
+            for user_id, entry in signed_players
+            if user_id not in comp["selected_ids"]
+        ]
+
+    bench_players = existing_bench + overflow_signed
+    group_1, group_2 = _build_groups(comp)
+
+    return {
+        "raid_id": str(raid_id),
+        "title": signup.get("title", "Raid Comp"),
+        "description": signup.get("description", ""),
+        "leader": signup.get("leader", ""),
+        "start_ts": signup.get("start_ts"),
+        "group_1": group_1,
+        "group_2": group_2,
+        "bench_players": bench_players,
+        "late_players": late_players,
+        "tentative_players": tentative_players,
+        "absence_players": absence_players,
+        "selected_players": comp["selected"],
+        "signed_players": signed_players,
+        "mentions": [f"<@{user_id}>" for user_id, _ in comp["selected"]],
+        "comp_label": comp["label"],
+        "role_targets": comp["role_targets"],
+        "bench_choice_steps": bench_choice_steps,
+        "status_buckets": {
+            "sign": signed_players,
+            "bench": bench_players,
+            "late": late_players,
+            "tentative": tentative_players,
+            "absence": absence_players,
+        },
+    }
+
+
+def analyze_roster_comp(raid_id: int | str) -> tuple[str, dict | None]:
+    """
+    Returns:
+    - ("ready", {"comp_data": ...}) when one comp should be posted directly
+    - ("ambiguous", {"option_226": ..., "option_235": ...}) when both are valid 10-man comps
+    - ("error", None) when raid not found
+    """
+    data = load_signups()
+    signup = find_message_signup(data, raid_id)
+
+    if not signup:
+        return "error", None
+
+    users = signup.get("users", {})
+    status_buckets = _split_players(users)
+    signed_players = status_buckets["sign"]
+    grouped = _group_signed_players(signed_players)
+
+    option_226 = _build_comp_option(
+        grouped,
+        healer_count=2,
+        dps_count=6,
+        label="2/2/6",
+    )
+
+    option_235 = _build_comp_option(
+        grouped,
+        healer_count=3,
+        dps_count=5,
+        label="2/3/5",
+    )
+
+    if option_226["count"] > option_235["count"]:
+        return "ready", {
+            "comp_data": _build_comp_payload(
+                signup,
+                raid_id,
+                status_buckets,
+                grouped,
+                option_226,
+            )
+        }
+
+    if option_235["count"] > option_226["count"]:
+        return "ready", {
+            "comp_data": _build_comp_payload(
+                signup,
+                raid_id,
+                status_buckets,
+                grouped,
+                option_235,
+            )
+        }
+
+    both_full_ten = option_226["count"] == 10 and option_235["count"] == 10
+    setups_differ = option_226["label"] != option_235["label"]
+
+    if both_full_ten and setups_differ:
+        return "ambiguous", {
+            "option_226": _build_comp_payload(
+                signup,
+                raid_id,
+                status_buckets,
+                grouped,
+                option_226,
+            ),
+            "option_235": _build_comp_payload(
+                signup,
+                raid_id,
+                status_buckets,
+                grouped,
+                option_235,
+            ),
+        }
+
+    return "ready", {
+        "comp_data": _build_comp_payload(
+            signup,
+            raid_id,
+            status_buckets,
+            grouped,
+            option_226,
+        )
+    }
+
+
+================================================
+FILE: services/guild/guild_settings_service.py
+================================================
+from data.guild_settings_store import (
+    get_guild_settings,
+    update_guild_settings,
+    ensure_guild_settings,
+)
+
+
+def _get_list_setting(guild_id: int, key: str) -> list[str]:
+    settings = ensure_guild_settings(guild_id)
+    return [str(x) for x in settings.get(key, [])]
+
+
+def _add_list_value(guild_id: int, key: str, value: int | str) -> bool:
+    current = _get_list_setting(guild_id, key)
+    value_str = str(value)
+
+    if value_str in current:
+        return False
+
+    current.append(value_str)
+    update_guild_settings(guild_id, {key: current})
+    return True
+
+
+def _remove_list_value(guild_id: int, key: str, value: int | str) -> bool:
+    current = _get_list_setting(guild_id, key)
+    value_str = str(value)
+
+    if value_str not in current:
+        return False
+
+    current.remove(value_str)
+    update_guild_settings(guild_id, {key: current})
+    return True
+
+
+def get_guild_name(guild_id: int) -> str:
+    settings = ensure_guild_settings(guild_id)
+    return str(settings.get("guild_name", "") or "")
+
+
+def set_guild_name(guild_id: int, guild_name: str) -> None:
+    update_guild_settings(guild_id, {}, guild_name=guild_name.strip())
+
+
+def sync_guild_identity(guild_id: int, guild_name: str) -> None:
+    ensure_guild_settings(guild_id, guild_name=guild_name.strip())
+
+
+def get_raid_control_users(guild_id: int) -> list[str]:
+    return _get_list_setting(guild_id, "raid_control_user_ids")
+
+
+def add_raid_control_user(guild_id: int, user_id: int) -> bool:
+    return _add_list_value(guild_id, "raid_control_user_ids", user_id)
+
+
+def remove_raid_control_user(guild_id: int, user_id: int) -> bool:
+    return _remove_list_value(guild_id, "raid_control_user_ids", user_id)
+
+
+def get_expected_players(guild_id: int) -> list[str]:
+    return _get_list_setting(guild_id, "expected_players")
+
+
+def add_expected_player(guild_id: int, user_id: int) -> bool:
+    return _add_list_value(guild_id, "expected_players", user_id)
+
+
+def remove_expected_player(guild_id: int, user_id: int) -> bool:
+    return _remove_list_value(guild_id, "expected_players", user_id)
+
+
+def get_default_leader(guild_id: int) -> str:
+    settings = ensure_guild_settings(guild_id)
+    return str(settings.get("default_leader", "") or "")
+
+
+def set_default_leader(guild_id: int, leader: str) -> None:
+    update_guild_settings(guild_id, {"default_leader": leader.strip()})
+
+
+def get_default_description(guild_id: int) -> str:
+    settings = ensure_guild_settings(guild_id)
+    return str(settings.get("default_description", "") or "")
+
+
+def set_default_description(guild_id: int, description: str) -> None:
+    update_guild_settings(guild_id, {"default_description": description.strip()})
+
+
+def get_weakauras_channel_id(guild_id: int) -> int | None:
+    settings = ensure_guild_settings(guild_id)
+    value = settings.get("weakauras_channel_id")
+
+    if value in (None, "", 0):
+        return None
+
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def set_weakauras_channel_id(guild_id: int, channel_id: int | None) -> None:
+    update_guild_settings(guild_id, {"weakauras_channel_id": channel_id})
+
+
+def get_guild_defaults(guild_id: int) -> dict:
+    settings = ensure_guild_settings(guild_id)
+    return {
+        "guild_name": str(settings.get("guild_name", "") or ""),
+        "raid_control_user_ids": [str(x) for x in settings.get("raid_control_user_ids", [])],
+        "expected_players": [str(x) for x in settings.get("expected_players", [])],
+        "default_leader": str(settings.get("default_leader", "") or ""),
+        "default_description": str(settings.get("default_description", "") or ""),
+        "weakauras_channel_id": settings.get("weakauras_channel_id"),
+    }
+
+
+def get_weakauras_message_id(guild_id: int) -> int | None:
+    settings = ensure_guild_settings(guild_id)
+    value = settings.get("weakauras_message_id")
+
+    if value in (None, "", 0):
+        return None
+
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def set_weakauras_message_id(guild_id: int, message_id: int | None) -> None:
+    update_guild_settings(guild_id, {"weakauras_message_id": message_id})
+
+
+================================================
+FILE: services/guild/weakauras_panel_service.py
+================================================
+import discord
+
+from services.guild.guild_settings_service import (
+    get_weakauras_channel_id,
+    get_weakauras_message_id,
+    set_weakauras_message_id,
+)
+from views.raidpack_views import RaidPackView
+
+
+WA_PANEL_TEXT = """# Must Have Addons & WA's
+- [Method Raid Tools](https://www.curseforge.com/wow/addons/method-raid-tools)
+- [Gargul](https://www.curseforge.com/wow/addons/gargul)
+- <:fojji:1482050733258838087> [Fojjicore](https://www.curseforge.com/wow/addons/fojjicore)
+- <:fojji:1482050733258838087> [Fojji - Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `cheddar123`
+- <:fojji:1482050733258838087> [Raid Anchors WA](https://wago.io/FojjiRaidAnchors-MoP)
+
+**Raid Weakauras (Check at bottom)**
+
+### RAIDLEADER ONLY
+- <:fojji:1482050733258838087> [Fojji - [T15][Raid Leader] Throne of Thunder](https://wago.io/Fojji-ToT-RL) > `macaron123`
+
+# Optional WeakAuras
+- <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP) > `nutella123`
+- <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP-PF) > `paprika123`
+- <:fojji:1482050733258838087> [Fojji - Gear Checker](https://wago.io/Fojji-GearChecker) > `cucina123`
+- <:fojji:1482050733258838087> [Fojji Trinket/Proc Tracker](https://wago.io/FojjiTrinkets-MoP)
+- <:fojji:1482050733258838087> [Fojji - Raid Ability Timeline](https://wago.io/FojjiRaidAbilityTimeline) > `turnip123`
+
+**Click the buttons below to download the Raid Pack WAs**
+Click *"Dismiss this message"* if it shows an old version, then re-click the button.
+"""
+
+
+async def ensure_weakauras_panel_for_guild(bot, guild: discord.Guild) -> tuple[bool, str]:
+    channel_id = get_weakauras_channel_id(guild.id)
+    if not channel_id:
+        return False, "No WeakAuras channel configured."
+
+    channel = guild.get_channel(channel_id)
+    if channel is None:
+        try:
+            channel = await guild.fetch_channel(channel_id)
+        except Exception:
+            return False, "Configured WeakAuras channel not found."
+
+    message_id = get_weakauras_message_id(guild.id)
+
+    if message_id:
+        try:
+            msg = await channel.fetch_message(message_id)
+            await msg.edit(
+                content=WA_PANEL_TEXT,
+                view=RaidPackView(),
+                suppress=True,
+            )
+            return True, "WeakAuras panel updated."
+        except discord.NotFound:
+            set_weakauras_message_id(guild.id, None)
+        except Exception as e:
+            return False, f"Failed to update existing panel: {e}"
+
+    try:
+        msg = await channel.send(
+            content=WA_PANEL_TEXT,
+            view=RaidPackView(),
+            suppress_embeds=True,
+        )
+        set_weakauras_message_id(guild.id, msg.id)
+        return True, "WeakAuras panel posted."
+    except Exception as e:
+        return False, f"Failed to post WeakAuras panel: {e}"
+
+
+================================================
+FILE: services/raid/__init__.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: services/raid/raid_admin_service.py
+================================================
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from data.signup_store import load_signups, save_signups
+
+
+SWEDEN_TZ = ZoneInfo("Europe/Stockholm")
+
+
+def _get_signup(data: dict, raid_id: int | str) -> dict | None:
+    return data.get(str(raid_id))
+
+
+def update_raid_title(raid_id: int | str, new_title: str) -> bool:
+    data = load_signups()
+    signup = _get_signup(data, raid_id)
+    if not signup:
+        return False
+
+    signup["title"] = new_title.strip()
+    save_signups(data)
+    return True
+
+
+def update_raid_description(raid_id: int | str, new_description: str) -> bool:
+    data = load_signups()
+    signup = _get_signup(data, raid_id)
+    if not signup:
+        return False
+
+    signup["description"] = new_description.strip()
+    save_signups(data)
+    return True
+
+
+def update_raid_leader(raid_id: int | str, new_leader: str) -> bool:
+    data = load_signups()
+    signup = _get_signup(data, raid_id)
+    if not signup:
+        return False
+
+    signup["leader"] = new_leader.strip()
+    save_signups(data)
+    return True
+
+
+def update_raid_time_only(raid_id: int | str, new_time: str) -> tuple[bool, int | None, str | None]:
+    data = load_signups()
+    signup = _get_signup(data, raid_id)
+    if not signup:
+        return False, None, "Raid signup not found."
+
+    start_ts = signup.get("start_ts")
+    if not start_ts:
+        return False, None, "Raid has no existing date/time to update."
+
+    try:
+        hour_str, minute_str = new_time.strip().split(":")
+        hour = int(hour_str)
+        minute = int(minute_str)
+    except ValueError:
+        return False, None, "Time must be in HH:MM format, for example 19:30."
+
+    if not (0 <= hour <= 23 and 0 <= minute <= 59):
+        return False, None, "Invalid time. Hour must be 00-23 and minute 00-59."
+
+    current_dt = datetime.fromtimestamp(start_ts, tz=SWEDEN_TZ)
+    updated_dt = current_dt.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    updated_ts = int(updated_dt.timestamp())
+
+    signup["start_ts"] = updated_ts
+    save_signups(data)
+    return True, updated_ts, None
+
+
+def update_raid_date_only(raid_id: int | str, new_date: str) -> tuple[bool, int | None, str | None]:
+    data = load_signups()
+    signup = _get_signup(data, raid_id)
+    if not signup:
+        return False, None, "Raid signup not found."
+
+    start_ts = signup.get("start_ts")
+    if not start_ts:
+        return False, None, "Raid has no existing date/time to update."
+
+    try:
+        year_str, month_str, day_str = new_date.strip().split("-")
+        year = int(year_str)
+        month = int(month_str)
+        day = int(day_str)
+    except ValueError:
+        return False, None, "Date must be in YYYY-MM-DD format, for example 2026-03-15."
+
+    current_dt = datetime.fromtimestamp(start_ts, tz=SWEDEN_TZ)
+
+    try:
+        updated_dt = current_dt.replace(year=year, month=month, day=day, second=0, microsecond=0)
+    except ValueError as e:
+        return False, None, f"Invalid date: {e}"
+
+    updated_ts = int(updated_dt.timestamp())
+
+    signup["start_ts"] = updated_ts
+    save_signups(data)
+    return True, updated_ts, None
+
+
+================================================
+FILE: services/raid/raid_control_service.py
+================================================
+import config
+
+from data.signup_store import load_signups, save_signups, find_message_signup
+
+
+VALID_STATUSES = {"sign", "late", "bench", "tentative", "absence"}
+
+
+def get_signup_data(raid_id: str) -> dict | None:
+    data = load_signups()
+    return find_message_signup(data, raid_id)
+
+
+def get_players(raid_id: str) -> list[dict]:
+    signup = get_signup_data(raid_id)
+    if not signup:
+        return []
+
+    users = signup.get("users", {})
+    players = []
+
+    for user_id, entry in users.items():
+        players.append(
+            {
+                "user_id": str(user_id),
+                "name": entry.get("name") or entry.get("display_name") or "Unknown",
+                "class": entry.get("class"),
+                "spec": entry.get("spec"),
+                "role": entry.get("role"),
+                "status": entry.get("status"),
+            }
+        )
+
+    players.sort(key=lambda p: (p.get("name") or "").lower())
+    return players
+
+
+def get_player_entry(raid_id: str, user_id: str) -> dict | None:
+    signup = get_signup_data(raid_id)
+    if not signup:
+        return None
+
+    users = signup.get("users", {})
+    return users.get(str(user_id))
+
+
+def get_player_class(raid_id: str, user_id: str) -> str | None:
+    entry = get_player_entry(raid_id, user_id)
+    if not entry:
+        return None
+
+    selected_class = entry.get("class")
+    if not selected_class:
+        return None
+
+    return selected_class
+
+
+def get_valid_specs_for_player(raid_id: str, user_id: str) -> list[dict]:
+    selected_class = get_player_class(raid_id, user_id)
+    if not selected_class:
+        return []
+
+    spec_map = config.CLASS_SPECS.get(selected_class, {})
+    if not spec_map:
+        return []
+
+    return [
+        {
+            "spec": spec_name,
+            "role": role_name,
+        }
+        for spec_name, role_name in spec_map.items()
+    ]
+
+
+def set_player_status(raid_id: str, user_id: str, new_status: str) -> bool:
+    if new_status not in VALID_STATUSES:
+        return False
+
+    data = load_signups()
+    raid = find_message_signup(data, raid_id)
+    if not raid:
+        return False
+
+    users = raid.get("users", {})
+    user_key = str(user_id)
+
+    if user_key not in users:
+        return False
+
+    users[user_key]["status"] = new_status
+    save_signups(data)
+    return True
+
+
+def remove_player_signup(raid_id: str, user_id: str) -> bool:
+    data = load_signups()
+    raid = find_message_signup(data, raid_id)
+    if not raid:
+        return False
+
+    users = raid.get("users", {})
+    user_key = str(user_id)
+
+    if user_key not in users:
+        return False
+
+    del users[user_key]
+    save_signups(data)
+    return True
+
+
+def change_player_spec(raid_id: str, user_id: str, new_spec: str) -> bool:
+    """
+    Changes spec/role for the CURRENT raid signup entry only.
+
+    This does NOT update the saved character database.
+    """
+    data = load_signups()
+    raid = find_message_signup(data, raid_id)
+    if not raid:
+        return False
+
+    users = raid.get("users", {})
+    user_key = str(user_id)
+    entry = users.get(user_key)
+
+    if not entry:
+        return False
+
+    selected_class = entry.get("class")
+    if not selected_class:
+        return False
+
+    spec_map = config.CLASS_SPECS.get(selected_class, {})
+    if not spec_map:
+        return False
+
+    if new_spec not in spec_map:
+        return False
+
+    entry["spec"] = new_spec
+    entry["role"] = spec_map[new_spec]
+
+    save_signups(data)
+    return True
+    
+def toggle_recurring(raid_id: str) -> bool:
+    data = load_signups()
+    raid = find_message_signup(data, raid_id)
+
+    if not raid:
+        return False
+
+    current = raid.get("is_recurring", False)
+    raid["is_recurring"] = not current
+
+    save_signups(data)
+    return True
+
+
+def set_recurring_interval(raid_id: str, days: int) -> bool:
+    if days < 1:
+        return False
+
+    data = load_signups()
+    raid = find_message_signup(data, raid_id)
+
+    if not raid:
+        return False
+
+    raid["recurring_interval_days"] = days
+    raid["is_recurring"] = True
+
+    save_signups(data)
+    return True
+
+
+def get_recurring_settings(raid_id: str) -> dict:
+    raid = get_signup_data(raid_id)
+    if not raid:
+        return {}
+
+    return {
+        "enabled": raid.get("is_recurring", False),
+        "interval": raid.get("recurring_interval_days", None),
+    }
+
+
+================================================
+FILE: services/raid/raid_lifecycle_service.py
+================================================
+from __future__ import annotations
+
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+from services.signup.signup_preset_service import build_signup_payload
+
+
+SWEDEN_TZ = ZoneInfo("Europe/Stockholm")
+
+RAID_RETENTION_AFTER_START_SECONDS = 30 * 60 #30 minutes
+
+def is_signup_due_for_lifecycle(signup: dict, now_ts: int) -> bool:
+    start_ts = signup.get("start_ts")
+
+    if not isinstance(start_ts, int):
+        return False
+
+    return now_ts >= (start_ts + RAID_RETENTION_AFTER_START_SECONDS)
+
+
+def is_recurring_signup(signup: dict) -> bool:
+    if not bool(signup.get("is_recurring", False)):
+        return False
+
+    interval = signup.get("recurring_interval_days")
+
+    return isinstance(interval, int) and interval > 0
+
+
+def calculate_next_start_ts(start_ts: int, interval_days: int, now_ts: int) -> int:
+    """
+    Returns the first recurring occurrence that is not already expired.
+
+    Example:
+    - original raid: Wednesday 19:30
+    - interval: 7 days
+    - bot was offline for 3 weeks
+
+    This function skips missed occurrences and returns the first valid
+    upcoming/current one in the recurring chain.
+    """
+
+    next_dt = datetime.fromtimestamp(start_ts, tz=SWEDEN_TZ)
+
+    next_dt += timedelta(days=interval_days)
+
+    while now_ts >= (int(next_dt.timestamp()) + RAID_RETENTION_AFTER_START_SECONDS):
+        next_dt += timedelta(days=interval_days)
+
+    return int(next_dt.timestamp())
+
+
+def build_next_recurring_signup(previous_signup: dict, now_ts: int) -> dict:
+
+    guild_id = int(previous_signup["guild_id"])
+    channel_id = int(previous_signup["channel_id"])
+
+    previous_start_ts = int(previous_signup.get("start_ts", now_ts))
+    interval_days = int(previous_signup["recurring_interval_days"])
+
+    next_start_ts = calculate_next_start_ts(
+        previous_start_ts,
+        interval_days,
+        now_ts,
+    )
+
+    signup = build_signup_payload(
+        guild_id=guild_id,
+        title=previous_signup.get("title", "New Raid Signup"),
+        description=previous_signup.get("description", ""),
+        leader=previous_signup.get("leader", ""),
+        start_ts=next_start_ts,
+        channel_id=channel_id,
+    )
+
+    signup.update(
+        {
+            "is_recurring": True,
+            "recurring_interval_days": interval_days,
+        }
+    )
+
+    return signup
+
+
+================================================
+FILE: services/raid/raid_preset_service.py
+================================================
+from services.guild.guild_settings_service import (
+    get_default_leader,
+    get_default_description,
+)
+from services.signup.signup_preset_service import build_signup_payload
+from services.signup.signup_template_service import build_fake_users
+from utils.time_helpers import next_weekday
+
+
+def _get_defaults(guild_id: int) -> tuple[str, str]:
+    leader = get_default_leader(guild_id) or "Raid Leader"
+    description = get_default_description(guild_id) or "Raid signup"
+    return leader, description
+
+
+def build_wednesday_signup(guild_id: int, channel_id: int) -> dict:
+    leader, description = _get_defaults(guild_id)
+    return build_signup_payload(
+        guild_id=guild_id,
+        title="HC Progression - Wednesday",
+        description=description,
+        leader=leader,
+        start_ts=next_weekday(2, 19, 30),
+        channel_id=channel_id,
+    )
+
+
+def build_sunday_signup(guild_id: int, channel_id: int) -> dict:
+    leader, description = _get_defaults(guild_id)
+    return build_signup_payload(
+        guild_id=guild_id,
+        title="HC Progression - Sunday",
+        description=description,
+        leader=leader,
+        start_ts=next_weekday(6, 19, 30),
+        channel_id=channel_id,
+    )
+
+
+def build_template_signup(guild_id: int, channel_id: int) -> dict:
+    leader, description = _get_defaults(guild_id)
+    return build_signup_payload(
+        guild_id=guild_id,
+        title="HC Progression - Template Preview",
+        description="Visual preview with fake raid roster",
+        leader=leader,
+        start_ts=next_weekday(2, 19, 30),
+        channel_id=channel_id,
+        users=build_fake_users(),
+    )
+
+
+================================================
+FILE: services/raid/raid_recurring_service.py
+================================================
+from __future__ import annotations
+
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+from services.signup.signup_preset_service import build_signup_payload
+
+
+SWEDEN_TZ = ZoneInfo("Europe/Stockholm")
+
+
+def is_valid_recurring_signup(signup: dict) -> bool:
+    if not isinstance(signup, dict):
+        return False
+
+    if not signup.get("is_recurring", False):
+        return False
+
+    interval = signup.get("recurring_interval_days")
+    if not isinstance(interval, int):
+        return False
+
+    if interval <= 0:
+        return False
+
+    start_ts = signup.get("start_ts")
+    if not isinstance(start_ts, int):
+        return False
+
+    guild_id = signup.get("guild_id")
+    channel_id = signup.get("channel_id")
+
+    if not guild_id or not channel_id:
+        return False
+
+    return True
+
+
+def has_next_recurring_already_been_created(signup: dict) -> bool:
+    return bool(signup.get("recurring_created_next", False))
+
+
+def should_create_next_recurring(signup: dict, now_ts: int) -> bool:
+    if not is_valid_recurring_signup(signup):
+        return False
+
+    if has_next_recurring_already_been_created(signup):
+        return False
+
+    start_ts = signup.get("start_ts")
+    return isinstance(start_ts, int) and start_ts <= now_ts
+
+
+def mark_next_recurring_created(signup: dict) -> None:
+    signup["recurring_created_next"] = True
+
+
+def calculate_next_start_ts(start_ts: int, interval_days: int) -> int:
+    current_dt = datetime.fromtimestamp(start_ts, tz=SWEDEN_TZ)
+    next_dt = current_dt + timedelta(days=interval_days)
+    return int(next_dt.timestamp())
+
+
+def build_next_recurring_signup(previous_signup: dict) -> dict:
+    guild_id = int(previous_signup["guild_id"])
+    channel_id = int(previous_signup["channel_id"])
+    interval_days = int(previous_signup["recurring_interval_days"])
+    previous_start_ts = int(previous_signup["start_ts"])
+
+    next_start_ts = calculate_next_start_ts(previous_start_ts, interval_days)
+
+    signup = build_signup_payload(
+        guild_id=guild_id,
+        title=previous_signup.get("title", "New Raid Signup"),
+        description=previous_signup.get("description", ""),
+        leader=previous_signup.get("leader", ""),
+        start_ts=next_start_ts,
+        channel_id=channel_id,
+    )
+
+    signup["is_recurring"] = True
+    signup["recurring_interval_days"] = interval_days
+    signup["recurring_created_next"] = False
+
+    return signup
+
+
+================================================
+FILE: services/raid/raid_template_service.py
+================================================
+from data.raid_template_store import get_guild_templates, save_guild_templates
+
+
+def list_templates(guild_id: int) -> list[dict]:
+    return get_guild_templates(guild_id)
+
+
+def save_template(guild_id: int, template_name: str, raid_data: dict) -> bool:
+    templates = get_guild_templates(guild_id)
+    name = template_name.strip()
+
+    if not name:
+        return False
+
+    existing_names = [t.get("name", "").strip().lower() for t in templates]
+    if name.lower() in existing_names:
+        return False
+
+    template = {
+        "name": name,
+        "title": raid_data.get("title", "New Raid Signup"),
+        "description": raid_data.get("description", ""),
+        "leader": raid_data.get("leader", ""),
+        "time": raid_data.get("time", "19:30"),
+        "channel_id": raid_data.get("channel_id"),
+        "is_recurring": bool(raid_data.get("is_recurring", False)),
+        "recurring_interval_days": raid_data.get("recurring_interval_days"),
+    }
+
+    templates.append(template)
+    save_guild_templates(guild_id, templates)
+    return True
+
+
+def overwrite_template(guild_id: int, template_name: str, raid_data: dict) -> bool:
+    templates = get_guild_templates(guild_id)
+    name = template_name.strip()
+
+    if not name:
+        return False
+
+    found = False
+    updated_templates = []
+
+    for template in templates:
+        if template.get("name", "").strip().lower() == name.lower():
+            updated_templates.append(
+                {
+                    "name": name,
+                    "title": raid_data.get("title", "New Raid Signup"),
+                    "description": raid_data.get("description", ""),
+                    "leader": raid_data.get("leader", ""),
+                    "time": raid_data.get("time", "19:30"),
+                    "channel_id": raid_data.get("channel_id"),
+                    "is_recurring": bool(raid_data.get("is_recurring", False)),
+                    "recurring_interval_days": raid_data.get("recurring_interval_days"),
+                }
+            )
+            found = True
+        else:
+            updated_templates.append(template)
+
+    if not found:
+        return False
+
+    save_guild_templates(guild_id, updated_templates)
+    return True
+
+
+def delete_template(guild_id: int, template_name: str) -> bool:
+    templates = get_guild_templates(guild_id)
+    name = template_name.strip().lower()
+
+    updated_templates = [
+        template
+        for template in templates
+        if template.get("name", "").strip().lower() != name
+    ]
+
+    if len(updated_templates) == len(templates):
+        return False
+
+    save_guild_templates(guild_id, updated_templates)
+    return True
+
+
+def get_template_by_name(guild_id: int, template_name: str) -> dict | None:
+    templates = get_guild_templates(guild_id)
+    name = template_name.strip().lower()
+
+    for template in templates:
+        if template.get("name", "").strip().lower() == name:
+            return template
+
+    return None
+
+
+def build_raid_data_from_template(
+    guild_id: int,
+    channel_id: int,

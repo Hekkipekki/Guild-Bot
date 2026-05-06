@@ -1,17 +1,18 @@
-import asyncio
 import discord
 import config
 
-from services.character_service import update_character_spec
-from services.signup_service import update_user_spec
-from services.signup_ui_service import (
+from services.character.character_service import update_character_spec
+from services.signup.signup_service import update_user_spec
+from services.signup.signup_ui_service import (
     refresh_and_show_signup_options_from_channel,
 )
-from .helpers import get_signup_entry, parse_spec_emoji, delete_ephemeral_after
+from .helpers import get_signup_entry
+from utils.emoji_helpers import parse_spec_emoji
 
 
 class EditSpecSelect(discord.ui.Select):
-    def __init__(self, raid_id: int, user_id: int, selected_class: str):
+    def __init__(self, guild_id: int, raid_id: int, user_id: int, selected_class: str):
+        self.guild_id = guild_id
         self.raid_id = raid_id
         self.user_id = user_id
         self.selected_class = selected_class
@@ -52,25 +53,34 @@ class EditSpecSelect(discord.ui.Select):
         )
 
         if not ok:
-            await interaction.response.send_message("Could not update spec.", ephemeral=True)
+            await interaction.response.send_message(
+                "Could not update spec. The signup may no longer exist.",
+                ephemeral=True,
+            )
             return
 
         update_character_spec(
+            self.guild_id,
             self.user_id,
             self.selected_class,
             selected_spec,
             role,
         )
 
-        await refresh_and_show_signup_options_from_channel(
+        shown = await refresh_and_show_signup_options_from_channel(
             interaction,
             self.raid_id,
             self.user_id,
-            delete_after=45,
         )
+
+        if not shown and not interaction.response.is_done():
+            await interaction.response.send_message(
+                "Spec updated, but failed to reopen signup options.",
+                ephemeral=True,
+            )
 
 
 class EditSpecView(discord.ui.View):
-    def __init__(self, raid_id: int, user_id: int, selected_class: str):
+    def __init__(self, guild_id: int, raid_id: int, user_id: int, selected_class: str):
         super().__init__(timeout=60)
-        self.add_item(EditSpecSelect(raid_id, user_id, selected_class))
+        self.add_item(EditSpecSelect(guild_id, raid_id, user_id, selected_class))

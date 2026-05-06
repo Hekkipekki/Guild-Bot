@@ -32,10 +32,23 @@ def signup_exists(data: dict[str, dict[str, Any]], message_id: int | str) -> boo
     return str(message_id) in data
 
 
+def find_message_signup(
+    data: dict[str, dict[str, Any]],
+    message_id: int | str,
+) -> dict[str, Any] | None:
+    return data.get(str(message_id))
+
+
 def get_message_signup(
     data: dict[str, dict[str, Any]],
     message_id: int | str,
 ) -> dict[str, Any]:
+    """
+    Ensures a signup entry exists and returns it.
+
+    Prefer `find_message_signup()` for read/update flows where a missing
+    signup should fail instead of being silently created.
+    """
     key = str(message_id)
 
     if key not in data:

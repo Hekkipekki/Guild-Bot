@@ -1,7 +1,16 @@
 from pathlib import Path
 
-TEST_GUILD_ID = 1423706462773051542
-RAID_CONTROL_USER_IDS = [141881090913599488]
+# ============================================================
+# Application config
+# ============================================================
+# NOTE:
+# - Runtime/app-level settings belong here
+# - Guild/server-specific settings belong in guild_settings.json
+#   and must be accessed through guild_settings_service.py
+
+# Dev-only: used for clearing old guild-scoped slash commands during testing.
+# Safe to keep, but should not be used as a source of guild settings.
+TEST_GUILD_ID = None
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -141,98 +150,104 @@ ROLE_LIMITS = {
 }
 
 SPEC_EMOJIS = {
-    "Blood": "<:Blood:1480344499506122853>",
-    "Frost": "<:Frost:1480262252316856470>",
-    "Unholy": "<:Unholy:1480262445695238276>",
+    # Death Knight
+    "Blood": "<:Blood:1482050758114414853>",
+    "FrostDK": "<:FrostDK:1482050821133963305>",
+    "Unholy": "<:Unholy:1482050820059959397>",
 
-    "Arms": "<:Arms:1480262401281753119>",
-    "Fury": "<:Fury:1480262411973033984>",
-    "ProtectionWarrior": "<:ProtectionWarrior:1480343025711321188>",
+    # Druid
+    "Balance": "<:Balance:1482050818885812345>",
+    "Feral": "<:Feral:1482050817417674924>",
+    "Guardian": "<:Guardian:1482050756889805000>",
+    "RestorationDruid": "<:RestorationDruid:1482050816092278957>",
 
-    "Balance": "<:Balance:1480262444000477245>",
-    "Feral": "<:Feral:1480262440313946285>",
-    "Guardian": "<:Guardian:1480344496091955451>",
-    "RestorationDruid": "<:RestorationDruid:1480262438736892075>",
+    # Hunter
+    "Beast Mastery": "<:BeastMastery:1482050810857652446>",
+    "BeastMastery": "<:BeastMastery:1482050810857652446>",
+    "Marksmanship": "<:Marksmanship:1482050812825043114>",
+    "Survival": "<:Survival:1482050814041391194>",
 
-    "HolyPaladin": "<:HolyPaladin:1480262327034052761>",
-    "ProtectionPaladin": "<:ProtectionPaladin:1480344497799037208>",
-    "Retribution": "<:Retribution:1480262333275181199>",
+    # Mage
+    "Arcane": "<:Arcane:1482050791450611793>",
+    "Fire": "<:Fire:1482050790100045824>",
+    "Frost": "<:Frost:1482050788753805362>",
 
-    "Brewmaster": "<:Brewmaster:1480262251033268365>",
-    "Mistweaver": "<:Mistweaver:1480262249162739946>",
-    "Windwalker": "<:Windwalker:1480262246792953926>",
+    # Monk
+    "Brewmaster": "<:Brewmaster:1482050787323412602>",
+    "Mistweaver": "<:Mistweaver:1482050786002337973>",
+    "Windwalker": "<:Windwalker:1482050784941047891>",
 
-    "Discipline": "<:Discipline:1480262338450817025>",
-    "HolyPriest": "<:HolyPriest:1480262340720201909>",
-    "Shadow": "<:Shadow:1480262324974649435>",
+    # Paladin
+    "HolyPaladin": "<:HolyPaladin:1482050797096271943>",
+    "ProtectionPaladin": "<:ProtectionPaladin:1482050755899691138>",
+    "Retribution": "<:Retribution:1482050799210332210>",
 
-    "Arcane": "<:Arcane:1480262255286288584>",
-    "Fire": "<:Fire:1480262253738594507>",
-    "FrostDK": "<:FrostDK:1480262447456588057>",
+    # Priest
+    "Discipline": "<:Discipline:1482050792696451193>",
+    "HolyPriest": "<:HolyPriest:1482050794244276305>",
+    "Shadow": "<:Shadow:1482050795737190611>",
 
-    "Affliction": "<:Affliction:1480262334541725858>",
-    "Demonology": "<:Demonology:1480262396433137846>",
-    "Destruction": "<:Destruction:1480262398400008404>",
+    # Rogue
+    "Assassination": "<:Assassination:1482050781443133572>",
+    "Combat": "<:Combat:1482050780000292955>",
+    "Subtlety": "<:Sublety:1482050782445437070>",
+    "Sublety": "<:Sublety:1482050782445437070>",
 
-    "Beast Mastery": "<:BeastMastery:1480262451814596860>",
-    "Marksmanship": "<:Marksmanship:1480262453563494612>",
-    "Survival": "<:Survival:1480262455711105188>",
+    # Shaman
+    "Elemental": "<:Elemental:1482050809712611328>",
+    "Enhancement": "<:Enmhancement:1482050808647520396>",
+    "Enmhancement": "<:Enmhancement:1482050808647520396>",
+    "RestorationShaman": "<:RestorationShaman:1482050807674441779>",
 
-    "Assassination": "<:Assassination:1480262257765122248>",
-    "Combat": "<:Combat:1480262256540254464>",
-    "Subtlety": "<:Subtlety:1480262260029915288>",
+    # Warlock
+    "Affliction": "<:Affliction:1482050800539799634>",
+    "Demonology": "<:Demonology:1482050801928110181>",
+    "Destruction": "<:Destruction:1482050802976690197>",
 
-    "Elemental": "<:Elemental:1480262394990301396>",
-    "Enhancement": "<:Enhancement:1480262393014653061>",
-    "RestorationShaman": "<:RestorationShaman:1480262390586015814>",
+    # Warrior
+    "Arms": "<:Arms:1482050804503281868>",
+    "Fury": "<:Fury:1482050806357168319>",
+    "ProtectionWarrior": "<:ProtectionWarrior:1482050759561318400>",
 }
 
 CLASS_EMOJIS = {
-    "Death Knight": "<:DEATHKNIGHT:1480948586010116187>",
-    "Warrior": "<:WARRIOR:1480948654582792262>",
-    "Druid": "<:DRUID:1480948657451696239>",
-    "Paladin": "<:PALADIN:1480948645896523850>",
-    "Monk": "<:MONK:1480953684413387024>", 
-    "Priest": "<:PRIEST:1480948647532302549>",
-    "Mage": "<:MAGE:1480948656097071399>",
-    "Warlock": "<:WARLOCK:1480948652762464358>",
-    "Hunter": "<:HUNTER:1480948644155756676>",
-    "Rogue": "<:ROGUE:1480948648891383879>",
-    "Shaman": "<:SHAMAN:1480948650971627682>",
+    "Death Knight": "<:DEATHKNIGHT:1482050742767452448>",
+    "Warrior": "<:WARRIOR:1482050753450344571>",
+    "Druid": "<:DRUID:1482050743723884584>",
+    "Paladin": "<:PALADIN:1482050746407977084>",
+    "Monk": "<:MONK:1482050741060374649>",
+    "Priest": "<:PRIEST:1482050747909800026>",
+    "Mage": "<:MAGE:1482050754599588061>",
+    "Warlock": "<:WARLOCK:1482050752208965754>",
+    "Hunter": "<:HUNTER:1482050745325981696>",
+    "Rogue": "<:ROGUE:1482050749776269443>",
+    "Shaman": "<:SHAMAN:1482050751034560564>",
 }
 
 SUMMARY_EMOJIS = {
-    "Countdown": "<:Countdown:1480262039753588919>",
-    "Absence": "<:Absence:1480262041284382790>",
-    "Signups": "<:Signups:1480262042953715825>",
-    "DPS": "<:DPS:1480262044497346712>",
-    "Tank": "<:Tank:1480262046036787260>",
-    "Healer": "<:Healer:1480262047483822347>",
-    "Tentative": "<:Tentative:1480262159031210115>",
-    "Late": "<:Late:1480262058648932478>",
-    "Calendar": "<:Calendar:1480262061090017300>",
-    "Bench": "<:Bench:1480262055188758799>",
+    "Countdown": "<:Countdown:1482050770453921883>",
+    "Absence": "<:Absence:1482050771800555640>",
+    "Signups": "<:Signups:1482050773616693449>",
+    "DPS": "<:DPS:1482050775311192187>",
+    "Tank": "<:Tank:1482050777060085960>",
+    "Healer": "<:Healer:1482050778683277514>",
+    "Tentative": "<:Tentative:1482050766704349334>",
+    "Late": "<:Late:1482050767803121755>",
+    "Calendar": "<:Calendar:1482050769015537794>",
+    "Bench": "<:Bench:1482050765278412942>",
 }
 
 BUTTON_EMOJIS = {
-    "sign": "<:Sign:1480262051644313905>",
-    "late": "<:Late:1480262058648932478>",
-    "bench": "<:Bench:1480262055188758799>",
-    "tentative": "<:Tentative:1480262159031210115>",
-    "absence": "<:Absence:1480262041284382790>",
-    "config": "<:Config:1480262049270333442>",
-    "leave": "<:Leave:1480262053632540682>",
+    "sign": "<:Sign:1482050762912825414>",
+    "late": "<:Late:1482050767803121755>",
+    "note": "<:Signups:1482050773616693449>",
+    "bench": "<:Bench:1482050765278412942>",
+    "tentative": "<:Tentative:1482050766704349334>",
+    "absence": "<:Absence:1482050771800555640>",
+    "config": "<:Config:1482050761507471390>",
+    "leave": "<:Leave:1482050763973988392>",
+    "create_raid": "<:create_raid:1482050739625787581>",
+    "create_template": "<:create_template:1482050738342461510>",
+    "submit_raid": "<:submit_raid:1482050736840900701>",
+    "cancel_raid": "<:cancel_raid:1482050734672314518>",
 }
-
-DEFAULT_EXPECTED_PLAYERS = [
-    141881090913599488, # Hekkipekki
-    771806222525267968, # Shadé
-    251004817844076554, # Magemil
-    260495039686246400, # Raitila
-    321966396864987137, # Rajensen
-    369109810311987200, # Maverinkel
-    239532428073500672, # Darkpreacha
-    344496860855009280, # Lenef
-    710915046200574073, # MistaProfessa
-    248796420880990208, # Turit   
-]

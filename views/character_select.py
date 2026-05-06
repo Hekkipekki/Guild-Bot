@@ -1,20 +1,20 @@
-from views.signup.shared import (
+from views.signup.main.shared import (
     parse_spec_emoji,
     parse_class_emoji,
     BackToCharacterMenuButton,
 )
-from views.signup.character_add_view import (
+from views.signup.character.character_add_view import (
     AddCharacterClassSelect,
     AddCharacterSpecSelect,
     AddCharacterClassView,
     AddCharacterSpecView,
     prettify_character_name,
 )
-from views.signup.character_manage_view import (
+from views.signup.character.character_manage_view import (
     RemoveCharacterSelect,
     ManageCharactersView,
 )
-from views.signup.character_select_view import (
+from views.signup.character.character_select_view import (
     CharacterSelect,
     CharacterView,
 )
