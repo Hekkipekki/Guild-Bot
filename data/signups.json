@@ -139,6 +139,16 @@
         "note": "idk",
         "display_name": "Maverinkel",
         "status": "absence"
+      },
+      "141881090913599488": {
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "timestamp": 1778103613.298142,
+        "name": "Hekkipekki",
+        "note": "",
+        "display_name": "Hekkipekki",
+        "status": "sign"
       }
     },
     "expected_players": [
@@ -240,7 +250,7 @@
     "recurring_interval_days": 7
   },
   "1501681551740768287": {
-    "title": "HC Progress, Alt raid or Off day",
+    "title": "Lei Shen + Ra Den quick kill",
     "description": "Raid signup",
     "leader": "Rhegaran",
     "start_ts": 1778434200,

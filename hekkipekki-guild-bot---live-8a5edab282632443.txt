@@ -1,8 +1,8 @@
 Directory structure:
 └── hekkipekki-guild-bot---live/
     ├── bot.py
+    ├── bot_log.txt
     ├── config.py
-    ├── github-recovery-codes.txt
     ├── split_file.py
     ├── Start Bot.bat
     ├── cogs/
@@ -17,6 +17,7 @@ Directory structure:
     │   ├── signup.py
     │   └── wa_commands.py
     ├── data/
+    │   ├── attendance.json
     │   ├── attendance_store.py
     │   ├── character_store.py
     │   ├── characters_dev.json
@@ -63,6 +64,7 @@ Directory structure:
     │   ├── raid/
     │   │   ├── __init__.py
     │   │   ├── raid_admin_service.py
+    │   │   ├── raid_cancel_service.py
     │   │   ├── raid_control_service.py
     │   │   ├── raid_lifecycle_service.py
     │   │   ├── raid_preset_service.py
@@ -332,6 +334,12 @@ if __name__ == "__main__":
 
 
 ================================================
+FILE: bot_log.txt
+================================================
+[Binary file]
+
+
+================================================
 FILE: config.py
 ================================================
 from pathlib import Path
@@ -590,27 +598,6 @@ BUTTON_EMOJIS = {
 
 
 ================================================
-FILE: github-recovery-codes.txt
-================================================
-ac14e-fdaa0
-df3b5-329f4
-fd0f6-333bf
-7dde0-40ee1
-428df-1a92c
-ac531-f52b8
-56d08-4f37c
-81790-0dc30
-e95e7-9417f
-1d002-d3e84
-0a90f-d6679
-2e09b-983db
-7452f-5b229
-91268-d7403
-3bef2-36a83
-8fb1b-037b5
-
-
-================================================
 FILE: split_file.py
 ================================================
 input_file = r"C:\Dev Projects\Bot\Guild Bot - Dev\github.txt"
@@ -637,13 +624,17 @@ print("File split into 4 parts successfully.")
 FILE: Start Bot.bat
 ================================================
 @echo off
-echo Starting Discord bot...
-cd /d "%~dp0"
+cd /d "C:\Dev Projects\Bot\Guild Bot - Dev"
 
-python bot.py
+echo Starting Guild Discord Bot...
+echo Folder: %cd%
+echo.
+
+py bot.py
 
 echo.
-echo Bot stopped.
+echo Bot stopped or crashed.
+echo.
 pause
 
 
@@ -1185,6 +1176,8 @@ async def setup(bot):
 ================================================
 FILE: cogs/raid_lifecycle.py
 ================================================
+from __future__ import annotations
+
 import time
 
 import discord
@@ -1193,74 +1186,87 @@ from discord.ext import commands, tasks
 from data.signup_store import load_signups, save_signups
 from services.attendance.attendance_service import sync_attendance_from_comp
 from services.raid.raid_lifecycle_service import (
-    is_signup_due_for_lifecycle,
-    is_recurring_signup,
     build_next_recurring_signup,
+    is_recurring_signup,
+    is_signup_due_for_lifecycle,
 )
 from services.signup.signup_message_service import send_signup_message
 
 
 class _ChannelCtx:
-    def __init__(self, channel):
+    def __init__(self, guild, channel):
+        self.guild = guild
         self.channel = channel
 
     async def send(self, *args, **kwargs):
         return await self.channel.send(*args, **kwargs)
 
 
-async def _delete_message_if_exists(channel, message_id: int | None) -> None:
+async def _delete_message_if_exists(channel, message_id: int | str | None) -> bool:
     if not message_id:
-        return
+        return False
 
     try:
         msg = await channel.fetch_message(int(message_id))
         await msg.delete()
+        return True
 
     except discord.NotFound:
-        return
+        return False
 
     except discord.Forbidden:
-        return
+        print(f"[Lifecycle] Missing permission to delete message {message_id}")
+        return False
 
-    except discord.HTTPException:
-        return
+    except discord.HTTPException as e:
+        print(f"[Lifecycle] Failed to delete message {message_id}: {e}")
+        return False
+
+    except (TypeError, ValueError):
+        return False
 
 
-async def _delete_old_raid_messages(bot, raid_id: str, signup: dict) -> None:
+async def _resolve_signup_channel(bot, signup: dict):
     guild_id = signup.get("guild_id")
     channel_id = signup.get("channel_id")
 
     if not guild_id or not channel_id:
-        return
+        return None, None
 
-    guild = bot.get_guild(int(guild_id))
-
-    if guild is None:
-        try:
+    try:
+        guild = bot.get_guild(int(guild_id))
+        if guild is None:
             guild = await bot.fetch_guild(int(guild_id))
-        except discord.HTTPException:
-            return
 
-    channel = guild.get_channel(int(channel_id))
+        channel = guild.get_channel(int(channel_id))
+        if channel is None:
+            channel = await guild.fetch_channel(int(channel_id))
+
+        return guild, channel
+
+    except discord.HTTPException as e:
+        print(f"[Lifecycle] Could not resolve guild/channel: {e}")
+        return None, None
+
+    except (TypeError, ValueError) as e:
+        print(f"[Lifecycle] Invalid guild/channel ID: {e}")
+        return None, None
+
+
+async def _delete_old_raid_messages(bot, raid_id: str, signup: dict) -> None:
+    _, channel = await _resolve_signup_channel(bot, signup)
 
     if channel is None:
-        try:
-            channel = await guild.fetch_channel(int(channel_id))
-        except discord.HTTPException:
-            return
+        print(f"[Lifecycle] Could not delete old raid messages for {raid_id}: channel not found")
+        return
 
-    await _delete_message_if_exists(channel, int(raid_id))
+    await _delete_message_if_exists(channel, raid_id)
     await _delete_message_if_exists(channel, signup.get("comp_message_id"))
     await _delete_message_if_exists(channel, signup.get("missing_reminder_message_id"))
     await _delete_message_if_exists(channel, signup.get("signed_reminder_message_id"))
 
 
 def _sync_attendance_snapshot_if_possible(raid_id: str, signup: dict) -> None:
-    """
-    Safety net:
-    If a comp exists, make sure attendance is synced one last time before
-    lifecycle cleanup removes the live signup entry.
-    """
     last_comp_data = signup.get("last_comp_data")
     comp_message_id = signup.get("comp_message_id")
 
@@ -1276,8 +1282,9 @@ def _sync_attendance_snapshot_if_possible(raid_id: str, signup: dict) -> None:
             comp_data=last_comp_data,
             actor_user_id=None,
         )
+
     except Exception as e:
-        print(f"[Attendance Sync] Failed before lifecycle cleanup for raid {raid_id}: {e}")
+        print(f"[Lifecycle] Attendance sync failed before cleanup for raid {raid_id}: {e}")
 
 
 class RaidLifecycleCog(commands.Cog):
@@ -1297,64 +1304,53 @@ class RaidLifecycleCog(commands.Cog):
         raid_ids_to_remove: list[str] = []
 
         for raid_id, signup in list(data.items()):
+            raid_id = str(raid_id)
 
-            if signup.get("lifecycle_processed"):
+            if not isinstance(signup, dict):
+                raid_ids_to_remove.append(raid_id)
+                changed = True
                 continue
 
             if not is_signup_due_for_lifecycle(signup, now_ts):
                 continue
 
-            # Non-recurring raid cleanup
-            if not is_recurring_signup(signup):
-                _sync_attendance_snapshot_if_possible(str(raid_id), signup)
+            print(f"[Lifecycle] Processing expired raid {raid_id}: {signup.get('title')}")
 
-                await _delete_old_raid_messages(self.bot, str(raid_id), signup)
+            _sync_attendance_snapshot_if_possible(raid_id, signup)
 
-                raid_ids_to_remove.append(str(raid_id))
-                continue
+            if is_recurring_signup(signup):
+                guild, channel = await _resolve_signup_channel(self.bot, signup)
 
-            guild_id = signup.get("guild_id")
-            channel_id = signup.get("channel_id")
-
-            if not guild_id or not channel_id:
-                continue
-
-            guild = self.bot.get_guild(int(guild_id))
-
-            if guild is None:
-                try:
-                    guild = await self.bot.fetch_guild(int(guild_id))
-                except discord.HTTPException:
+                if guild is None or channel is None:
+                    print(f"[Lifecycle] Could not create next recurring raid for {raid_id}: channel not found")
                     continue
 
-            channel = guild.get_channel(int(channel_id))
+                next_signup = build_next_recurring_signup(signup, now_ts)
+                new_message_id = await send_signup_message(
+                    _ChannelCtx(guild, channel),
+                    next_signup,
+                )
 
-            if channel is None:
-                try:
-                    channel = await guild.fetch_channel(int(channel_id))
-                except discord.HTTPException:
+                if not new_message_id:
+                    print(f"[Lifecycle] Failed to create next recurring signup for {raid_id}")
                     continue
 
-            next_signup = build_next_recurring_signup(signup, now_ts)
+                data[str(new_message_id)] = next_signup
+                changed = True
 
-            new_message_id = await send_signup_message(_ChannelCtx(channel), next_signup)
+                print(
+                    f"[Lifecycle] Created next recurring raid {new_message_id} "
+                    f"from old raid {raid_id}"
+                )
 
-            if not new_message_id:
-                continue
-
-            data[str(new_message_id)] = next_signup
-            changed = True
-
-            _sync_attendance_snapshot_if_possible(str(raid_id), signup)
-
-            await _delete_old_raid_messages(self.bot, str(raid_id), signup)
-
-            raid_ids_to_remove.append(str(raid_id))
+            await _delete_old_raid_messages(self.bot, raid_id, signup)
+            raid_ids_to_remove.append(raid_id)
 
         for raid_id in raid_ids_to_remove:
             if raid_id in data:
                 del data[raid_id]
                 changed = True
+                print(f"[Lifecycle] Removed old signup entry {raid_id} from signups.json")
 
         if changed:
             save_signups(data)
@@ -1799,6 +1795,1137 @@ async def setup(bot):
 
 
 ================================================
+FILE: data/attendance.json
+================================================
+{
+  "1490536929152729179": {
+    "raid_id": "1490536929152729179",
+    "guild_id": 1423706462773051542,
+    "channel_id": 1445169144377901107,
+    "title": "HC Progress",
+    "description": "Lei Shen HC + Ra Den",
+    "leader": "Rhegaran/Hekkipekki",
+    "start_ts": 1776015000,
+    "comp_message_id": 1491926286111866950,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "489526528309460993": {
+        "display_name": "Nickfury",
+        "name": "Nickfury",
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "note": "",
+        "user_id": "489526528309460993",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "141881090913599488": {
+        "display_name": "Hekkipekki",
+        "name": "Hekkipekki",
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "344496860855009280": {
+        "display_name": "Lenef",
+        "name": "Lenef",
+        "class": "Warlock",
+        "spec": "Affliction",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "344496860855009280",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "251004817844076554": {
+        "display_name": "Magemil",
+        "name": "Magemil",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "251004817844076554",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "239532428073500672": {
+        "display_name": "dpreborn",
+        "name": "Darkpreacha",
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "note": "",
+        "user_id": "239532428073500672",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "248796420880990208": {
+        "display_name": "Turit",
+        "name": "Turitpala",
+        "class": "Paladin",
+        "spec": "HolyPaladin",
+        "role": "Healer",
+        "note": "",
+        "user_id": "248796420880990208",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "771806222525267968": {
+        "display_name": "Shadé",
+        "name": "Shadé",
+        "class": "Rogue",
+        "spec": "Assassination",
+        "role": "Melee",
+        "note": "",
+        "user_id": "771806222525267968",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "710915046200574073": {
+        "display_name": "MistaProfessa",
+        "name": "Rhegaran",
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "note": "",
+        "user_id": "710915046200574073",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "260495039686246400": {
+        "display_name": "Raitila",
+        "name": "Reilu",
+        "class": "Shaman",
+        "spec": "RestorationShaman",
+        "role": "Healer",
+        "note": "Werent there on wednesday, can be on the bench if needed",
+        "user_id": "260495039686246400",
+        "signup_status": "bench",
+        "auto_status": "benched",
+        "attendance_status": "benched",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "321966396864987137": {
+        "display_name": "RaJensen/Rinira",
+        "name": "RaJensen",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "321966396864987137",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "369109810311987200": {
+        "display_name": "Maverinkel",
+        "name": "Maverman",
+        "class": "Hunter",
+        "spec": "Survival",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "369109810311987200",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1775773345,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1775773345,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1776016827,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1776016827,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "finalized_at": 1776016827,
+    "finalized_by": "auto_comp_post"
+  },
+  "1492971953886331090": {
+    "raid_id": "1492971953886331090",
+    "guild_id": 1423706462773051542,
+    "channel_id": 1423981356798578718,
+    "title": "HC Re-clear",
+    "description": "HC Re-clear, aiming for 13/13",
+    "leader": "Rhegaran",
+    "start_ts": 1776272400,
+    "comp_message_id": 1493369650866815157,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "141881090913599488": {
+        "display_name": "Hekkipekki",
+        "name": "Hekkipekki",
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "710915046200574073": {
+        "display_name": "MistaProfessa",
+        "name": "Rhegaran",
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "note": "",
+        "user_id": "710915046200574073",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "321966396864987137": {
+        "display_name": "RaJensen/Rinira",
+        "name": "RaJensen",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "321966396864987137",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "771806222525267968": {
+        "display_name": "Shadé",
+        "name": "Shadé",
+        "class": "Rogue",
+        "spec": "Assassination",
+        "role": "Melee",
+        "note": "",
+        "user_id": "771806222525267968",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "489526528309460993": {
+        "display_name": "Nickfury",
+        "name": "Nickfury",
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "note": "",
+        "user_id": "489526528309460993",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "248796420880990208": {
+        "display_name": "Turit",
+        "name": "Turitpala",
+        "class": "Paladin",
+        "spec": "HolyPaladin",
+        "role": "Healer",
+        "note": "",
+        "user_id": "248796420880990208",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "239532428073500672": {
+        "display_name": "dpreborn",
+        "name": "Darkpreacha",
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "note": "",
+        "user_id": "239532428073500672",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "251004817844076554": {
+        "display_name": "Magemil",
+        "name": "Magemil",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "251004817844076554",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "369109810311987200": {
+        "display_name": "Maverinkel",
+        "name": "Maverman",
+        "class": "Hunter",
+        "spec": "Survival",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "369109810311987200",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "344496860855009280": {
+        "display_name": "Lenef",
+        "name": "Lenef",
+        "class": "Warlock",
+        "spec": "Affliction",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "344496860855009280",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1776117471,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1776117471,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1776245586,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1776245586,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1776274240,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1776274240,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "finalized_at": 1776274240,
+    "finalized_by": "auto_comp_post"
+  },
+  "1492947514834288884": {
+    "raid_id": "1492947514834288884",
+    "guild_id": 1423706462773051542,
+    "channel_id": 1445169144377901107,
+    "title": "Lei Shen + Ra Den",
+    "description": "Lei Shen + Ra Den",
+    "leader": "Rhegaran/Hekkipekki",
+    "start_ts": 1776619800,
+    "comp_message_id": 1495197295807959253,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "141881090913599488": {
+        "display_name": "Hekkipekki",
+        "name": "Hekkipekki",
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "710915046200574073": {
+        "display_name": "MistaProfessa",
+        "name": "Rhegaran",
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "note": "",
+        "user_id": "710915046200574073",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "321966396864987137": {
+        "display_name": "RaJensen/Rinira",
+        "name": "RaJensen",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "321966396864987137",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "771806222525267968": {
+        "display_name": "Shadé",
+        "name": "Shadé",
+        "class": "Rogue",
+        "spec": "Assassination",
+        "role": "Melee",
+        "note": "",
+        "user_id": "771806222525267968",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "489526528309460993": {
+        "display_name": "Nickfury",
+        "name": "Nickfury",
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "note": "Not Home sunday",
+        "user_id": "489526528309460993",
+        "signup_status": "absence",
+        "auto_status": "absent",
+        "attendance_status": "absent",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "248796420880990208": {
+        "display_name": "Turit",
+        "name": "Turitpala",
+        "class": "Paladin",
+        "spec": "HolyPaladin",
+        "role": "Healer",
+        "note": "",
+        "user_id": "248796420880990208",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "239532428073500672": {
+        "display_name": "dpreborn",
+        "name": "Darkpreacha",
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "note": "",
+        "user_id": "239532428073500672",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "251004817844076554": {
+        "display_name": "Magemil",
+        "name": "Magemil",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "251004817844076554",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "125025831402602496": {
+        "display_name": "Waz",
+        "name": "Arcanz",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "125025831402602496",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "369109810311987200": {
+        "display_name": "Maverinkel",
+        "name": "Maverman",
+        "class": "Hunter",
+        "spec": "Survival",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "369109810311987200",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "344496860855009280": {
+        "display_name": "Lenef",
+        "name": "Lenef",
+        "class": "Warlock",
+        "spec": "Affliction",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "344496860855009280",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1776553217,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1776553217,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1776621636,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1776621636,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "finalized_at": 1776621636,
+    "finalized_by": "auto_comp_post"
+  },
+  "1496571428575776808": {
+    "raid_id": "1496571428575776808",
+    "guild_id": 1423706462773051542,
+    "channel_id": 1423981356798578718,
+    "title": "HC Re-clear",
+    "description": "HC Re-clear, aiming for 13/13",
+    "leader": "Rhegaran",
+    "start_ts": 1777483800,
+    "comp_message_id": 1498257715007328276,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "344496860855009280": {
+        "display_name": "Lenef",
+        "name": "Lenef",
+        "class": "Warlock",
+        "spec": "Affliction",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "344496860855009280",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "369109810311987200": {
+        "display_name": "Maverinkel",
+        "name": "Maverman",
+        "class": "Hunter",
+        "spec": "Survival",
+        "role": "Ranged",
+        "note": "Möjligtvis övertid på jobbet.",
+        "user_id": "369109810311987200",
+        "signup_status": "tentative",
+        "auto_status": "tentative",
+        "attendance_status": "tentative",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "251004817844076554": {
+        "display_name": "Magemil",
+        "name": "Magemil",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "251004817844076554",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "239532428073500672": {
+        "display_name": "dpreborn",
+        "name": "Darkpreacha",
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "note": "Work abroad",
+        "user_id": "239532428073500672",
+        "signup_status": "absence",
+        "auto_status": "absent",
+        "attendance_status": "absent",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "489526528309460993": {
+        "display_name": "Nickfury",
+        "name": "Nickfury",
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "note": "",
+        "user_id": "489526528309460993",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "111044497311313920": {
+        "display_name": "Blouw",
+        "name": "Blouw",
+        "class": "Shaman",
+        "spec": "RestorationShaman",
+        "role": "Healer",
+        "note": "",
+        "user_id": "111044497311313920",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "771806222525267968": {
+        "display_name": "Shadé",
+        "name": "Shadé",
+        "class": "Rogue",
+        "spec": "Assassination",
+        "role": "Melee",
+        "note": "",
+        "user_id": "771806222525267968",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "733947209845833730": {
+        "display_name": "Frikadella",
+        "name": "Frikadella",
+        "class": "Shaman",
+        "spec": "Elemental",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "733947209845833730",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "710915046200574073": {
+        "display_name": "MistaProfessa",
+        "name": "Rhegaran",
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "note": "",
+        "user_id": "710915046200574073",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "248796420880990208": {
+        "display_name": "Turit",
+        "name": "Turitpala",
+        "class": "Paladin",
+        "spec": "HolyPaladin",
+        "role": "Healer",
+        "note": "",
+        "user_id": "248796420880990208",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "141881090913599488": {
+        "display_name": "Hekkipekki",
+        "name": "Hekkipekki",
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "321966396864987137": {
+        "display_name": "RaJensen",
+        "name": "RaJensen",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "321966396864987137",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1777282877,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1777282877,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1777485640,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1777485640,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "finalized_at": 1777485640,
+    "finalized_by": "auto_comp_post"
+  },
+  "1499108171820826635": {
+    "raid_id": "1499108171820826635",
+    "guild_id": 1423706462773051542,
+    "channel_id": 1423981356798578718,
+    "title": "HC Re-clear",
+    "description": "HC Re-clear, aiming for 13/13",
+    "leader": "Rhegaran",
+    "start_ts": 1778088600,
+    "comp_message_id": 1500432793912610917,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 2,
+    "finalized": true,
+    "players": {
+      "248796420880990208": {
+        "display_name": "Turit",
+        "name": "Turitpala",
+        "class": "Paladin",
+        "spec": "HolyPaladin",
+        "role": "Healer",
+        "note": "",
+        "user_id": "248796420880990208",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "369109810311987200": {
+        "display_name": "Maverinkel",
+        "name": "Maverman",
+        "class": "Hunter",
+        "spec": "Survival",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "369109810311987200",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "321966396864987137": {
+        "display_name": "RaJensen",
+        "name": "RaJensen",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "321966396864987137",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "111044497311313920": {
+        "display_name": "Blouw",
+        "name": "Blouw",
+        "class": "Shaman",
+        "spec": "RestorationShaman",
+        "role": "Healer",
+        "note": "",
+        "user_id": "111044497311313920",
+        "signup_status": "bench",
+        "auto_status": "benched",
+        "attendance_status": "benched",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "141881090913599488": {
+        "display_name": "Hekkipekki",
+        "name": "Hekkipekki",
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "710915046200574073": {
+        "display_name": "MistaProfessa",
+        "name": "Rhegaran",
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "note": "",
+        "user_id": "710915046200574073",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "344496860855009280": {
+        "display_name": "Lenef",
+        "name": "Lenef",
+        "class": "Warlock",
+        "spec": "Affliction",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "344496860855009280",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "489526528309460993": {
+        "display_name": "Nickfury",
+        "name": "Nickfury",
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "note": "",
+        "user_id": "489526528309460993",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "771806222525267968": {
+        "display_name": "Shadé",
+        "name": "Shadé",
+        "class": "Rogue",
+        "spec": "Assassination",
+        "role": "Melee",
+        "note": "Away on holiday from the 4th till the 8th",
+        "user_id": "771806222525267968",
+        "signup_status": "absence",
+        "auto_status": "absent",
+        "attendance_status": "absent",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "260495039686246400": {
+        "display_name": "Raitila",
+        "name": "Raitila",
+        "class": "Paladin",
+        "spec": "HolyPaladin",
+        "role": "Healer",
+        "note": "",
+        "user_id": "260495039686246400",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "239532428073500672": {
+        "display_name": "dpreborn",
+        "name": "Darkpreacha",
+        "class": "Priest",
+        "spec": "Shadow",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "239532428073500672",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      },
+      "251004817844076554": {
+        "display_name": "Magemil",
+        "name": "Magemil",
+        "class": "Mage",
+        "spec": "Arcane",
+        "role": "Ranged",
+        "note": "",
+        "user_id": "251004817844076554",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1777801456,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 3
+      },
+      {
+        "timestamp": 1777801456,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1778090419,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 2
+      },
+      {
+        "timestamp": 1778090419,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "expected_players": [
+      "710915046200574073",
+      "489526528309460993",
+      "369109810311987200",
+      "251004817844076554",
+      "248796420880990208",
+      "239532428073500672",
+      "141881090913599488",
+      "771806222525267968",
+      "321966396864987137",
+      "344496860855009280"
+    ],
+    "finalized_at": 1778090419,
+    "finalized_by": "auto_comp_post"
+  }
+}
+
+
+================================================
 FILE: data/attendance_store.py
 ================================================
 import json
@@ -2080,7 +3207,7 @@ FILE: data/guild_settings.json
     "default_leader": "",
     "default_description": "",
     "weakauras_channel_id": 1480200691938099263,
-    "weakauras_message_id": 1490538061870796976
+    "weakauras_message_id": 1491785650150707392
   },
   "1423706462773051542": {
     "guild_name": "IDK Fake Guild Group",
@@ -2098,13 +3225,35 @@ FILE: data/guild_settings.json
       "141881090913599488",
       "771806222525267968",
       "321966396864987137",
-      "260495039686246400",
-      "344496860855009280"
+      "344496860855009280",
+      "260495039686246400"
     ],
     "default_leader": "",
     "default_description": "",
-    "weakauras_channel_id": null,
-    "weakauras_message_id": null
+    "weakauras_channel_id": 1423733790907306005,
+    "weakauras_message_id": 1501321993465757927
+  },
+  "1175174589639303339": {
+    "guild_name": "ＥＮＳＩＤＩＧ A",
+    "raid_control_user_ids": [
+      "733947209845833730"
+    ],
+    "expected_players": [
+      "747110982136103035",
+      "733947209845833730",
+      "676385985008893982",
+      "451796745936961556",
+      "219053149216964608",
+      "209344159943753729",
+      "196533947256012800",
+      "185836617112485889",
+      "182816419078078464",
+      "1462420346631360607"
+    ],
+    "default_leader": "",
+    "default_description": "",
+    "weakauras_channel_id": 1493105210321666210,
+    "weakauras_message_id": 1493138574206304306
   }
 }
 
@@ -2330,6 +3479,30 @@ FILE: data/raid_templates.json
         "channel_id": 1445169144377901107,
         "is_recurring": true,
         "recurring_interval_days": 7
+      },
+      {
+        "name": "Wedn",
+        "title": "New Raid Signup",
+        "description": "Raid signup",
+        "leader": "Raid Leader",
+        "time": "19:30",
+        "channel_id": 1423981356798578718,
+        "is_recurring": true,
+        "recurring_interval_days": 7
+      }
+    ]
+  },
+  "1175174589639303339": {
+    "templates": [
+      {
+        "name": "Sunday hc",
+        "title": "ToT hc",
+        "description": "Raid signup",
+        "leader": "Frikadella",
+        "time": "20:00",
+        "channel_id": 1344375353245696143,
+        "is_recurring": false,
+        "recurring_interval_days": null
       }
     ]
   }
@@ -2506,140 +3679,160 @@ def get_all_signup_message_ids() -> list[int]:
 FILE: data/signups.json
 ================================================
 {
-  "1490534263819604180": {
-    "title": "HC Progression - Template Preview",
-    "description": "Visual preview with fake raid roster",
-    "leader": "Raid Leader",
-    "start_ts": 1775669400,
-    "channel_id": 1480200691938099263,
-    "guild_id": 1480200690654777466,
+  "1500565180818391170": {
+    "title": "ToT hc",
+    "description": "Raid signup",
+    "leader": "Frikadella",
+    "start_ts": 1778436000,
+    "channel_id": 1344375353245696143,
+    "guild_id": 1175174589639303339,
     "users": {
-      "demo_0": {
-        "display_name": "Arrowqt",
-        "class": "Paladin",
-        "spec": "ProtectionPaladin",
-        "role": "Tank",
-        "status": "sign",
-        "timestamp": 1775441461.1497636
-      },
-      "demo_1": {
-        "display_name": "Shockbot",
-        "class": "Warrior",
-        "spec": "ProtectionWarrior",
-        "role": "Tank",
-        "status": "sign",
-        "timestamp": 1775441462.1497636
-      },
-      "demo_2": {
-        "display_name": "Darkmoo",
-        "class": "Shaman",
-        "spec": "RestorationShaman",
-        "role": "Healer",
-        "status": "sign",
-        "timestamp": 1775441463.1497636
-      },
-      "demo_3": {
-        "display_name": "Mendrina",
-        "class": "Priest",
-        "spec": "Discipline",
-        "role": "Healer",
-        "status": "sign",
-        "timestamp": 1775441464.1497636
-      },
-      "demo_4": {
-        "display_name": "Totemlord",
-        "class": "Priest",
-        "spec": "HolyPriest",
-        "role": "Healer",
-        "status": "sign",
-        "timestamp": 1775441465.1497636
-      },
-      "demo_5": {
-        "display_name": "Thorgrim",
-        "class": "Death Knight",
-        "spec": "Unholy",
-        "role": "Melee",
-        "status": "sign",
-        "timestamp": 1775441466.1497636
-      },
-      "demo_6": {
-        "display_name": "Moonbeef",
-        "class": "Warrior",
-        "spec": "Fury",
-        "role": "Melee",
-        "status": "sign",
-        "timestamp": 1775441467.1497636
-      },
-      "demo_7": {
-        "display_name": "Frostzug",
-        "class": "Warlock",
-        "spec": "Demonology",
-        "role": "Ranged",
-        "status": "sign",
-        "timestamp": 1775441468.1497636
-      },
-      "demo_8": {
-        "display_name": "Pyroblastz",
-        "class": "Mage",
-        "spec": "Arcane",
-        "role": "Ranged",
-        "status": "sign",
-        "timestamp": 1775441469.1497636
-      },
-      "demo_9": {
-        "display_name": "Holytoast",
+      "733947209845833730": {
         "class": "Shaman",
         "spec": "Elemental",
         "role": "Ranged",
-        "status": "sign",
-        "timestamp": 1775441470.1497636
+        "timestamp": 1777833243.6232119,
+        "name": "Frikadella",
+        "note": "",
+        "display_name": "Frikadella",
+        "status": "sign"
       },
-      "demo_10": {
-        "display_name": "Critlord",
-        "class": "Paladin",
-        "spec": "HolyPaladin",
-        "role": "Healer",
-        "status": "late",
-        "timestamp": 1775441471.1497636
+      "185836617112485889": {
+        "class": "Monk",
+        "spec": "Brewmaster",
+        "role": "Tank",
+        "timestamp": 1777835455.0936618,
+        "name": "Tickle",
+        "note": "",
+        "display_name": "Tickle",
+        "status": "sign"
       },
-      "demo_11": {
-        "display_name": "Hexella",
-        "class": "Hunter",
-        "spec": "Marksmanship",
+      "451796745936961556": {
+        "class": "Shaman",
+        "spec": "Elemental",
         "role": "Ranged",
-        "status": "tentative",
-        "timestamp": 1775441472.1497636
+        "timestamp": 1777836408.1424863,
+        "name": "Copperagnus",
+        "note": "",
+        "display_name": "Copperagnus",
+        "status": "sign"
       },
-      "demo_12": {
-        "display_name": "Windbonk",
+      "196533947256012800": {
+        "class": "Druid",
+        "spec": "RestorationDruid",
+        "role": "Healer",
+        "timestamp": 1777893888.1522157,
+        "name": "Charoma",
+        "note": "",
+        "display_name": "Charoma",
+        "status": "sign"
+      },
+      "219053149216964608": {
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "timestamp": 1777910394.0405915,
+        "name": "Nani",
+        "note": "",
+        "display_name": "Nani/Klamydia",
+        "status": "sign"
+      },
+      "1462420346631360607": {
+        "class": "Death Knight",
+        "spec": "FrostDK",
+        "role": "Melee",
+        "timestamp": 1777931189.5429735,
+        "name": "Frost Death Knight",
+        "note": "",
+        "display_name": "Busmusen",
+        "status": "sign"
+      },
+      "676385985008893982": {
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "timestamp": 1777969038.9806502,
+        "name": "Sweet home",
+        "note": "",
+        "display_name": "Pingi/Aladama",
+        "status": "sign"
+      }
+    },
+    "expected_players": [
+      "747110982136103035",
+      "733947209845833730",
+      "676385985008893982",
+      "451796745936961556",
+      "219053149216964608",
+      "209344159943753729",
+      "196533947256012800",
+      "185836617112485889",
+      "182816419078078464",
+      "1462420346631360607"
+    ],
+    "missing_signup_reminders_sent": {
+      "2880": false,
+      "1440": false
+    },
+    "signed_player_reminders_sent": {
+      "60": false
+    },
+    "missing_reminder_message_id": null,
+    "signed_reminder_message_id": null,
+    "is_recurring": true,
+    "recurring_interval_days": 7
+  },
+  "1501644784706523307": {
+    "title": "HC Re-clear",
+    "description": "HC Re-clear, aiming for 13/13",
+    "leader": "Rhegaran",
+    "start_ts": 1778693400,
+    "channel_id": 1423981356798578718,
+    "guild_id": 1423706462773051542,
+    "users": {
+      "248796420880990208": {
+        "class": "Shaman",
+        "spec": "Elemental",
+        "role": "Ranged",
+        "timestamp": 1778092575.073933,
+        "name": "Turit",
+        "note": "",
+        "display_name": "Turit",
+        "status": "sign"
+      },
+      "710915046200574073": {
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "timestamp": 1778095444.839082,
+        "name": "Rhegaran",
+        "note": "",
+        "display_name": "MistaProfessa",
+        "status": "sign"
+      },
+      "369109810311987200": {
         "class": "Hunter",
         "spec": "Survival",
         "role": "Ranged",
-        "status": "absence",
-        "timestamp": 1775441473.1497636
-      },
-      "demo_13": {
-        "display_name": "Dotsdot",
-        "class": "Warlock",
-        "spec": "Destruction",
-        "role": "Ranged",
-        "status": "bench",
-        "timestamp": 1775441474.1497636
-      },
-      "141881090913599488": {
-        "class": "Druid",
-        "spec": "Balance",
-        "role": "Ranged",
-        "timestamp": 1775441473.357029,
-        "name": "Hokkopokko",
-        "note": "",
-        "display_name": "Hekkipekki",
-        "status": "sign"
+        "timestamp": 1778099257.8258235,
+        "name": "Maverman",
+        "note": "idk",
+        "display_name": "Maverinkel",
+        "status": "absence"
       }
     },
     "expected_players": [
-      "1480200859735293965",
-      "141881090913599488"
+      "710915046200574073",
+      "489526528309460993",
+      "369109810311987200",
+      "251004817844076554",
+      "248796420880990208",
+      "239532428073500672",
+      "141881090913599488",
+      "771806222525267968",
+      "321966396864987137",
+      "344496860855009280",
+      "260495039686246400"
     ],
     "missing_signup_reminders_sent": {
       "2880": false,
@@ -2650,756 +3843,69 @@ FILE: data/signups.json
     },
     "missing_reminder_message_id": null,
     "signed_reminder_message_id": null,
-    "comp_message_id": 1490534369478185011,
-    "last_comp_data": {
-      "raid_id": "1490534263819604180",
-      "title": "HC Progression - Template Preview",
-      "description": "Visual preview with fake raid roster",
-      "leader": "Raid Leader",
-      "start_ts": 1775669400,
-      "group_1": [
-        [
-          "demo_0",
-          {
-            "display_name": "Arrowqt",
-            "class": "Paladin",
-            "spec": "ProtectionPaladin",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441461.1497636
-          }
-        ],
-        [
-          "demo_1",
-          {
-            "display_name": "Shockbot",
-            "class": "Warrior",
-            "spec": "ProtectionWarrior",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441462.1497636
-          }
-        ],
-        [
-          "demo_2",
-          {
-            "display_name": "Darkmoo",
-            "class": "Shaman",
-            "spec": "RestorationShaman",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441463.1497636
-          }
-        ],
-        [
-          "demo_4",
-          {
-            "display_name": "Totemlord",
-            "class": "Priest",
-            "spec": "HolyPriest",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441465.1497636
-          }
-        ],
-        [
-          "demo_5",
-          {
-            "display_name": "Thorgrim",
-            "class": "Death Knight",
-            "spec": "Unholy",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441466.1497636
-          }
-        ]
-      ],
-      "group_2": [
-        [
-          "demo_6",
-          {
-            "display_name": "Moonbeef",
-            "class": "Warrior",
-            "spec": "Fury",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441467.1497636
-          }
-        ],
-        [
-          "demo_7",
-          {
-            "display_name": "Frostzug",
-            "class": "Warlock",
-            "spec": "Demonology",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441468.1497636
-          }
-        ],
-        [
-          "demo_8",
-          {
-            "display_name": "Pyroblastz",
-            "class": "Mage",
-            "spec": "Arcane",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441469.1497636
-          }
-        ],
-        [
-          "demo_9",
-          {
-            "display_name": "Holytoast",
-            "class": "Shaman",
-            "spec": "Elemental",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441470.1497636
-          }
-        ],
-        [
-          "141881090913599488",
-          {
-            "class": "Druid",
-            "spec": "Balance",
-            "role": "Ranged",
-            "timestamp": 1775441473.357029,
-            "name": "Hokkopokko",
-            "note": "",
-            "display_name": "Hekkipekki",
-            "status": "sign"
-          }
-        ]
-      ],
-      "bench_players": [
-        [
-          "demo_13",
-          {
-            "display_name": "Dotsdot",
-            "class": "Warlock",
-            "spec": "Destruction",
-            "role": "Ranged",
-            "status": "bench",
-            "timestamp": 1775441474.1497636
-          }
-        ],
-        [
-          "demo_3",
-          {
-            "display_name": "Mendrina",
-            "class": "Priest",
-            "spec": "Discipline",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441464.1497636
-          }
-        ]
-      ],
-      "late_players": [
-        [
-          "demo_10",
-          {
-            "display_name": "Critlord",
-            "class": "Paladin",
-            "spec": "HolyPaladin",
-            "role": "Healer",
-            "status": "late",
-            "timestamp": 1775441471.1497636
-          }
-        ]
-      ],
-      "tentative_players": [
-        [
-          "demo_11",
-          {
-            "display_name": "Hexella",
-            "class": "Hunter",
-            "spec": "Marksmanship",
-            "role": "Ranged",
-            "status": "tentative",
-            "timestamp": 1775441472.1497636
-          }
-        ]
-      ],
-      "absence_players": [
-        [
-          "demo_12",
-          {
-            "display_name": "Windbonk",
-            "class": "Hunter",
-            "spec": "Survival",
-            "role": "Ranged",
-            "status": "absence",
-            "timestamp": 1775441473.1497636
-          }
-        ]
-      ],
-      "selected_players": [
-        [
-          "demo_0",
-          {
-            "display_name": "Arrowqt",
-            "class": "Paladin",
-            "spec": "ProtectionPaladin",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441461.1497636
-          }
-        ],
-        [
-          "demo_1",
-          {
-            "display_name": "Shockbot",
-            "class": "Warrior",
-            "spec": "ProtectionWarrior",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441462.1497636
-          }
-        ],
-        [
-          "demo_2",
-          {
-            "display_name": "Darkmoo",
-            "class": "Shaman",
-            "spec": "RestorationShaman",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441463.1497636
-          }
-        ],
-        [
-          "demo_4",
-          {
-            "display_name": "Totemlord",
-            "class": "Priest",
-            "spec": "HolyPriest",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441465.1497636
-          }
-        ],
-        [
-          "demo_5",
-          {
-            "display_name": "Thorgrim",
-            "class": "Death Knight",
-            "spec": "Unholy",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441466.1497636
-          }
-        ],
-        [
-          "demo_6",
-          {
-            "display_name": "Moonbeef",
-            "class": "Warrior",
-            "spec": "Fury",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441467.1497636
-          }
-        ],
-        [
-          "demo_7",
-          {
-            "display_name": "Frostzug",
-            "class": "Warlock",
-            "spec": "Demonology",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441468.1497636
-          }
-        ],
-        [
-          "demo_8",
-          {
-            "display_name": "Pyroblastz",
-            "class": "Mage",
-            "spec": "Arcane",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441469.1497636
-          }
-        ],
-        [
-          "demo_9",
-          {
-            "display_name": "Holytoast",
-            "class": "Shaman",
-            "spec": "Elemental",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441470.1497636
-          }
-        ],
-        [
-          "141881090913599488",
-          {
-            "class": "Druid",
-            "spec": "Balance",
-            "role": "Ranged",
-            "timestamp": 1775441473.357029,
-            "name": "Hokkopokko",
-            "note": "",
-            "display_name": "Hekkipekki",
-            "status": "sign"
-          }
-        ]
-      ],
-      "signed_players": [
-        [
-          "demo_0",
-          {
-            "display_name": "Arrowqt",
-            "class": "Paladin",
-            "spec": "ProtectionPaladin",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441461.1497636
-          }
-        ],
-        [
-          "demo_1",
-          {
-            "display_name": "Shockbot",
-            "class": "Warrior",
-            "spec": "ProtectionWarrior",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441462.1497636
-          }
-        ],
-        [
-          "demo_2",
-          {
-            "display_name": "Darkmoo",
-            "class": "Shaman",
-            "spec": "RestorationShaman",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441463.1497636
-          }
-        ],
-        [
-          "demo_4",
-          {
-            "display_name": "Totemlord",
-            "class": "Priest",
-            "spec": "HolyPriest",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441465.1497636
-          }
-        ],
-        [
-          "demo_5",
-          {
-            "display_name": "Thorgrim",
-            "class": "Death Knight",
-            "spec": "Unholy",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441466.1497636
-          }
-        ],
-        [
-          "demo_6",
-          {
-            "display_name": "Moonbeef",
-            "class": "Warrior",
-            "spec": "Fury",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441467.1497636
-          }
-        ],
-        [
-          "demo_7",
-          {
-            "display_name": "Frostzug",
-            "class": "Warlock",
-            "spec": "Demonology",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441468.1497636
-          }
-        ],
-        [
-          "demo_8",
-          {
-            "display_name": "Pyroblastz",
-            "class": "Mage",
-            "spec": "Arcane",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441469.1497636
-          }
-        ],
-        [
-          "demo_9",
-          {
-            "display_name": "Holytoast",
-            "class": "Shaman",
-            "spec": "Elemental",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441470.1497636
-          }
-        ],
-        [
-          "141881090913599488",
-          {
-            "class": "Druid",
-            "spec": "Balance",
-            "role": "Ranged",
-            "timestamp": 1775441473.357029,
-            "name": "Hokkopokko",
-            "note": "",
-            "display_name": "Hekkipekki",
-            "status": "sign"
-          }
-        ]
-      ],
-      "mentions": [
-        "<@demo_0>",
-        "<@demo_1>",
-        "<@demo_2>",
-        "<@demo_4>",
-        "<@demo_5>",
-        "<@demo_6>",
-        "<@demo_7>",
-        "<@demo_8>",
-        "<@demo_9>",
-        "<@141881090913599488>"
-      ],
-      "comp_label": "2/2/6",
-      "role_targets": {
-        "Tank": 2,
-        "Healer": 2,
-        "DPS": 6
-      },
-      "bench_choice_steps": [],
-      "status_buckets": {
-        "sign": [
-          [
-            "demo_0",
-            {
-              "display_name": "Arrowqt",
-              "class": "Paladin",
-              "spec": "ProtectionPaladin",
-              "role": "Tank",
-              "status": "sign",
-              "timestamp": 1775441461.1497636
-            }
-          ],
-          [
-            "demo_1",
-            {
-              "display_name": "Shockbot",
-              "class": "Warrior",
-              "spec": "ProtectionWarrior",
-              "role": "Tank",
-              "status": "sign",
-              "timestamp": 1775441462.1497636
-            }
-          ],
-          [
-            "demo_2",
-            {
-              "display_name": "Darkmoo",
-              "class": "Shaman",
-              "spec": "RestorationShaman",
-              "role": "Healer",
-              "status": "sign",
-              "timestamp": 1775441463.1497636
-            }
-          ],
-          [
-            "demo_3",
-            {
-              "display_name": "Mendrina",
-              "class": "Priest",
-              "spec": "Discipline",
-              "role": "Healer",
-              "status": "sign",
-              "timestamp": 1775441464.1497636
-            }
-          ],
-          [
-            "demo_4",
-            {
-              "display_name": "Totemlord",
-              "class": "Priest",
-              "spec": "HolyPriest",
-              "role": "Healer",
-              "status": "sign",
-              "timestamp": 1775441465.1497636
-            }
-          ],
-          [
-            "demo_5",
-            {
-              "display_name": "Thorgrim",
-              "class": "Death Knight",
-              "spec": "Unholy",
-              "role": "Melee",
-              "status": "sign",
-              "timestamp": 1775441466.1497636
-            }
-          ],
-          [
-            "demo_6",
-            {
-              "display_name": "Moonbeef",
-              "class": "Warrior",
-              "spec": "Fury",
-              "role": "Melee",
-              "status": "sign",
-              "timestamp": 1775441467.1497636
-            }
-          ],
-          [
-            "demo_7",
-            {
-              "display_name": "Frostzug",
-              "class": "Warlock",
-              "spec": "Demonology",
-              "role": "Ranged",
-              "status": "sign",
-              "timestamp": 1775441468.1497636
-            }
-          ],
-          [
-            "demo_8",
-            {
-              "display_name": "Pyroblastz",
-              "class": "Mage",
-              "spec": "Arcane",
-              "role": "Ranged",
-              "status": "sign",
-              "timestamp": 1775441469.1497636
-            }
-          ],
-          [
-            "demo_9",
-            {
-              "display_name": "Holytoast",
-              "class": "Shaman",
-              "spec": "Elemental",
-              "role": "Ranged",
-              "status": "sign",
-              "timestamp": 1775441470.1497636
-            }
-          ],
-          [
-            "141881090913599488",
-            {
-              "class": "Druid",
-              "spec": "Balance",
-              "role": "Ranged",
-              "timestamp": 1775441473.357029,
-              "name": "Hokkopokko",
-              "note": "",
-              "display_name": "Hekkipekki",
-              "status": "sign"
-            }
-          ]
-        ],
-        "bench": [
-          [
-            "demo_13",
-            {
-              "display_name": "Dotsdot",
-              "class": "Warlock",
-              "spec": "Destruction",
-              "role": "Ranged",
-              "status": "bench",
-              "timestamp": 1775441474.1497636
-            }
-          ]
-        ],
-        "late": [
-          [
-            "demo_10",
-            {
-              "display_name": "Critlord",
-              "class": "Paladin",
-              "spec": "HolyPaladin",
-              "role": "Healer",
-              "status": "late",
-              "timestamp": 1775441471.1497636
-            }
-          ]
-        ],
-        "tentative": [
-          [
-            "demo_11",
-            {
-              "display_name": "Hexella",
-              "class": "Hunter",
-              "spec": "Marksmanship",
-              "role": "Ranged",
-              "status": "tentative",
-              "timestamp": 1775441472.1497636
-            }
-          ]
-        ],
-        "absence": [
-          [
-            "demo_12",
-            {
-              "display_name": "Windbonk",
-              "class": "Hunter",
-              "spec": "Survival",
-              "role": "Ranged",
-              "status": "absence",
-              "timestamp": 1775441473.1497636
-            }
-          ]
-        ]
-      }
-    },
-    "attendance_snapshot_created": true,
-    "attendance_record_id": "1490534263819604180"
+    "is_recurring": true,
+    "recurring_interval_days": 7
   },
-  "1490534384091140198": {
-    "title": "HC Progression - Template Preview",
-    "description": "Visual preview with fake raid roster",
-    "leader": "Raid Leader",
-    "start_ts": 1775669400,
-    "channel_id": 1480200691938099263,
-    "guild_id": 1480200690654777466,
+  "1501652346399101028": {
+    "title": "ToT hc",
+    "description": "Raid signup",
+    "leader": "Frikadella",
+    "start_ts": 1778695200,
+    "channel_id": 1344375248283238452,
+    "guild_id": 1175174589639303339,
     "users": {
-      "demo_0": {
-        "display_name": "Windbonk",
-        "class": "Death Knight",
-        "spec": "Blood",
+      "185836617112485889": {
+        "class": "Monk",
+        "spec": "Brewmaster",
         "role": "Tank",
-        "status": "sign",
-        "timestamp": 1775441489.8488102
+        "timestamp": 1778093836.5627112,
+        "name": "Tickle",
+        "note": "",
+        "display_name": "Tickle",
+        "status": "sign"
       },
-      "demo_1": {
-        "display_name": "Sneakstab",
+      "182816419078078464": {
         "class": "Paladin",
         "spec": "ProtectionPaladin",
         "role": "Tank",
-        "status": "sign",
-        "timestamp": 1775441490.8488102
-      },
-      "demo_2": {
-        "display_name": "Pyroblastz",
-        "class": "Monk",
-        "spec": "Mistweaver",
-        "role": "Healer",
-        "status": "sign",
-        "timestamp": 1775441491.8488102
-      },
-      "demo_3": {
-        "display_name": "Hexella",
-        "class": "Priest",
-        "spec": "HolyPriest",
-        "role": "Healer",
-        "status": "sign",
-        "timestamp": 1775441492.8488102
-      },
-      "demo_4": {
-        "display_name": "Leafhealz",
-        "class": "Shaman",
-        "spec": "RestorationShaman",
-        "role": "Healer",
-        "status": "sign",
-        "timestamp": 1775441493.8488102
-      },
-      "demo_5": {
-        "display_name": "Clawbert",
-        "class": "Warrior",
-        "spec": "Fury",
-        "role": "Melee",
-        "status": "sign",
-        "timestamp": 1775441494.8488102
-      },
-      "demo_6": {
-        "display_name": "Thorgrim",
-        "class": "Paladin",
-        "spec": "Retribution",
-        "role": "Melee",
-        "status": "sign",
-        "timestamp": 1775441495.8488102
-      },
-      "demo_7": {
-        "display_name": "Totemlord",
-        "class": "Warlock",
-        "spec": "Demonology",
-        "role": "Ranged",
-        "status": "sign",
-        "timestamp": 1775441496.8488102
-      },
-      "demo_8": {
-        "display_name": "Darkmoo",
-        "class": "Druid",
-        "spec": "Balance",
-        "role": "Ranged",
-        "status": "sign",
-        "timestamp": 1775441497.8488102
-      },
-      "demo_9": {
-        "display_name": "Glimmer",
-        "class": "Mage",
-        "spec": "Arcane",
-        "role": "Ranged",
-        "status": "sign",
-        "timestamp": 1775441498.8488102
-      },
-      "demo_10": {
-        "display_name": "Arrowqt",
-        "class": "Warlock",
-        "spec": "Destruction",
-        "role": "Ranged",
-        "status": "late",
-        "timestamp": 1775441499.8488102
-      },
-      "demo_11": {
-        "display_name": "Shieldbro",
-        "class": "Hunter",
-        "spec": "Marksmanship",
-        "role": "Ranged",
-        "status": "tentative",
-        "timestamp": 1775441500.8488102
-      },
-      "demo_12": {
-        "display_name": "Bonkadin",
-        "class": "Druid",
-        "spec": "Guardian",
-        "role": "Tank",
-        "status": "absence",
-        "timestamp": 1775441501.8488102
-      },
-      "demo_13": {
-        "display_name": "Stonepaw",
-        "class": "Mage",
-        "spec": "Frost",
-        "role": "Ranged",
-        "status": "bench",
-        "timestamp": 1775441502.8488102
-      },
-      "141881090913599488": {
-        "class": "Warrior",
-        "spec": "Fury",
-        "role": "Melee",
-        "timestamp": 1775441503.087667,
-        "name": "Yes",
+        "timestamp": 1778096486.9895482,
+        "name": "DPS Tank",
         "note": "",
-        "display_name": "Hekkipekki",
+        "display_name": "Särpär",
+        "status": "sign"
+      },
+      "196533947256012800": {
+        "class": "Druid",
+        "spec": "RestorationDruid",
+        "role": "Healer",
+        "timestamp": 1778101340.814263,
+        "name": "Charoma",
+        "note": "",
+        "display_name": "Charoma",
+        "status": "sign"
+      },
+      "676385985008893982": {
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "timestamp": 1778102526.9241192,
+        "name": "Sweet home",
+        "note": "",
+        "display_name": "Pingi/Aladama",
         "status": "sign"
       }
     },
     "expected_players": [
-      "1480200859735293965",
-      "141881090913599488"
+      "747110982136103035",
+      "733947209845833730",
+      "676385985008893982",
+      "451796745936961556",
+      "219053149216964608",
+      "209344159943753729",
+      "196533947256012800",
+      "185836617112485889",
+      "182816419078078464",
+      "1462420346631360607"
     ],
     "missing_signup_reminders_sent": {
       "2880": false,
@@ -3410,658 +3916,95 @@ FILE: data/signups.json
     },
     "missing_reminder_message_id": null,
     "signed_reminder_message_id": null,
-    "comp_message_id": 1490534486784348183,
-    "last_comp_data": {
-      "raid_id": "1490534384091140198",
-      "title": "HC Progression - Template Preview",
-      "description": "Visual preview with fake raid roster",
-      "leader": "Raid Leader",
-      "start_ts": 1775669400,
-      "group_1": [
-        [
-          "demo_0",
-          {
-            "display_name": "Windbonk",
-            "class": "Death Knight",
-            "spec": "Blood",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441489.8488102
-          }
-        ],
-        [
-          "demo_1",
-          {
-            "display_name": "Sneakstab",
-            "class": "Paladin",
-            "spec": "ProtectionPaladin",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441490.8488102
-          }
-        ],
-        [
-          "demo_2",
-          {
-            "display_name": "Pyroblastz",
-            "class": "Monk",
-            "spec": "Mistweaver",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441491.8488102
-          }
-        ],
-        [
-          "demo_4",
-          {
-            "display_name": "Leafhealz",
-            "class": "Shaman",
-            "spec": "RestorationShaman",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441493.8488102
-          }
-        ],
-        [
-          "demo_5",
-          {
-            "display_name": "Clawbert",
-            "class": "Warrior",
-            "spec": "Fury",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441494.8488102
-          }
-        ]
-      ],
-      "group_2": [
-        [
-          "demo_6",
-          {
-            "display_name": "Thorgrim",
-            "class": "Paladin",
-            "spec": "Retribution",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441495.8488102
-          }
-        ],
-        [
-          "demo_7",
-          {
-            "display_name": "Totemlord",
-            "class": "Warlock",
-            "spec": "Demonology",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441496.8488102
-          }
-        ],
-        [
-          "demo_8",
-          {
-            "display_name": "Darkmoo",
-            "class": "Druid",
-            "spec": "Balance",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441497.8488102
-          }
-        ],
-        [
-          "demo_9",
-          {
-            "display_name": "Glimmer",
-            "class": "Mage",
-            "spec": "Arcane",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441498.8488102
-          }
-        ],
-        [
-          "141881090913599488",
-          {
-            "class": "Warrior",
-            "spec": "Fury",
-            "role": "Melee",
-            "timestamp": 1775441503.087667,
-            "name": "Yes",
-            "note": "",
-            "display_name": "Hekkipekki",
-            "status": "sign"
-          }
-        ]
-      ],
-      "bench_players": [
-        [
-          "demo_13",
-          {
-            "display_name": "Stonepaw",
-            "class": "Mage",
-            "spec": "Frost",
-            "role": "Ranged",
-            "status": "bench",
-            "timestamp": 1775441502.8488102
-          }
-        ],
-        [
-          "demo_3",
-          {
-            "display_name": "Hexella",
-            "class": "Priest",
-            "spec": "HolyPriest",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441492.8488102
-          }
-        ]
-      ],
-      "late_players": [
-        [
-          "demo_10",
-          {
-            "display_name": "Arrowqt",
-            "class": "Warlock",
-            "spec": "Destruction",
-            "role": "Ranged",
-            "status": "late",
-            "timestamp": 1775441499.8488102
-          }
-        ]
-      ],
-      "tentative_players": [
-        [
-          "demo_11",
-          {
-            "display_name": "Shieldbro",
-            "class": "Hunter",
-            "spec": "Marksmanship",
-            "role": "Ranged",
-            "status": "tentative",
-            "timestamp": 1775441500.8488102
-          }
-        ]
-      ],
-      "absence_players": [
-        [
-          "demo_12",
-          {
-            "display_name": "Bonkadin",
-            "class": "Druid",
-            "spec": "Guardian",
-            "role": "Tank",
-            "status": "absence",
-            "timestamp": 1775441501.8488102
-          }
-        ]
-      ],
-      "selected_players": [
-        [
-          "demo_0",
-          {
-            "display_name": "Windbonk",
-            "class": "Death Knight",
-            "spec": "Blood",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441489.8488102
-          }
-        ],
-        [
-          "demo_1",
-          {
-            "display_name": "Sneakstab",
-            "class": "Paladin",
-            "spec": "ProtectionPaladin",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441490.8488102
-          }
-        ],
-        [
-          "demo_2",
-          {
-            "display_name": "Pyroblastz",
-            "class": "Monk",
-            "spec": "Mistweaver",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441491.8488102
-          }
-        ],
-        [
-          "demo_4",
-          {
-            "display_name": "Leafhealz",
-            "class": "Shaman",
-            "spec": "RestorationShaman",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441493.8488102
-          }
-        ],
-        [
-          "demo_5",
-          {
-            "display_name": "Clawbert",
-            "class": "Warrior",
-            "spec": "Fury",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441494.8488102
-          }
-        ],
-        [
-          "demo_6",
-          {
-            "display_name": "Thorgrim",
-            "class": "Paladin",
-            "spec": "Retribution",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441495.8488102
-          }
-        ],
-        [
-          "demo_7",
-          {
-            "display_name": "Totemlord",
-            "class": "Warlock",
-            "spec": "Demonology",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441496.8488102
-          }
-        ],
-        [
-          "demo_8",
-          {
-            "display_name": "Darkmoo",
-            "class": "Druid",
-            "spec": "Balance",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441497.8488102
-          }
-        ],
-        [
-          "demo_9",
-          {
-            "display_name": "Glimmer",
-            "class": "Mage",
-            "spec": "Arcane",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441498.8488102
-          }
-        ],
-        [
-          "141881090913599488",
-          {
-            "class": "Warrior",
-            "spec": "Fury",
-            "role": "Melee",
-            "timestamp": 1775441503.087667,
-            "name": "Yes",
-            "note": "",
-            "display_name": "Hekkipekki",
-            "status": "sign"
-          }
-        ]
-      ],
-      "signed_players": [
-        [
-          "demo_0",
-          {
-            "display_name": "Windbonk",
-            "class": "Death Knight",
-            "spec": "Blood",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441489.8488102
-          }
-        ],
-        [
-          "demo_1",
-          {
-            "display_name": "Sneakstab",
-            "class": "Paladin",
-            "spec": "ProtectionPaladin",
-            "role": "Tank",
-            "status": "sign",
-            "timestamp": 1775441490.8488102
-          }
-        ],
-        [
-          "demo_2",
-          {
-            "display_name": "Pyroblastz",
-            "class": "Monk",
-            "spec": "Mistweaver",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441491.8488102
-          }
-        ],
-        [
-          "demo_4",
-          {
-            "display_name": "Leafhealz",
-            "class": "Shaman",
-            "spec": "RestorationShaman",
-            "role": "Healer",
-            "status": "sign",
-            "timestamp": 1775441493.8488102
-          }
-        ],
-        [
-          "demo_5",
-          {
-            "display_name": "Clawbert",
-            "class": "Warrior",
-            "spec": "Fury",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441494.8488102
-          }
-        ],
-        [
-          "demo_6",
-          {
-            "display_name": "Thorgrim",
-            "class": "Paladin",
-            "spec": "Retribution",
-            "role": "Melee",
-            "status": "sign",
-            "timestamp": 1775441495.8488102
-          }
-        ],
-        [
-          "demo_7",
-          {
-            "display_name": "Totemlord",
-            "class": "Warlock",
-            "spec": "Demonology",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441496.8488102
-          }
-        ],
-        [
-          "demo_8",
-          {
-            "display_name": "Darkmoo",
-            "class": "Druid",
-            "spec": "Balance",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441497.8488102
-          }
-        ],
-        [
-          "demo_9",
-          {
-            "display_name": "Glimmer",
-            "class": "Mage",
-            "spec": "Arcane",
-            "role": "Ranged",
-            "status": "sign",
-            "timestamp": 1775441498.8488102
-          }
-        ],
-        [
-          "141881090913599488",
-          {
-            "class": "Warrior",
-            "spec": "Fury",
-            "role": "Melee",
-            "timestamp": 1775441503.087667,
-            "name": "Yes",
-            "note": "",
-            "display_name": "Hekkipekki",
-            "status": "sign"
-          }
-        ]
-      ],
-      "mentions": [
-        "<@demo_0>",
-        "<@demo_1>",
-        "<@demo_2>",
-        "<@demo_4>",
-        "<@demo_5>",
-        "<@demo_6>",
-        "<@demo_7>",
-        "<@demo_8>",
-        "<@demo_9>",
-        "<@141881090913599488>"
-      ],
-      "comp_label": "2/2/6",
-      "role_targets": {
-        "Tank": 2,
-        "Healer": 2,
-        "DPS": 6
-      },
-      "bench_choice_steps": [],
-      "status_buckets": {
-        "sign": [
-          [
-            "demo_0",
-            {
-              "display_name": "Windbonk",
-              "class": "Death Knight",
-              "spec": "Blood",
-              "role": "Tank",
-              "status": "sign",
-              "timestamp": 1775441489.8488102
-            }
-          ],
-          [
-            "demo_1",
-            {
-              "display_name": "Sneakstab",
-              "class": "Paladin",
-              "spec": "ProtectionPaladin",
-              "role": "Tank",
-              "status": "sign",
-              "timestamp": 1775441490.8488102
-            }
-          ],
-          [
-            "demo_2",
-            {
-              "display_name": "Pyroblastz",
-              "class": "Monk",
-              "spec": "Mistweaver",
-              "role": "Healer",
-              "status": "sign",
-              "timestamp": 1775441491.8488102
-            }
-          ],
-          [
-            "demo_3",
-            {
-              "display_name": "Hexella",
-              "class": "Priest",
-              "spec": "HolyPriest",
-              "role": "Healer",
-              "status": "sign",
-              "timestamp": 1775441492.8488102
-            }
-          ],
-          [
-            "demo_4",
-            {
-              "display_name": "Leafhealz",
-              "class": "Shaman",
-              "spec": "RestorationShaman",
-              "role": "Healer",
-              "status": "sign",
-              "timestamp": 1775441493.8488102
-            }
-          ],
-          [
-            "demo_5",
-            {
-              "display_name": "Clawbert",
-              "class": "Warrior",
-              "spec": "Fury",
-              "role": "Melee",
-              "status": "sign",
-              "timestamp": 1775441494.8488102
-            }
-          ],
-          [
-            "demo_6",
-            {
-              "display_name": "Thorgrim",
-              "class": "Paladin",
-              "spec": "Retribution",
-              "role": "Melee",
-              "status": "sign",
-              "timestamp": 1775441495.8488102
-            }
-          ],
-          [
-            "demo_7",
-            {
-              "display_name": "Totemlord",
-              "class": "Warlock",
-              "spec": "Demonology",
-              "role": "Ranged",
-              "status": "sign",
-              "timestamp": 1775441496.8488102
-            }
-          ],
-          [
-            "demo_8",
-            {
-              "display_name": "Darkmoo",
-              "class": "Druid",
-              "spec": "Balance",
-              "role": "Ranged",
-              "status": "sign",
-              "timestamp": 1775441497.8488102
-            }
-          ],
-          [
-            "demo_9",
-            {
-              "display_name": "Glimmer",
-              "class": "Mage",
-              "spec": "Arcane",
-              "role": "Ranged",
-              "status": "sign",
-              "timestamp": 1775441498.8488102
-            }
-          ],
-          [
-            "141881090913599488",
-            {
-              "class": "Warrior",
-              "spec": "Fury",
-              "role": "Melee",
-              "timestamp": 1775441503.087667,
-              "name": "Yes",
-              "note": "",
-              "display_name": "Hekkipekki",
-              "status": "sign"
-            }
-          ]
-        ],
-        "bench": [
-          [
-            "demo_13",
-            {
-              "display_name": "Stonepaw",
-              "class": "Mage",
-              "spec": "Frost",
-              "role": "Ranged",
-              "status": "bench",
-              "timestamp": 1775441502.8488102
-            }
-          ]
-        ],
-        "late": [
-          [
-            "demo_10",
-            {
-              "display_name": "Arrowqt",
-              "class": "Warlock",
-              "spec": "Destruction",
-              "role": "Ranged",
-              "status": "late",
-              "timestamp": 1775441499.8488102
-            }
-          ]
-        ],
-        "tentative": [
-          [
-            "demo_11",
-            {
-              "display_name": "Shieldbro",
-              "class": "Hunter",
-              "spec": "Marksmanship",
-              "role": "Ranged",
-              "status": "tentative",
-              "timestamp": 1775441500.8488102
-            }
-          ]
-        ],
-        "absence": [
-          [
-            "demo_12",
-            {
-              "display_name": "Bonkadin",
-              "class": "Druid",
-              "spec": "Guardian",
-              "role": "Tank",
-              "status": "absence",
-              "timestamp": 1775441501.8488102
-            }
-          ]
-        ]
-      }
-    },
-    "attendance_snapshot_created": true,
-    "attendance_record_id": "1490534384091140198"
+    "is_recurring": true,
+    "recurring_interval_days": 7
   },
-  "1490536929152729179": {
-    "title": "HC Prog, Alt Raid or Off day",
-    "description": "What will happen?",
-    "leader": "Rhegaran/Hekkipekki",
-    "start_ts": 1776015000,
+  "1501681551740768287": {
+    "title": "HC Progress, Alt raid or Off day",
+    "description": "Raid signup",
+    "leader": "Rhegaran",
+    "start_ts": 1778434200,
     "channel_id": 1445169144377901107,
     "guild_id": 1423706462773051542,
     "users": {
-      "141881090913599488": {
-        "class": "Druid",
-        "spec": "Balance",
-        "role": "Ranged",
-        "timestamp": 1775461387.0458627,
-        "name": "Hekkipekki",
+      "248796420880990208": {
+        "class": "Monk",
+        "spec": "Mistweaver",
+        "role": "Healer",
+        "timestamp": 1778099193.7638977,
+        "name": "Turit",
         "note": "",
-        "display_name": "Hekkipekki",
-        "status": "sign"
-      },
-      "771806222525267968": {
-        "class": "Rogue",
-        "spec": "Assassination",
-        "role": "Melee",
-        "timestamp": 1775461485.7396286,
-        "name": "Shadé",
-        "note": "",
-        "display_name": "Shadé",
+        "display_name": "Turit",
         "status": "sign"
       },
       "489526528309460993": {
         "class": "Warrior",
         "spec": "Fury",
         "role": "Melee",
-        "timestamp": 1775462219.2711742,
+        "timestamp": 1778099275.3991506,
         "name": "Nickfury",
-        "note": "",
+        "note": "Late due to eating out. Don't think I can be there before 21:00 ST",
         "display_name": "Nickfury",
+        "status": "late"
+      },
+      "321966396864987137": {
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "timestamp": 1778099239.4299924,
+        "name": "RaJensen",
+        "note": "",
+        "display_name": "RaJensen",
+        "status": "sign"
+      },
+      "239532428073500672": {
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "timestamp": 1778099242.0549297,
+        "name": "Darkpreacha",
+        "note": "",
+        "display_name": "dpreborn",
+        "status": "sign"
+      },
+      "344496860855009280": {
+        "class": "Warlock",
+        "spec": "Affliction",
+        "role": "Ranged",
+        "timestamp": 1778099251.4314792,
+        "name": "Lenef",
+        "note": "",
+        "display_name": "Lenef",
+        "status": "sign"
+      },
+      "710915046200574073": {
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "timestamp": 1778099316.870454,
+        "name": "Rhegaran",
+        "note": "",
+        "display_name": "MistaProfessa",
+        "status": "sign"
+      },
+      "369109810311987200": {
+        "class": "Hunter",
+        "spec": "Survival",
+        "role": "Ranged",
+        "timestamp": 1778102733.577771,
+        "name": "Maverman",
+        "note": "känner mig färdig med tot",
+        "display_name": "Maverinkel",
+        "status": "absence"
+      },
+      "141881090913599488": {
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "timestamp": 1778103071.6213953,
+        "name": "Hekkipekki",
+        "note": "",
+        "display_name": "Hekkipekki",
         "status": "sign"
       }
     },
@@ -4075,8 +4018,8 @@ FILE: data/signups.json
       "141881090913599488",
       "771806222525267968",
       "321966396864987137",
-      "260495039686246400",
-      "344496860855009280"
+      "344496860855009280",
+      "260495039686246400"
     ],
     "missing_signup_reminders_sent": {
       "2880": false,
@@ -4952,6 +4895,7 @@ from services.attendance.attendance_rules import (
     is_present_attendance_status,
     normalize_attendance_status,
 )
+from services.guild.guild_settings_service import get_expected_players
 
 
 def _safe_int(value: Any, default: int = 0) -> int:
@@ -4962,14 +4906,6 @@ def _safe_int(value: Any, default: int = 0) -> int:
 
 
 def _get_player_name(player: dict) -> str:
-    """
-    Best available user-facing name for attendance reports.
-
-    Priority:
-    1. Stored Discord display name
-    2. Character name
-    3. Discord user id fallback
-    """
     display_name = (player.get("display_name") or "").strip()
     if display_name:
         return display_name
@@ -4986,12 +4922,6 @@ def _get_player_name(player: dict) -> str:
 
 
 def _get_status_priority(status: str | None) -> int:
-    """
-    Higher = better
-
-    Priority requested:
-    Attended > Benched > Late > Tentative > Absent > Unassigned
-    """
     order = {
         "attending": 5,
         "benched": 4,
@@ -5006,10 +4936,6 @@ def _get_status_priority(status: str | None) -> int:
 
 
 def _status_counts_for_attendance(status: str | None) -> tuple[int, int]:
-    """
-    Returns:
-    (present_count, missed_count)
-    """
     normalized = normalize_attendance_status(status)
 
     if is_present_attendance_status(normalized):
@@ -5028,6 +4954,21 @@ def _build_raid_summary(record: dict) -> dict:
         "start_ts": _safe_int(record.get("start_ts"), 0),
         "finalized": bool(record.get("finalized")),
     }
+
+
+def _get_current_raid_team(guild_id: int | str) -> set[str]:
+    return {str(user_id) for user_id in get_expected_players(int(guild_id))}
+
+
+def _get_record_expected_players(record: dict) -> set[str]:
+    expected = record.get("expected_players", [])
+
+    if expected:
+        return {str(user_id) for user_id in expected}
+
+    # Backward compatibility for older attendance records created before
+    # expected_players was stored on the attendance snapshot.
+    return {str(user_id) for user_id in record.get("players", {}).keys()}
 
 
 def get_guild_attendance_records(
@@ -5063,29 +5004,13 @@ def build_attendance_matrix(
     finalized_only: bool = True,
     limit_raids: int | None = None,
 ) -> dict:
-    """
-    Returns a render-friendly matrix structure:
+    guild_id_int = _safe_int(guild_id)
+    current_raid_team_ids = _get_current_raid_team(guild_id_int)
 
-    {
-        "guild_id": ...,
-        "raids": [...],
-        "players": [
-            {
-                "user_id": "...",
-                "name": "...",
-                "attendance_pct": 90,
-                "present_count": 9,
-                "missed_count": 1,
-                "raid_statuses": {
-                    "raid_id_1": "attending",
-                    "raid_id_2": "benched",
-                    ...
-                }
-            }
-        ]
-    }
-    """
-    records = get_guild_attendance_records(guild_id, finalized_only=finalized_only)
+    records = get_guild_attendance_records(
+        guild_id_int,
+        finalized_only=finalized_only,
+    )
 
     if limit_raids is not None and limit_raids > 0:
         records = records[-limit_raids:]
@@ -5105,29 +5030,43 @@ def build_attendance_matrix(
 
     for record in records:
         raid_id = str(record.get("raid_id"))
+        record_players = record.get("players", {})
+        record_expected_ids = _get_record_expected_players(record)
 
-        for user_id, player in record.get("players", {}).items():
+        if current_raid_team_ids:
+            relevant_user_ids = current_raid_team_ids & record_expected_ids
+        else:
+            relevant_user_ids = record_expected_ids
+
+        for user_id in relevant_user_ids:
             user_id = str(user_id)
-            status = normalize_attendance_status(player.get("attendance_status"))
+            player = record_players.get(user_id)
+
+            if player:
+                status = normalize_attendance_status(player.get("attendance_status"))
+                candidate_name = _get_player_name(player)
+            else:
+                status = "no_sign"
+                candidate_name = f"Discord {user_id}"
 
             row = players_by_user[user_id]
             row["user_id"] = user_id
 
-            # Prefer stored Discord display name if it appears later.
-            candidate_name = _get_player_name(player)
             current_name = (row["name"] or "").strip()
             current_is_fallback = (
                 not current_name
                 or current_name == "Unknown"
                 or current_name.startswith("Discord ")
+                or current_name.startswith("User ")
             )
-            candidate_is_display_name = bool((player.get("display_name") or "").strip())
+
+            candidate_is_display_name = bool(
+                player and (player.get("display_name") or "").strip()
+            )
 
             if current_is_fallback or candidate_is_display_name:
                 row["name"] = candidate_name
 
-            # Merge multiple characters for the same Discord user by keeping
-            # the best attendance status for each raid.
             existing_status = row["raid_statuses"].get(raid_id)
             if existing_status is None:
                 row["raid_statuses"][raid_id] = status
@@ -5136,7 +5075,6 @@ def build_attendance_matrix(
 
     players = list(players_by_user.values())
 
-    # Recalculate counts from the merged final per-raid statuses.
     for row in players:
         row["present_count"] = 0
         row["missed_count"] = 0
@@ -5161,10 +5099,11 @@ def build_attendance_matrix(
     )
 
     return {
-        "guild_id": _safe_int(guild_id),
+        "guild_id": guild_id_int,
         "raids": raids,
         "players": players,
         "finalized_only": finalized_only,
+        "raid_team_only": bool(current_raid_team_ids),
     }
 
 
@@ -5380,6 +5319,7 @@ from data.attendance_store import (
     load_attendance,
     save_attendance,
 )
+from data.signup_store import find_message_signup, load_signups
 from services.attendance.attendance_rules import (
     VALID_ATTENDANCE_STATUSES,
     build_manual_placeholder_player,
@@ -5406,19 +5346,61 @@ def _append_history(
     history.append(payload)
 
 
+def _get_signup_for_raid(raid_id: int | str) -> dict[str, Any] | None:
+    data = load_signups()
+    return find_message_signup(data, str(raid_id))
+
+
+def _get_expected_players_for_raid(raid_id: int | str) -> list[str]:
+    signup = _get_signup_for_raid(raid_id)
+    if not signup:
+        return []
+
+    return [str(user_id) for user_id in signup.get("expected_players", [])]
+
+
+def _build_auto_no_sign_player(user_id: int | str) -> dict[str, Any]:
+    key = str(user_id)
+    return {
+        "display_name": f"User {key}",
+        "name": "",
+        "class": "",
+        "spec": "",
+        "role": "",
+        "note": "",
+        "user_id": key,
+        "signup_status": "no_sign",
+        "auto_status": "no_sign",
+        "attendance_status": "no_sign",
+        "status_source": "auto",
+        "manual_override": False,
+        "edited_by": None,
+        "edited_at": None,
+    }
+
+
+def _add_expected_no_sign_players(
+    *,
+    auto_players: dict[str, dict[str, Any]],
+    expected_players: list[str],
+) -> dict[str, dict[str, Any]]:
+    updated = dict(auto_players)
+
+    for user_id in expected_players:
+        key = str(user_id)
+        if key in updated:
+            continue
+
+        updated[key] = _build_auto_no_sign_player(key)
+
+    return updated
+
+
 def _merge_snapshot_players(
     *,
     existing_players: dict[str, dict[str, Any]],
     auto_players: dict[str, dict[str, Any]],
 ) -> dict[str, dict[str, Any]]:
-    """
-    Merge fresh auto-derived snapshot data with any previous manual overrides.
-
-    Rules:
-    - Auto snapshot remains the source of truth for current roster metadata.
-    - Existing manual overrides keep their chosen attendance_status.
-    - Manual-only players (for example added via attendance editor) are preserved.
-    """
     merged: dict[str, dict[str, Any]] = {}
 
     all_user_ids = set(auto_players.keys()) | set(existing_players.keys())
@@ -5449,7 +5431,6 @@ def _merge_snapshot_players(
             merged[user_id] = player
             continue
 
-        # Preserve players that only exist because of manual attendance editing.
         if existing:
             player = dict(existing)
             player["user_id"] = str(user_id)
@@ -5476,17 +5457,17 @@ def sync_attendance_from_comp(
     comp_data: dict[str, Any],
     actor_user_id: int | str | None,
 ) -> dict[str, Any]:
-    """
-    Create or refresh the attendance snapshot from the latest comp data.
-
-    This remains the public integration point used by:
-    - comp posting/updating
-    - lifecycle cleanup safety sync
-    """
     data = load_attendance()
     record = get_or_create_attendance_record(data, raid_id)
 
+    expected_players = _get_expected_players_for_raid(raid_id)
+
     auto_players = derive_auto_snapshot_players(comp_data)
+    auto_players = _add_expected_no_sign_players(
+        auto_players=auto_players,
+        expected_players=expected_players,
+    )
+
     existing_players = record.get("players", {})
 
     record["raid_id"] = str(raid_id)
@@ -5499,8 +5480,10 @@ def sync_attendance_from_comp(
     record["comp_message_id"] = (
         int(comp_message_id) if comp_message_id is not None else record.get("comp_message_id")
     )
+
+    record["expected_players"] = expected_players
     record["snapshot_source"] = "comp_post"
-    record["snapshot_version"] = 2
+    record["snapshot_version"] = 3
     record["players"] = _merge_snapshot_players(
         existing_players=existing_players,
         auto_players=auto_players,
@@ -5515,7 +5498,7 @@ def sync_attendance_from_comp(
         record,
         "attendance_snapshot_created",
         by_user_id=actor_user_id,
-        extra={"snapshot_version": 2},
+        extra={"snapshot_version": 3},
     )
     _append_history(
         record,
@@ -5595,7 +5578,6 @@ def set_manual_attendance_status(
     player["edited_by"] = str(edited_by_user_id) if edited_by_user_id is not None else None
     player["edited_at"] = int(time.time())
 
-    # Keep attendance record finalized after admin edits.
     record["finalized"] = True
 
     _append_history(
@@ -6332,9 +6314,9 @@ from views.raidpack_views import RaidPackView
 
 WA_PANEL_TEXT = """# Must Have Addons & WA's
 - [Method Raid Tools](https://www.curseforge.com/wow/addons/method-raid-tools)
-- [Gargul](https://www.curseforge.com/wow/addons/gargul)
+- [RC Loot Council](https://www.curseforge.com/wow/addons/rclootcouncil-classic)
 - <:fojji:1482050733258838087> [Fojjicore](https://www.curseforge.com/wow/addons/fojjicore)
-- <:fojji:1482050733258838087> [Fojji - Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `cheddar123`
+- <:fojji:1482050733258838087> [Fojji - Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `turmeric123`
 - <:fojji:1482050733258838087> [Raid Anchors WA](https://wago.io/FojjiRaidAnchors-MoP)
 
 **Raid Weakauras (Check at bottom)**
@@ -6508,6 +6490,136 @@ def update_raid_date_only(raid_id: int | str, new_date: str) -> tuple[bool, int 
     signup["start_ts"] = updated_ts
     save_signups(data)
     return True, updated_ts, None
+
+
+================================================
+FILE: services/raid/raid_cancel_service.py
+================================================
+from __future__ import annotations
+
+import discord
+
+from data.attendance_store import load_attendance, save_attendance
+from data.signup_store import (
+    find_message_signup,
+    load_signups,
+    remove_signup_by_message_id,
+)
+
+
+NOTIFY_STATUSES = {"sign", "bench", "late", "tentative"}
+
+
+def _get_notify_user_ids(signup: dict) -> list[str]:
+    users = signup.get("users", {})
+
+    return [
+        str(user_id)
+        for user_id, entry in users.items()
+        if entry.get("status") in NOTIFY_STATUSES and str(user_id).isdigit()
+    ]
+
+
+async def _fetch_signup_channel(bot, signup: dict):
+    guild_id = signup.get("guild_id")
+    channel_id = signup.get("channel_id")
+
+    if not guild_id or not channel_id:
+        return None
+
+    try:
+        guild = bot.get_guild(int(guild_id))
+        if guild is None:
+            guild = await bot.fetch_guild(int(guild_id))
+
+        channel = guild.get_channel(int(channel_id))
+        if channel is None:
+            channel = await guild.fetch_channel(int(channel_id))
+
+        return channel
+
+    except Exception:
+        return None
+
+
+async def _delete_message_if_exists(channel, message_id: int | str | None) -> bool:
+    if not message_id:
+        return False
+
+    try:
+        msg = await channel.fetch_message(int(message_id))
+        await msg.delete()
+        return True
+
+    except (
+        discord.NotFound,
+        discord.Forbidden,
+        discord.HTTPException,
+        TypeError,
+        ValueError,
+    ):
+        return False
+
+
+def _remove_attendance_record(raid_id: str) -> None:
+    attendance = load_attendance()
+
+    if raid_id not in attendance:
+        return
+
+    del attendance[raid_id]
+    save_attendance(attendance)
+
+
+async def cancel_signup_raid(
+    *,
+    bot,
+    raid_id: int | str,
+    cancel_message: str,
+) -> tuple[bool, str]:
+    raid_key = str(raid_id)
+
+    data = load_signups()
+    signup = find_message_signup(data, raid_key)
+
+    if not signup:
+        return False, "Raid signup not found."
+
+    channel = await _fetch_signup_channel(bot, signup)
+    if channel is None:
+        return False, "Could not find the signup channel."
+
+    title = signup.get("title") or "Raid"
+    user_ids = _get_notify_user_ids(signup)
+    mentions = " ".join(f"<@{user_id}>" for user_id in user_ids)
+
+    cancel_text = cancel_message.strip() or "Raid has been cancelled."
+
+    await channel.send(
+        (
+            f"## ❌ Raid Cancelled — {title}\n"
+            f"{mentions}\n\n"
+            f"{cancel_text}"
+        ).strip(),
+        allowed_mentions=discord.AllowedMentions(
+            users=True,
+            roles=False,
+            everyone=False,
+        ),
+    )
+
+    await _delete_message_if_exists(channel, signup.get("missing_reminder_message_id"))
+    await _delete_message_if_exists(channel, signup.get("signed_reminder_message_id"))
+    await _delete_message_if_exists(channel, signup.get("comp_message_id"))
+    await _delete_message_if_exists(channel, raid_key)
+
+    removed = remove_signup_by_message_id(raid_key)
+    if not removed:
+        return False, "Discord messages were handled, but the JSON signup entry could not be removed."
+
+    _remove_attendance_record(raid_key)
+
+    return True, "Raid cancelled and removed."
 
 
 ================================================
@@ -12709,6 +12821,7 @@ import discord
 
 from services.comp.comp_message_service import post_comp_message
 from services.comp.roster_comp_service import analyze_roster_comp
+from services.raid.raid_cancel_service import cancel_signup_raid
 from services.raid.raid_control_service import (
     get_player_entry,
     remove_player_signup,
@@ -12741,14 +12854,12 @@ async def _send_raid_control_error(
         asyncio.create_task(
             delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
         )
-    else:
-        await interaction.response.send_message(
-            message,
-            ephemeral=True,
-        )
-        asyncio.create_task(
-            delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-        )
+        return
+
+    await interaction.response.send_message(message, ephemeral=True)
+    asyncio.create_task(
+        delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+    )
 
 
 async def _edit_panel(
@@ -12757,10 +12868,7 @@ async def _edit_panel(
     content: str,
     view: discord.ui.View | None,
 ) -> None:
-    await interaction.response.edit_message(
-        content=content,
-        view=view,
-    )
+    await interaction.response.edit_message(content=content, view=view)
 
 
 async def _close_panel(
@@ -12769,10 +12877,7 @@ async def _close_panel(
     content: str,
     delete_after_seconds: int = RAID_CONTROL_AUTO_DELETE_SECONDS,
 ) -> None:
-    await interaction.response.edit_message(
-        content=content,
-        view=None,
-    )
+    await interaction.response.edit_message(content=content, view=None)
     asyncio.create_task(
         delete_interaction_after(interaction, delete_after_seconds)
     )
@@ -12791,6 +12896,7 @@ async def _refresh_signup_or_error(
             )
             return False
         return True
+
     except Exception as e:
         await _send_raid_control_error(
             interaction,
@@ -12829,14 +12935,16 @@ async def _open_attendance_panel(
     interaction: discord.Interaction,
     raid_id: str,
 ) -> None:
-    from views.signup.raid_control.attendance_view import (
-        AttendanceView,
-        build_attendance_panel_content,
-    )
+    from views.signup.raid_control.attendance_view import AttendanceView
+    from views.signup.raid_control.attendance_view_helpers import build_panel_content
 
     await _edit_panel(
         interaction,
-        content=build_attendance_panel_content(raid_id),
+        content=build_panel_content(
+            selected_raid_id=str(raid_id),
+            selected_user_id=None,
+            selected_action=None,
+        ),
         view=AttendanceView(raid_id),
     )
 
@@ -12858,10 +12966,7 @@ async def _handle_build_comp(
         await _edit_panel(
             interaction,
             content="Two valid 10-man comps were found. Choose which one to continue with.",
-            view=CompChoiceView(
-                payload["option_226"],
-                payload["option_235"],
-            ),
+            view=CompChoiceView(payload["option_226"], payload["option_235"]),
         )
         return
 
@@ -12883,10 +12988,7 @@ async def _handle_build_comp(
         )
         return
 
-    ok, message = await post_comp_message(
-        interaction.channel,
-        comp_data,
-    )
+    ok, message = await post_comp_message(interaction.channel, comp_data)
 
     if not ok:
         await _close_panel(
@@ -12903,6 +13005,50 @@ async def _handle_build_comp(
     )
 
 
+class CancelRaidModal(discord.ui.Modal, title="Cancel Raid"):
+    cancel_message = discord.ui.TextInput(
+        label="Message to signed players",
+        placeholder="Example: Raid is cancelled tonight due to roster issues.",
+        style=discord.TextStyle.paragraph,
+        required=True,
+        min_length=1,
+        max_length=500,
+    )
+
+    def __init__(self, raid_id: str):
+        super().__init__()
+        self.raid_id = str(raid_id)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            ok, message = await cancel_signup_raid(
+                bot=interaction.client,
+                raid_id=self.raid_id,
+                cancel_message=str(self.cancel_message).strip(),
+            )
+
+            if not ok:
+                await _send_raid_control_error(interaction, f"⚠ {message}")
+                return
+
+            await interaction.response.edit_message(
+                content=(
+                    "✅ Raid cancelled. Signup message, comp message, reminders, "
+                    "attendance record, and JSON entry removed."
+                ),
+                view=None,
+            )
+            asyncio.create_task(
+                delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            )
+
+        except Exception as e:
+            await _send_raid_control_error(
+                interaction,
+                f"Cancel raid failed: {type(e).__name__}: {e}",
+            )
+
+
 class ChangeSpecRaidControlButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -12914,8 +13060,7 @@ class ChangeSpecRaidControlButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            view = self.view
-            await _open_change_spec_panel(interaction, view.raid_id)
+            await _open_change_spec_panel(interaction, self.view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -12934,8 +13079,7 @@ class RaidSettingsButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            view = self.view
-            await _open_raid_settings_panel(interaction, view.raid_id)
+            await _open_raid_settings_panel(interaction, self.view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -12954,8 +13098,7 @@ class AttendanceButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            view = self.view
-            await _open_attendance_panel(interaction, view.raid_id)
+            await _open_attendance_panel(interaction, self.view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -12974,8 +13117,7 @@ class BuildCompButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            view = self.view
-            await _handle_build_comp(interaction, view.raid_id)
+            await _handle_build_comp(interaction, self.view.raid_id)
         except Exception as e:
             await _send_raid_control_error(
                 interaction,
@@ -12997,10 +13139,7 @@ class PlayerNoteButton(discord.ui.Button):
         selected_user_id = view.selected_user_id
 
         if not selected_user_id:
-            await _send_raid_control_error(
-                interaction,
-                "Select a player first.",
-            )
+            await _send_raid_control_error(interaction, "Select a player first.")
             return
 
         entry = get_player_entry(view.raid_id, selected_user_id)
@@ -13032,6 +13171,21 @@ class PlayerNoteButton(discord.ui.Button):
         )
 
 
+class CancelRaidButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label="Cancel Raid",
+            emoji=parse_button_emoji("cancel_raid"),
+            style=discord.ButtonStyle.danger,
+            row=3,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(
+            CancelRaidModal(self.view.raid_id)
+        )
+
+
 class RaidControlView(discord.ui.View):
     def __init__(self, raid_id: str):
         super().__init__(timeout=120)
@@ -13047,6 +13201,7 @@ class RaidControlView(discord.ui.View):
         self.add_item(AttendanceButton())
         self.add_item(BuildCompButton())
         self.add_item(PlayerNoteButton())
+        self.add_item(CancelRaidButton())
 
     async def try_apply_action(self, interaction: discord.Interaction):
         try:
@@ -13076,11 +13231,18 @@ class RaidControlView(discord.ui.View):
             if not refreshed:
                 return
 
-            await _edit_panel(
-                interaction,
-                content=f"Player {action_text}.",
-                view=RaidControlView(self.raid_id),
-            )
+            if interaction.response.is_done():
+                await interaction.edit_original_response(
+                    content=f"Player {action_text}.",
+                    view=RaidControlView(self.raid_id),
+                )
+            else:
+                await _edit_panel(
+                    interaction,
+                    content=f"Player {action_text}.",
+                    view=RaidControlView(self.raid_id),
+                )
+
             asyncio.create_task(
                 delete_interaction_after(
                     interaction,
