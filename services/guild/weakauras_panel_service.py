@@ -12,7 +12,7 @@ WA_PANEL_TEXT = """# Must Have Addons & WA's
 - [Method Raid Tools](https://www.curseforge.com/wow/addons/method-raid-tools)
 - [RC Loot Council](https://www.curseforge.com/wow/addons/rclootcouncil-classic)
 - <:fojji:1482050733258838087> [Fojjicore](https://www.curseforge.com/wow/addons/fojjicore)
-- <:fojji:1482050733258838087> [Fojji - Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `cheddar123`
+- <:fojji:1482050733258838087> [Fojji - Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `turmeric123`
 - <:fojji:1482050733258838087> [Raid Anchors WA](https://wago.io/FojjiRaidAnchors-MoP)
 
 **Raid Weakauras (Check at bottom)**

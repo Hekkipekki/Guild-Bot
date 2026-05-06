@@ -1,9 +1,9 @@
 {
-  "1498028417113915435": {
+  "1500565180818391170": {
     "title": "ToT hc",
     "description": "Raid signup",
     "leader": "Frikadella",
-    "start_ts": 1777831200,
+    "start_ts": 1778436000,
     "channel_id": 1344375353245696143,
     "guild_id": 1175174589639303339,
     "users": {
@@ -11,90 +11,70 @@
         "class": "Shaman",
         "spec": "Elemental",
         "role": "Ranged",
-        "timestamp": 1777238746.5037947,
+        "timestamp": 1777833243.6232119,
         "name": "Frikadella",
-        "note": "Family",
+        "note": "",
         "display_name": "Frikadella",
-        "status": "absence"
-      },
-      "219053149216964608": {
-        "class": "Warrior",
-        "spec": "Fury",
-        "role": "Melee",
-        "timestamp": 1777267135.537247,
-        "name": "Nani",
-        "note": "",
-        "display_name": "Nani/Klamydia",
-        "status": "sign"
-      },
-      "676385985008893982": {
-        "class": "Priest",
-        "spec": "Discipline",
-        "role": "Healer",
-        "timestamp": 1777272831.233045,
-        "name": "Sweet home",
-        "note": "",
-        "display_name": "Pingi/Aladama",
-        "status": "sign"
-      },
-      "196533947256012800": {
-        "class": "Druid",
-        "spec": "RestorationDruid",
-        "role": "Healer",
-        "timestamp": 1777301959.6941826,
-        "name": "Charoma",
-        "note": "",
-        "display_name": "Charoma",
-        "status": "sign"
-      },
-      "451796745936961556": {
-        "class": "Shaman",
-        "spec": "Elemental",
-        "role": "Ranged",
-        "timestamp": 1777312459.088863,
-        "name": "Copperagnus",
-        "note": "",
-        "display_name": "Copperagnus",
         "status": "sign"
       },
       "185836617112485889": {
         "class": "Monk",
         "spec": "Brewmaster",
         "role": "Tank",
-        "timestamp": 1777376842.9683821,
+        "timestamp": 1777835455.0936618,
         "name": "Tickle",
         "note": "",
         "display_name": "Tickle",
         "status": "sign"
       },
-      "747110982136103035": {
-        "class": "Hunter",
-        "spec": "Survival",
+      "451796745936961556": {
+        "class": "Shaman",
+        "spec": "Elemental",
         "role": "Ranged",
-        "timestamp": 1777644090.5998702,
-        "name": "Ingen",
+        "timestamp": 1777836408.1424863,
+        "name": "Copperagnus",
         "note": "",
-        "display_name": "Fläktarn",
+        "display_name": "Copperagnus",
         "status": "sign"
       },
-      "182816419078078464": {
-        "class": "Paladin",
-        "spec": "ProtectionPaladin",
-        "role": "Tank",
-        "timestamp": 1777658592.4021618,
-        "name": "DPS Tank",
-        "note": "",
-        "display_name": "Särpär",
-        "status": "sign"
-      },
-      "209344159943753729": {
+      "196533947256012800": {
         "class": "Druid",
-        "spec": "Balance",
-        "role": "Ranged",
-        "timestamp": 1777663821.1650481,
-        "name": "Frökenhöger",
+        "spec": "RestorationDruid",
+        "role": "Healer",
+        "timestamp": 1777893888.1522157,
+        "name": "Charoma",
         "note": "",
-        "display_name": "Rumpestuss",
+        "display_name": "Charoma",
+        "status": "sign"
+      },
+      "219053149216964608": {
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "timestamp": 1777910394.0405915,
+        "name": "Nani",
+        "note": "",
+        "display_name": "Nani/Klamydia",
+        "status": "sign"
+      },
+      "1462420346631360607": {
+        "class": "Death Knight",
+        "spec": "FrostDK",
+        "role": "Melee",
+        "timestamp": 1777931189.5429735,
+        "name": "Frost Death Knight",
+        "note": "",
+        "display_name": "Busmusen",
+        "status": "sign"
+      },
+      "676385985008893982": {
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "timestamp": 1777969038.9806502,
+        "name": "Sweet home",
+        "note": "",
+        "display_name": "Pingi/Aladama",
         "status": "sign"
       }
     },
@@ -111,103 +91,240 @@
       "1462420346631360607"
     ],
     "missing_signup_reminders_sent": {
-      "2880": true,
+      "2880": false,
       "1440": false
     },
     "signed_player_reminders_sent": {
       "60": false
     },
-    "missing_reminder_message_id": 1499832693574205643,
+    "missing_reminder_message_id": null,
     "signed_reminder_message_id": null,
     "is_recurring": true,
     "recurring_interval_days": 7
   },
-  "1499108171820826635": {
+  "1501644784706523307": {
     "title": "HC Re-clear",
     "description": "HC Re-clear, aiming for 13/13",
     "leader": "Rhegaran",
-    "start_ts": 1778088600,
+    "start_ts": 1778693400,
     "channel_id": 1423981356798578718,
     "guild_id": 1423706462773051542,
     "users": {
+      "248796420880990208": {
+        "class": "Shaman",
+        "spec": "Elemental",
+        "role": "Ranged",
+        "timestamp": 1778092575.073933,
+        "name": "Turit",
+        "note": "",
+        "display_name": "Turit",
+        "status": "sign"
+      },
       "710915046200574073": {
         "class": "Warrior",
         "spec": "ProtectionWarrior",
         "role": "Tank",
-        "timestamp": 1777485701.304537,
+        "timestamp": 1778095444.839082,
         "name": "Rhegaran",
         "note": "",
         "display_name": "MistaProfessa",
-        "status": "sign"
-      },
-      "321966396864987137": {
-        "class": "Death Knight",
-        "spec": "Blood",
-        "role": "Tank",
-        "timestamp": 1777498782.8150437,
-        "name": "RaJensen",
-        "note": "",
-        "display_name": "RaJensen",
-        "status": "sign"
-      },
-      "771806222525267968": {
-        "class": "Rogue",
-        "spec": "Assassination",
-        "role": "Melee",
-        "timestamp": 1777543427.8577297,
-        "name": "Shadé",
-        "note": "Away on holiday from the 4th till the 8th",
-        "display_name": "Shadé",
-        "status": "absence"
-      },
-      "489526528309460993": {
-        "class": "Warrior",
-        "spec": "Fury",
-        "role": "Melee",
-        "timestamp": 1777549195.2601235,
-        "name": "Nickfury",
-        "note": "",
-        "display_name": "Nickfury",
-        "status": "sign"
-      },
-      "141881090913599488": {
-        "class": "Druid",
-        "spec": "Balance",
-        "role": "Ranged",
-        "timestamp": 1777554324.4384608,
-        "name": "Hekkipekki",
-        "note": "",
-        "display_name": "Hekkipekki",
-        "status": "sign"
-      },
-      "260495039686246400": {
-        "class": "Paladin",
-        "spec": "HolyPaladin",
-        "role": "Healer",
-        "timestamp": 1777556149.9712179,
-        "name": "Raitila",
-        "note": "",
-        "display_name": "Raitila",
         "status": "sign"
       },
       "369109810311987200": {
         "class": "Hunter",
         "spec": "Survival",
         "role": "Ranged",
-        "timestamp": 1777579264.234132,
+        "timestamp": 1778099257.8258235,
         "name": "Maverman",
-        "note": "",
+        "note": "idk",
         "display_name": "Maverinkel",
+        "status": "absence"
+      }
+    },
+    "expected_players": [
+      "710915046200574073",
+      "489526528309460993",
+      "369109810311987200",
+      "251004817844076554",
+      "248796420880990208",
+      "239532428073500672",
+      "141881090913599488",
+      "771806222525267968",
+      "321966396864987137",
+      "344496860855009280",
+      "260495039686246400"
+    ],
+    "missing_signup_reminders_sent": {
+      "2880": false,
+      "1440": false
+    },
+    "signed_player_reminders_sent": {
+      "60": false
+    },
+    "missing_reminder_message_id": null,
+    "signed_reminder_message_id": null,
+    "is_recurring": true,
+    "recurring_interval_days": 7
+  },
+  "1501652346399101028": {
+    "title": "ToT hc",
+    "description": "Raid signup",
+    "leader": "Frikadella",
+    "start_ts": 1778695200,
+    "channel_id": 1344375248283238452,
+    "guild_id": 1175174589639303339,
+    "users": {
+      "185836617112485889": {
+        "class": "Monk",
+        "spec": "Brewmaster",
+        "role": "Tank",
+        "timestamp": 1778093836.5627112,
+        "name": "Tickle",
+        "note": "",
+        "display_name": "Tickle",
         "status": "sign"
       },
-      "251004817844076554": {
-        "class": "Mage",
-        "spec": "Arcane",
-        "role": "Ranged",
-        "timestamp": 1777632949.7169669,
-        "name": "Magemil",
+      "182816419078078464": {
+        "class": "Paladin",
+        "spec": "ProtectionPaladin",
+        "role": "Tank",
+        "timestamp": 1778096486.9895482,
+        "name": "DPS Tank",
         "note": "",
-        "display_name": "Magemil",
+        "display_name": "Särpär",
+        "status": "sign"
+      },
+      "196533947256012800": {
+        "class": "Druid",
+        "spec": "RestorationDruid",
+        "role": "Healer",
+        "timestamp": 1778101340.814263,
+        "name": "Charoma",
+        "note": "",
+        "display_name": "Charoma",
+        "status": "sign"
+      },
+      "676385985008893982": {
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "timestamp": 1778102526.9241192,
+        "name": "Sweet home",
+        "note": "",
+        "display_name": "Pingi/Aladama",
+        "status": "sign"
+      }
+    },
+    "expected_players": [
+      "747110982136103035",
+      "733947209845833730",
+      "676385985008893982",
+      "451796745936961556",
+      "219053149216964608",
+      "209344159943753729",
+      "196533947256012800",
+      "185836617112485889",
+      "182816419078078464",
+      "1462420346631360607"
+    ],
+    "missing_signup_reminders_sent": {
+      "2880": false,
+      "1440": false
+    },
+    "signed_player_reminders_sent": {
+      "60": false
+    },
+    "missing_reminder_message_id": null,
+    "signed_reminder_message_id": null,
+    "is_recurring": true,
+    "recurring_interval_days": 7
+  },
+  "1501681551740768287": {
+    "title": "HC Progress, Alt raid or Off day",
+    "description": "Raid signup",
+    "leader": "Rhegaran",
+    "start_ts": 1778434200,
+    "channel_id": 1445169144377901107,
+    "guild_id": 1423706462773051542,
+    "users": {
+      "248796420880990208": {
+        "class": "Monk",
+        "spec": "Mistweaver",
+        "role": "Healer",
+        "timestamp": 1778099193.7638977,
+        "name": "Turit",
+        "note": "",
+        "display_name": "Turit",
+        "status": "sign"
+      },
+      "489526528309460993": {
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "timestamp": 1778099275.3991506,
+        "name": "Nickfury",
+        "note": "Late due to eating out. Don't think I can be there before 21:00 ST",
+        "display_name": "Nickfury",
+        "status": "late"
+      },
+      "321966396864987137": {
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "timestamp": 1778099239.4299924,
+        "name": "RaJensen",
+        "note": "",
+        "display_name": "RaJensen",
+        "status": "sign"
+      },
+      "239532428073500672": {
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "timestamp": 1778099242.0549297,
+        "name": "Darkpreacha",
+        "note": "",
+        "display_name": "dpreborn",
+        "status": "sign"
+      },
+      "344496860855009280": {
+        "class": "Warlock",
+        "spec": "Affliction",
+        "role": "Ranged",
+        "timestamp": 1778099251.4314792,
+        "name": "Lenef",
+        "note": "",
+        "display_name": "Lenef",
+        "status": "sign"
+      },
+      "710915046200574073": {
+        "class": "Warrior",
+        "spec": "ProtectionWarrior",
+        "role": "Tank",
+        "timestamp": 1778099316.870454,
+        "name": "Rhegaran",
+        "note": "",
+        "display_name": "MistaProfessa",
+        "status": "sign"
+      },
+      "369109810311987200": {
+        "class": "Hunter",
+        "spec": "Survival",
+        "role": "Ranged",
+        "timestamp": 1778102733.577771,
+        "name": "Maverman",
+        "note": "känner mig färdig med tot",
+        "display_name": "Maverinkel",
+        "status": "absence"
+      },
+      "141881090913599488": {
+        "class": "Druid",
+        "spec": "Balance",
+        "role": "Ranged",
+        "timestamp": 1778103071.6213953,
+        "name": "Hekkipekki",
+        "note": "",
+        "display_name": "Hekkipekki",
         "status": "sign"
       }
     },
@@ -221,7 +338,8 @@
       "141881090913599488",
       "771806222525267968",
       "321966396864987137",
-      "344496860855009280"
+      "344496860855009280",
+      "260495039686246400"
     ],
     "missing_signup_reminders_sent": {
       "2880": false,
@@ -233,89 +351,7 @@
     "missing_reminder_message_id": null,
     "signed_reminder_message_id": null,
     "is_recurring": true,
-    "recurring_interval_days": 7
-  },
-  "1499115721441939567": {
-    "title": "ToT hc",
-    "description": "Raid signup",
-    "leader": "Frikadella",
-    "start_ts": 1778090400,
-    "channel_id": 1344375248283238452,
-    "guild_id": 1175174589639303339,
-    "users": {
-      "185836617112485889": {
-        "class": "Monk",
-        "spec": "Brewmaster",
-        "role": "Tank",
-        "timestamp": 1777488256.1217225,
-        "name": "Tickle",
-        "note": "",
-        "display_name": "Tickle",
-        "status": "sign"
-      },
-      "219053149216964608": {
-        "class": "Warrior",
-        "spec": "Fury",
-        "role": "Melee",
-        "timestamp": 1777495166.857934,
-        "name": "Nani",
-        "note": "",
-        "display_name": "Nani/Klamydia",
-        "status": "sign"
-      },
-      "733947209845833730": {
-        "class": "Shaman",
-        "spec": "Elemental",
-        "role": "Ranged",
-        "timestamp": 1777498688.95092,
-        "name": "Frikadella",
-        "note": "",
-        "display_name": "Frikadella",
-        "status": "sign"
-      },
-      "451796745936961556": {
-        "class": "Shaman",
-        "spec": "Elemental",
-        "role": "Ranged",
-        "timestamp": 1777531287.0805464,
-        "name": "Copperagnus",
-        "note": "",
-        "display_name": "Copperagnus",
-        "status": "sign"
-      },
-      "676385985008893982": {
-        "class": "Priest",
-        "spec": "Discipline",
-        "role": "Healer",
-        "timestamp": 1777534436.646882,
-        "name": "Sweet home",
-        "note": "",
-        "display_name": "Pingi/Aladama",
-        "status": "sign"
-      }
-    },
-    "expected_players": [
-      "747110982136103035",
-      "733947209845833730",
-      "676385985008893982",
-      "451796745936961556",
-      "219053149216964608",
-      "209344159943753729",
-      "196533947256012800",
-      "185836617112485889",
-      "182816419078078464",
-      "1462420346631360607"
-    ],
-    "missing_signup_reminders_sent": {
-      "2880": false,
-      "1440": false
-    },
-    "signed_player_reminders_sent": {
-      "60": false
-    },
-    "missing_reminder_message_id": null,
-    "signed_reminder_message_id": null,
-    "is_recurring": true,
-    "recurring_interval_days": 7
+    "recurring_interval_days": 7,
+    "recurring_created_next": false
   }
 }
