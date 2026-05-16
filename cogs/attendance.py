@@ -17,24 +17,18 @@ from utils.ui_timing import (
 )
 
 
+RECENT_ATTENDANCE_RAID_COUNT = 16
+
+
 class AttendanceCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @app_commands.command(
         name="attendance",
-        description="Show the guild attendance report.",
+        description="Show the guild attendance report for the latest 10 raids.",
     )
-    @app_commands.describe(
-        raids="Number of recent raids to include (default: 12)",
-        include_unfinalized="Include raids that are not finalized yet",
-    )
-    async def attendance(
-        self,
-        interaction: discord.Interaction,
-        raids: int | None = None,
-        include_unfinalized: bool = False,
-    ):
+    async def attendance(self, interaction: discord.Interaction):
         guild = interaction.guild
 
         if guild is None:
@@ -45,30 +39,24 @@ class AttendanceCommands(commands.Cog):
             )
             return
 
-        limit_raids = raids or 12
-        if limit_raids < 1:
-            limit_raids = 1
-        if limit_raids > 30:
-            limit_raids = 30
-
         await interaction.response.defer(ephemeral=True, thinking=True)
 
         try:
-            finalized_only = not include_unfinalized
+            finalized_only = True
 
-            if finalized_only:
-                finalized_records = get_guild_attendance_records(
-                    guild.id,
-                    finalized_only=True,
-                )
-                if not finalized_records:
-                    finalized_only = False
+            finalized_records = get_guild_attendance_records(
+                guild.id,
+                finalized_only=True,
+            )
+
+            if not finalized_records:
+                finalized_only = False
 
             buffer = render_attendance_report_image(
                 guild_id=guild.id,
                 finalized_only=finalized_only,
-                limit_raids=limit_raids,
-                title=None,
+                limit_raids=RECENT_ATTENDANCE_RAID_COUNT,
+                title="Attendance",
             )
 
             file = File(fp=buffer, filename="attendance_report.png")

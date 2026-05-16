@@ -162,7 +162,21 @@ async def on_ready():
     await _ensure_weakauras_panels()
 
     try:
-        await bot.change_presence(activity=discord.Game("DEV BUILD"))
+        if config.DEV_MODE:
+            await bot.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.listening,
+                    name="/raid , /setup , /attendance",
+                )
+            )
+        else:
+            await bot.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.listening,
+                    name="/raid , /setup , /attendance",
+                )
+            )
+
     except Exception as e:
         print(f"Failed to set presence: {e}")
 
