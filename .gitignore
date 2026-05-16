@@ -1,3 +1,11 @@
+# Secrets
+secrets_local.py
+.env
+
+# Logs
+bot_log.txt
+*.log
+
 # Python cache
 __pycache__/
 *.pyc
@@ -7,23 +15,17 @@ __pycache__/
 .venv/
 venv/
 
-# Local secrets
-secrets_local.py
-.env
-
-# Local repo splitter
-split.py
-
-# Logs
-bot_log.txt
-*.log
-
-# Local runtime data
+# Runtime JSON data
 data/signups.json
 data/characters.json
 data/attendance.json
 data/guild_settings.json
 data/raid_templates.json
-
-# Dev runtime data
 data/*_dev.json
+
+# Local helper scripts
+split.py
+
+# OS files
+.DS_Store
+Thumbs.db

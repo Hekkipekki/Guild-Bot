@@ -3,21 +3,39 @@ from pathlib import Path
 # ============================================================
 # Application config
 # ============================================================
-# NOTE:
-# - Runtime/app-level settings belong here
-# - Guild/server-specific settings belong in guild_settings.json
-#   and must be accessed through guild_settings_service.py
-
-# Dev-only: used for clearing old guild-scoped slash commands during testing.
-# Safe to keep, but should not be used as a source of guild settings.
-TEST_GUILD_ID = None
+# Runtime/app-level settings belong here.
+# Local/live secrets and environment flags belong in secrets_local.py.
+#
+# Local DEV secrets_local.py:
+#   TOKEN = "DEV_TOKEN"
+#   DEV_MODE = True
+#   TEST_GUILD_ID = 123456789123456789
+#
+# PebbleHost LIVE secrets_local.py:
+#   TOKEN = "LIVE_TOKEN"
+#   DEV_MODE = False
+#   TEST_GUILD_ID = None
+# ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+FILES_DIR = BASE_DIR / "files"
 
 try:
     from secrets_local import TOKEN
 except ImportError:
     TOKEN = None
+
+try:
+    from secrets_local import DEV_MODE
+except ImportError:
+    DEV_MODE = False
+
+try:
+    from secrets_local import TEST_GUILD_ID
+except ImportError:
+    TEST_GUILD_ID = None
+
 
 PACKS = {
     "tot_01_06": {
@@ -132,61 +150,40 @@ ROLE_LIMITS = {
 }
 
 SPEC_EMOJIS = {
-    # Death Knight
     "Blood": "<:Blood:1482050758114414853>",
     "FrostDK": "<:FrostDK:1482050821133963305>",
     "Unholy": "<:Unholy:1482050820059959397>",
-
-    # Druid
     "Balance": "<:Balance:1482050818885812345>",
     "Feral": "<:Feral:1482050817417674924>",
     "Guardian": "<:Guardian:1482050756889805000>",
     "RestorationDruid": "<:RestorationDruid:1482050816092278957>",
-
-    # Hunter
     "Beast Mastery": "<:BeastMastery:1482050810857652446>",
     "BeastMastery": "<:BeastMastery:1482050810857652446>",
     "Marksmanship": "<:Marksmanship:1482050812825043114>",
     "Survival": "<:Survival:1482050814041391194>",
-
-    # Mage
     "Arcane": "<:Arcane:1482050791450611793>",
     "Fire": "<:Fire:1482050790100045824>",
     "Frost": "<:Frost:1482050788753805362>",
-
-    # Monk
     "Brewmaster": "<:Brewmaster:1482050787323412602>",
     "Mistweaver": "<:Mistweaver:1482050786002337973>",
     "Windwalker": "<:Windwalker:1482050784941047891>",
-
-    # Paladin
     "HolyPaladin": "<:HolyPaladin:1482050797096271943>",
     "ProtectionPaladin": "<:ProtectionPaladin:1482050755899691138>",
     "Retribution": "<:Retribution:1482050799210332210>",
-
-    # Priest
     "Discipline": "<:Discipline:1482050792696451193>",
     "HolyPriest": "<:HolyPriest:1482050794244276305>",
     "Shadow": "<:Shadow:1482050795737190611>",
-
-    # Rogue
     "Assassination": "<:Assassination:1482050781443133572>",
     "Combat": "<:Combat:1482050780000292955>",
     "Subtlety": "<:Sublety:1482050782445437070>",
     "Sublety": "<:Sublety:1482050782445437070>",
-
-    # Shaman
     "Elemental": "<:Elemental:1482050809712611328>",
     "Enhancement": "<:Enmhancement:1482050808647520396>",
     "Enmhancement": "<:Enmhancement:1482050808647520396>",
     "RestorationShaman": "<:RestorationShaman:1482050807674441779>",
-
-    # Warlock
     "Affliction": "<:Affliction:1482050800539799634>",
     "Demonology": "<:Demonology:1482050801928110181>",
     "Destruction": "<:Destruction:1482050802976690197>",
-
-    # Warrior
     "Arms": "<:Arms:1482050804503281868>",
     "Fury": "<:Fury:1482050806357168319>",
     "ProtectionWarrior": "<:ProtectionWarrior:1482050759561318400>",

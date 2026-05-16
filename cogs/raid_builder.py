@@ -8,7 +8,7 @@ from utils.discord_utils import send_ephemeral_error, delete_interaction_after
 from utils.permissions import can_manage_raid_tools
 from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
-    SLASH_PANEL_AUTO_DELETE_SECONDS,
+    RAID_BUILDER_PANEL_AUTO_DELETE_SECONDS,
 )
 from views.raid_builder import RaidStartView
 
@@ -44,7 +44,7 @@ class RaidBuilderCommands(commands.Cog):
             ephemeral=True,
         )
         asyncio.create_task(
-            delete_interaction_after(interaction, SLASH_PANEL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(interaction, RAID_BUILDER_PANEL_AUTO_DELETE_SECONDS)
         )
 
 
