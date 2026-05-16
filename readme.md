@@ -81,6 +81,10 @@ pip install -r requirements.txt
 
 ```python
 TOKEN = "YOUR_DISCORD_BOT_TOKEN"
+
+DEV_MODE = True or False
+
+TEST_GUILD_ID = None or 'Server id'
 ```
 
 ## Start Bot
