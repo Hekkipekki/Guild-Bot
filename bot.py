@@ -31,7 +31,6 @@ EXTENSIONS = [
     "cogs.help",
 ]
 
-
 def _register_persistent_views() -> None:
     global _views_registered
 

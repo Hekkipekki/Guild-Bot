@@ -1,10 +1,29 @@
 # Python cache
 __pycache__/
 *.pyc
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
 
 # Local secrets
 secrets_local.py
+.env
+
+# Local repo splitter
+split.py
+
+# Logs
+bot_log.txt
+*.log
 
 # Local runtime data
 data/signups.json
 data/characters.json
+data/attendance.json
+data/guild_settings.json
+data/raid_templates.json
+
+# Dev runtime data
+data/*_dev.json
