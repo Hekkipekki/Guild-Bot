@@ -31,7 +31,7 @@ class BackToCharacterMenuButton(discord.ui.Button):
         from views.signup.character.character_select_view import CharacterView
 
         try:
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="Select your saved character:",
                 view=CharacterView(
                     self.guild_id,

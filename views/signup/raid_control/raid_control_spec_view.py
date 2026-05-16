@@ -7,36 +7,23 @@ from services.raid.raid_control_service import (
     get_valid_specs_for_player,
     change_player_spec,
 )
-from services.signup.signup_refresh_service import refresh_signup_message_by_id
-from utils.discord_utils import delete_interaction_after, delete_message_after
+
+from services.signup.signup_refresh_service import (
+    refresh_signup_message_by_id,
+)
+
+from utils.discord_utils import delete_interaction_after
 from utils.ui_timing import (
-    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     RAID_CONTROL_AUTO_DELETE_SECONDS,
 )
 
+from utils.panel_helpers import (
+    send_panel_error,
+)
 
-async def _send_spec_error(
-    interaction: discord.Interaction,
-    message: str,
-) -> None:
-    if interaction.response.is_done():
-        msg = await interaction.followup.send(
-            message,
-            ephemeral=True,
-            wait=True,
-        )
-        asyncio.create_task(
-            delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-        )
-    else:
-        await interaction.response.send_message(
-            message,
-            ephemeral=True,
-        )
-        asyncio.create_task(
-            delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-        )
-
+# ------------------------------------------------
+# Player Select
+# ------------------------------------------------
 
 class RaidControlSpecPlayerSelect(discord.ui.Select):
     def __init__(self, raid_id: str):
@@ -84,16 +71,27 @@ class RaidControlSpecPlayerSelect(discord.ui.Select):
                 content="No players found.",
                 view=None,
             )
+
             asyncio.create_task(
-                delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                delete_interaction_after(
+                    interaction,
+                    5,
+                )
             )
             return
 
         await interaction.response.edit_message(
             content="Select a new spec for this player:",
-            view=RaidControlSpecSelectView(self.view.raid_id, selected_value),
+            view=RaidControlSpecSelectView(
+                self.view.raid_id,
+                selected_value,
+            ),
         )
 
+
+# ------------------------------------------------
+# Spec Select
+# ------------------------------------------------
 
 class RaidControlSpecSelect(discord.ui.Select):
     def __init__(self, raid_id: str, user_id: str):
@@ -102,14 +100,19 @@ class RaidControlSpecSelect(discord.ui.Select):
 
         options = []
 
-        valid_specs = get_valid_specs_for_player(raid_id, user_id)
+        valid_specs = get_valid_specs_for_player(
+            raid_id,
+            user_id,
+        )
 
         for item in valid_specs:
             spec_name = item["spec"]
             role_name = item["role"]
+
             emoji = None
 
             raw = config.SPEC_EMOJIS.get(spec_name)
+
             if raw:
                 try:
                     emoji = discord.PartialEmoji.from_str(raw)
@@ -146,7 +149,10 @@ class RaidControlSpecSelect(discord.ui.Select):
         selected_value = self.values[0]
 
         if selected_value == "__none__":
-            await _send_spec_error(interaction, "No valid spec choices available.")
+            await send_panel_error(
+                interaction,
+                "No valid spec choices available.",
+            )
             return
 
         ok = change_player_spec(
@@ -156,48 +162,74 @@ class RaidControlSpecSelect(discord.ui.Select):
         )
 
         if not ok:
-            await _send_spec_error(
+            await send_panel_error(
                 interaction,
                 "Could not change that player's spec. The raid or signup may no longer exist.",
             )
             return
 
         try:
-            refreshed = await refresh_signup_message_by_id(interaction.channel, int(self.raid_id))
+            refreshed = await refresh_signup_message_by_id(
+                interaction.channel,
+                int(self.raid_id),
+            )
+
             if not refreshed:
-                await _send_spec_error(
+                await send_panel_error(
                     interaction,
                     "Player spec updated, but the raid signup no longer exists.",
                 )
                 return
+
         except Exception as e:
-            await _send_spec_error(
+            await send_panel_error(
                 interaction,
                 f"Spec updated, but failed to refresh raid: {e}",
             )
             return
 
-        from views.signup.raid_control.raid_control_view import RaidControlView
+        from views.signup.raid_control.raid_control_view import (
+            RaidControlView,
+        )
 
         await interaction.response.edit_message(
             content=f"Player spec changed to **{selected_value}**.",
             view=RaidControlView(self.raid_id),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
+
+# ------------------------------------------------
+# Views
+# ------------------------------------------------
 
 class RaidControlSpecPlayerView(discord.ui.View):
     def __init__(self, raid_id: str):
         super().__init__(timeout=120)
+
         self.raid_id = raid_id
-        self.add_item(RaidControlSpecPlayerSelect(raid_id))
+
+        self.add_item(
+            RaidControlSpecPlayerSelect(raid_id)
+        )
 
 
 class RaidControlSpecSelectView(discord.ui.View):
     def __init__(self, raid_id: str, user_id: str):
         super().__init__(timeout=120)
+
         self.raid_id = raid_id
         self.user_id = user_id
-        self.add_item(RaidControlSpecSelect(raid_id, user_id))
+
+        self.add_item(
+            RaidControlSpecSelect(
+                raid_id,
+                user_id,
+            )
+        )

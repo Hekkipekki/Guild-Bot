@@ -8,13 +8,21 @@ from services.attendance.attendance_service import (
     reset_player_to_auto_status,
     set_manual_attendance_status,
 )
-from utils.discord_utils import delete_interaction_after, delete_message_after
-from utils.emoji_helpers import parse_button_emoji
+
 from utils.permissions import can_manage_raid_tools
+from utils.emoji_helpers import parse_button_emoji
 from utils.ui_timing import (
-    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     RAID_CONTROL_AUTO_DELETE_SECONDS,
 )
+
+from utils.discord_utils import delete_interaction_after
+
+from utils.panel_helpers import (
+    send_panel_error,
+    safe_panel_edit,
+    close_panel,
+)
+
 from views.signup.raid_control.attendance_view_helpers import (
     build_action_options,
     build_attendance_panel_content,
@@ -24,28 +32,9 @@ from views.signup.raid_control.attendance_view_helpers import (
 )
 
 
-async def _send_attendance_error(
-    interaction: discord.Interaction,
-    message: str,
-) -> None:
-    if interaction.response.is_done():
-        msg = await interaction.followup.send(
-            message,
-            ephemeral=True,
-            wait=True,
-        )
-        asyncio.create_task(
-            delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-        )
-    else:
-        await interaction.response.send_message(
-            message,
-            ephemeral=True,
-        )
-        asyncio.create_task(
-            delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-        )
-
+# ------------------------------------------------
+# Raid Select
+# ------------------------------------------------
 
 class AttendanceRaidSelect(discord.ui.Select):
     def __init__(
@@ -69,7 +58,7 @@ class AttendanceRaidSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if not can_manage_raid_tools(interaction):
-            await _send_attendance_error(
+            await send_panel_error(
                 interaction,
                 "You do not have access to attendance controls.",
             )
@@ -82,7 +71,8 @@ class AttendanceRaidSelect(discord.ui.Select):
         view = self.view
         selected_raid_id = str(self.values[0])
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=build_panel_content(
                 selected_raid_id=selected_raid_id,
                 selected_user_id=None,
@@ -96,6 +86,10 @@ class AttendanceRaidSelect(discord.ui.Select):
             ),
         )
 
+
+# ------------------------------------------------
+# Player Select
+# ------------------------------------------------
 
 class AttendancePlayerSelect(discord.ui.Select):
     def __init__(
@@ -119,7 +113,7 @@ class AttendancePlayerSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if not can_manage_raid_tools(interaction):
-            await _send_attendance_error(
+            await send_panel_error(
                 interaction,
                 "You do not have access to attendance controls.",
             )
@@ -132,7 +126,8 @@ class AttendancePlayerSelect(discord.ui.Select):
         view = self.view
         view.selected_user_id = str(self.values[0])
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=build_panel_content(
                 selected_raid_id=view.selected_raid_id,
                 selected_user_id=view.selected_user_id,
@@ -146,6 +141,10 @@ class AttendancePlayerSelect(discord.ui.Select):
             ),
         )
 
+
+# ------------------------------------------------
+# Action Select
+# ------------------------------------------------
 
 class AttendanceActionSelect(discord.ui.Select):
     def __init__(self, *, selected_action: str | None = None):
@@ -159,7 +158,7 @@ class AttendanceActionSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if not can_manage_raid_tools(interaction):
-            await _send_attendance_error(
+            await send_panel_error(
                 interaction,
                 "You do not have access to attendance controls.",
             )
@@ -168,7 +167,8 @@ class AttendanceActionSelect(discord.ui.Select):
         view = self.view
         view.selected_action = self.values[0]
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=build_panel_content(
                 selected_raid_id=view.selected_raid_id,
                 selected_user_id=view.selected_user_id,
@@ -183,6 +183,10 @@ class AttendanceActionSelect(discord.ui.Select):
         )
 
 
+# ------------------------------------------------
+# Apply Button
+# ------------------------------------------------
+
 class ApplyAttendanceActionButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -194,7 +198,7 @@ class ApplyAttendanceActionButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         if not can_manage_raid_tools(interaction):
-            await _send_attendance_error(
+            await send_panel_error(
                 interaction,
                 "You do not have access to attendance controls.",
             )
@@ -203,7 +207,7 @@ class ApplyAttendanceActionButton(discord.ui.Button):
         view = self.view
 
         if not view.selected_user_id or not view.selected_action:
-            await _send_attendance_error(
+            await send_panel_error(
                 interaction,
                 "Select a raid, player, and attendance status first.",
             )
@@ -217,10 +221,14 @@ class ApplyAttendanceActionButton(discord.ui.Button):
         )
 
         if not ok:
-            await _send_attendance_error(interaction, message)
+            await send_panel_error(
+                interaction,
+                message,
+            )
             return
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=build_panel_content(
                 selected_raid_id=view.selected_raid_id,
                 selected_user_id=view.selected_user_id,
@@ -235,6 +243,10 @@ class ApplyAttendanceActionButton(discord.ui.Button):
         )
 
 
+# ------------------------------------------------
+# Reset Button
+# ------------------------------------------------
+
 class ResetAttendancePlayerButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -245,7 +257,7 @@ class ResetAttendancePlayerButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         if not can_manage_raid_tools(interaction):
-            await _send_attendance_error(
+            await send_panel_error(
                 interaction,
                 "You do not have access to attendance controls.",
             )
@@ -254,7 +266,7 @@ class ResetAttendancePlayerButton(discord.ui.Button):
         view = self.view
 
         if not view.selected_user_id:
-            await _send_attendance_error(
+            await send_panel_error(
                 interaction,
                 "Select a player first.",
             )
@@ -267,10 +279,14 @@ class ResetAttendancePlayerButton(discord.ui.Button):
         )
 
         if not ok:
-            await _send_attendance_error(interaction, message)
+            await send_panel_error(
+                interaction,
+                message,
+            )
             return
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=build_panel_content(
                 selected_raid_id=view.selected_raid_id,
                 selected_user_id=view.selected_user_id,
@@ -285,6 +301,10 @@ class ResetAttendancePlayerButton(discord.ui.Button):
         )
 
 
+# ------------------------------------------------
+# Back Button
+# ------------------------------------------------
+
 class BackToRaidControlButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -296,7 +316,7 @@ class BackToRaidControlButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         if not can_manage_raid_tools(interaction):
-            await _send_attendance_error(
+            await send_panel_error(
                 interaction,
                 "You do not have access to attendance controls.",
             )
@@ -306,14 +326,23 @@ class BackToRaidControlButton(discord.ui.Button):
 
         view = self.view
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="Raid control panel",
             view=RaidControlView(view.current_raid_id),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
+
+# ------------------------------------------------
+# Close Button
+# ------------------------------------------------
 
 class CloseAttendanceButton(discord.ui.Button):
     def __init__(self):
@@ -325,14 +354,15 @@ class CloseAttendanceButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
-            content="Attendance control closed.",
-            view=None,
-        )
-        asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+        await close_panel(
+            interaction,
+            message="Attendance control closed.",
         )
 
+
+# ------------------------------------------------
+# Main View
+# ------------------------------------------------
 
 class AttendanceView(discord.ui.View):
     def __init__(
@@ -356,17 +386,20 @@ class AttendanceView(discord.ui.View):
                 selected_raid_id=self.selected_raid_id,
             )
         )
+
         self.add_item(
             AttendancePlayerSelect(
                 self.selected_raid_id,
                 selected_user_id=self.selected_user_id,
             )
         )
+
         self.add_item(
             AttendanceActionSelect(
                 selected_action=self.selected_action,
             )
         )
+
         self.add_item(ApplyAttendanceActionButton())
         self.add_item(ResetAttendancePlayerButton())
         self.add_item(BackToRaidControlButton())

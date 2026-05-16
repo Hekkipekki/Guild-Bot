@@ -28,6 +28,7 @@ def get_players(raid_id: str) -> list[dict]:
                 "spec": entry.get("spec"),
                 "role": entry.get("role"),
                 "status": entry.get("status"),
+                "note": entry.get("note", ""),
             }
         )
 

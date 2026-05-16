@@ -10,6 +10,7 @@ from views.guild_admin.guild_admin_manage_views import (
     RaidTeamManageChoiceView,
     WeakAurasChannelManageView,
 )
+from utils.panel_helpers import safe_panel_edit
 
 
 class RaidAdminsSetupButton(discord.ui.Button):
@@ -21,8 +22,12 @@ class RaidAdminsSetupButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
+
+        await safe_panel_edit(
+            interaction,
             content="Manage raid admins / leaders.",
+
+
             embed=None,
             view=RaidAdminManageChoiceView(),
         )
@@ -37,7 +42,8 @@ class RaidTeamSetupButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="Manage raid team.",
             embed=None,
             view=RaidTeamManageChoiceView(),
@@ -53,7 +59,8 @@ class WeakAurasSetupButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="Select the channel to use for WeakAuras posts.",
             embed=None,
             view=WeakAurasChannelManageView(),
@@ -70,7 +77,8 @@ class CloseSetupButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="Setup closed.",
             embed=None,
             view=None,

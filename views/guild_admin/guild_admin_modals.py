@@ -8,6 +8,7 @@ from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
 )
 from views.guild_admin.guild_admin_helpers import build_guild_config_embed
+from utils.panel_helpers import safe_panel_edit
 
 
 class EditDefaultDescriptionModal(discord.ui.Modal, title="Edit Raid Description Template"):
@@ -37,12 +38,12 @@ class EditDefaultDescriptionModal(discord.ui.Modal, title="Edit Raid Description
             )
             return
 
-        from views.guild_admin.guild_admin_view import GuildAdminView
+        from views.guild_admin.guild_admin_view import GuildSetupView
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
             content=None,
             embed=build_guild_config_embed(guild),
-            view=GuildAdminView(),
+            view=GuildSetupView(),
         )
         asyncio.create_task(
             delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)

@@ -131,7 +131,7 @@ class BenchSelect(discord.ui.Select):
 
             if remaining_steps:
                 next_step = remaining_steps[0]
-                await interaction.response.edit_message(
+                await safe_panel_edit(
                     content=_build_step_prompt(next_step),
                     view=CompBenchView(updated_comp_data),
                 )
@@ -143,7 +143,7 @@ class BenchSelect(discord.ui.Select):
             )
 
             if not ok:
-                await interaction.response.edit_message(
+                await safe_panel_edit(
                     content=message,
                     view=None,
                 )
@@ -152,7 +152,7 @@ class BenchSelect(discord.ui.Select):
                 )
                 return
 
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="Comp posted.",
                 view=None,
             )
@@ -161,7 +161,7 @@ class BenchSelect(discord.ui.Select):
             )
 
         except Exception as e:
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content=f"Failed to post comp: {type(e).__name__}: {e}",
                 view=None,
             )

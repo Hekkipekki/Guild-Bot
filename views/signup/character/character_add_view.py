@@ -150,7 +150,7 @@ class AddCharacterClassSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         selected_class = self.values[0]
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
             content=f"Choose a spec for **{selected_class}**:",
             view=AddCharacterSpecView(
                 self.guild_id,

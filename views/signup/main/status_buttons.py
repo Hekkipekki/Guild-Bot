@@ -3,12 +3,22 @@ import discord
 
 from services.signup.signup_service import set_user_status
 from services.signup.signup_refresh_service import refresh_signup_message
+
 from utils.emoji_helpers import parse_button_emoji
-from utils.ui_timing import ERROR_MESSAGE_AUTO_DELETE_SECONDS
 from utils.discord_utils import delete_interaction_after, delete_message_after
+from utils.ui_timing import ERROR_MESSAGE_AUTO_DELETE_SECONDS
 
+from constants.statuses import (
+    SIGNUP_STATUS_LATE,
+    SIGNUP_STATUS_TENTATIVE,
+    SIGNUP_STATUS_ABSENCE,
+)
 
-NOTE_REQUIRED_STATUSES = {"late", "tentative", "absence"}
+NOTE_REQUIRED_STATUSES = {
+    SIGNUP_STATUS_LATE,
+    SIGNUP_STATUS_TENTATIVE,
+    SIGNUP_STATUS_ABSENCE,
+}
 
 
 class SignupStatusButton(discord.ui.Button):
@@ -29,19 +39,26 @@ class SignupStatusButton(discord.ui.Button):
             custom_id=f"signup:{status}:{raid_id}",
             row=row,
         )
+
         self.raid_id = raid_id
         self.status = status
 
     async def callback(self, interaction: discord.Interaction):
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This action can only be used inside a server.",
                 ephemeral=True,
             )
+
             asyncio.create_task(
-                delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                delete_interaction_after(
+                    interaction,
+                    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                )
             )
+
             return
 
         if self.status in NOTE_REQUIRED_STATUSES:
@@ -55,6 +72,7 @@ class SignupStatusButton(discord.ui.Button):
                     status=self.status,
                 )
             )
+
             return
 
         ok, error_message = set_user_status(
@@ -69,20 +87,33 @@ class SignupStatusButton(discord.ui.Button):
                 error_message or "⚠ Could not update signup status.",
                 ephemeral=True,
             )
+
             asyncio.create_task(
-                delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                delete_interaction_after(
+                    interaction,
+                    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                )
             )
+
             return
 
         await interaction.response.defer()
 
-        refreshed = await refresh_signup_message(interaction, int(self.raid_id))
+        refreshed = await refresh_signup_message(
+            interaction,
+            int(self.raid_id),
+        )
+
         if not refreshed:
             msg = await interaction.followup.send(
                 "⚠ Status updated, but the raid signup could not be refreshed.",
                 ephemeral=True,
                 wait=True,
             )
+
             asyncio.create_task(
-                delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                delete_message_after(
+                    msg,
+                    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                )
             )

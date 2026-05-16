@@ -4,8 +4,10 @@ import config
 
 from services.signup.signup_service import remove_user_signup
 from services.signup.signup_refresh_service import refresh_signup_message_by_id
-from utils.ui_timing import SHORT_CONFIRMATION_DELETE_SECONDS
+
 from utils.discord_utils import delete_interaction_after
+from utils.panel_helpers import safe_panel_edit
+from utils.ui_timing import SHORT_CONFIRMATION_DELETE_SECONDS
 
 from .helpers import get_signup_entry
 from .modals import EditNameModal, EditNoteModal
@@ -19,13 +21,18 @@ class EditNameButton(discord.ui.Button):
             style=discord.ButtonStyle.secondary,
             row=0,
         )
+
         self.guild_id = guild_id
         self.raid_id = raid_id
         self.user_id = user_id
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_modal(
-            EditNameModal(self.guild_id, self.raid_id, self.user_id)
+            EditNameModal(
+                self.guild_id,
+                self.raid_id,
+                self.user_id,
+            )
         )
 
 
@@ -36,17 +43,26 @@ class EditSpecButton(discord.ui.Button):
             style=discord.ButtonStyle.secondary,
             row=0,
         )
+
         self.guild_id = guild_id
         self.raid_id = raid_id
         self.user_id = user_id
 
     async def callback(self, interaction: discord.Interaction):
-        entry = get_signup_entry(self.raid_id, str(self.user_id))
+        entry = get_signup_entry(
+            self.raid_id,
+            str(self.user_id),
+        )
+
         if not entry:
-            await interaction.response.send_message("Signup not found.", ephemeral=True)
+            await interaction.response.send_message(
+                "Signup not found.",
+                ephemeral=True,
+            )
             return
 
         selected_class = entry.get("class")
+
         if not selected_class or selected_class not in config.CLASS_SPECS:
             await interaction.response.send_message(
                 "Class not found for this signup.",
@@ -54,10 +70,16 @@ class EditSpecButton(discord.ui.Button):
             )
             return
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="Choose a new spec:",
             embed=None,
-            view=EditSpecView(self.guild_id, self.raid_id, self.user_id, selected_class),
+            view=EditSpecView(
+                self.guild_id,
+                self.raid_id,
+                self.user_id,
+                selected_class,
+            ),
         )
 
 
@@ -68,13 +90,18 @@ class EditNoteButton(discord.ui.Button):
             style=discord.ButtonStyle.secondary,
             row=0,
         )
+
         self.guild_id = guild_id
         self.raid_id = raid_id
         self.user_id = user_id
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_modal(
-            EditNoteModal(self.guild_id, self.raid_id, self.user_id)
+            EditNoteModal(
+                self.guild_id,
+                self.raid_id,
+                self.user_id,
+            )
         )
 
 
@@ -85,6 +112,7 @@ class RemoveSignupButton(discord.ui.Button):
             style=discord.ButtonStyle.danger,
             row=1,
         )
+
         self.guild_id = guild_id
         self.raid_id = raid_id
         self.user_id = user_id
@@ -96,35 +124,49 @@ class RemoveSignupButton(discord.ui.Button):
         )
 
         if not removed:
-            await interaction.response.edit_message(
+            await safe_panel_edit(
+                interaction,
                 content="⚠ Signup not found or already removed.",
                 embed=None,
                 view=None,
             )
+
             asyncio.create_task(
-                delete_interaction_after(interaction, SHORT_CONFIRMATION_DELETE_SECONDS)
+                delete_interaction_after(
+                    interaction,
+                    SHORT_CONFIRMATION_DELETE_SECONDS,
+                )
             )
+
             return
 
         try:
-            await refresh_signup_message_by_id(interaction.channel, self.raid_id)
+            await refresh_signup_message_by_id(
+                interaction.channel,
+                self.raid_id,
+            )
         except Exception:
             pass
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="❌ Signup removed.",
             embed=None,
             view=None,
         )
 
         asyncio.create_task(
-            delete_interaction_after(interaction, SHORT_CONFIRMATION_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                SHORT_CONFIRMATION_DELETE_SECONDS,
+            )
         )
 
 
 class SignupOptionsView(discord.ui.View):
     def __init__(self, guild_id: int, raid_id: int, user_id: int):
         super().__init__(timeout=90)
+
         self.add_item(EditNameButton(guild_id, raid_id, user_id))
         self.add_item(EditSpecButton(guild_id, raid_id, user_id))
         self.add_item(EditNoteButton(guild_id, raid_id, user_id))

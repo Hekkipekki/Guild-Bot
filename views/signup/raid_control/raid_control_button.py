@@ -1,16 +1,34 @@
+from __future__ import annotations
+
 import asyncio
 import traceback
 
 import discord
 
 from utils.permissions import can_manage_raid_tools
+
 from utils.ui_timing import (
-    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     RAID_CONTROL_AUTO_DELETE_SECONDS,
 )
-from utils.emoji_helpers import parse_button_emoji
-from views.signup.raid_control.raid_control_view import RaidControlView
-from utils.discord_utils import delete_interaction_after, delete_message_after
+
+from utils.emoji_helpers import (
+    parse_button_emoji,
+)
+
+from utils.discord_utils import (
+    delete_interaction_after,
+)
+
+from utils.panel_helpers import (
+    send_panel_error,
+)
+
+from views.signup.raid_control.raid_control_view import (
+    RaidControlView,
+)
+from views.signup.raid_control.raid_control_notes import (
+    OpenNotesButton,
+)
 
 
 class RaidControlButton(discord.ui.Button):
@@ -22,20 +40,15 @@ class RaidControlButton(discord.ui.Button):
             row=row,
             custom_id=f"raid_control:{raid_id}",
         )
+
         self.raid_id = str(raid_id)
 
     async def callback(self, interaction: discord.Interaction):
         try:
             if not can_manage_raid_tools(interaction):
-                await interaction.response.send_message(
+                await send_panel_error(
+                    interaction,
                     "⛔ You do not have access to raid control.",
-                    ephemeral=True,
-                )
-                asyncio.create_task(
-                    delete_interaction_after(
-                        interaction,
-                        ERROR_MESSAGE_AUTO_DELETE_SECONDS,
-                    )
                 )
                 return
 
@@ -46,6 +59,7 @@ class RaidControlButton(discord.ui.Button):
                 view=view,
                 ephemeral=True,
             )
+
             asyncio.create_task(
                 delete_interaction_after(
                     interaction,
@@ -59,25 +73,7 @@ class RaidControlButton(discord.ui.Button):
             print(f"Exception: {type(e).__name__}: {e}")
             traceback.print_exc()
 
-            message = f"⚠ Raid Control failed: `{type(e).__name__}: {e}`"
-
-            if interaction.response.is_done():
-                msg = await interaction.followup.send(
-                    message,
-                    ephemeral=True,
-                    wait=True,
-                )
-                asyncio.create_task(
-                    delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-                )
-            else:
-                await interaction.response.send_message(
-                    message,
-                    ephemeral=True,
-                )
-                asyncio.create_task(
-                    delete_interaction_after(
-                        interaction,
-                        ERROR_MESSAGE_AUTO_DELETE_SECONDS,
-                    )
-                )
+            await send_panel_error(
+                interaction,
+                f"⚠ Raid Control failed: `{type(e).__name__}: {e}`",
+            )

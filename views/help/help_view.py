@@ -3,17 +3,19 @@ import asyncio
 import discord
 
 from utils.discord_utils import delete_interaction_after
+from utils.panel_helpers import (
+    safe_panel_edit,
+    close_panel,
+)
+from utils.embed_theme import build_panel_embed
 from utils.ui_timing import SLASH_PANEL_AUTO_DELETE_SECONDS
 
 
 def _base_embed(title: str, description: str) -> discord.Embed:
-    embed = discord.Embed(
+    return build_panel_embed(
         title=title,
         description=description,
-        color=discord.Color.purple(),
     )
-    embed.set_footer(text="This help panel closes automatically.")
-    return embed
 
 
 def build_help_home_embed() -> discord.Embed:
@@ -150,6 +152,7 @@ class HelpSectionButton(discord.ui.Button):
             style=discord.ButtonStyle.secondary,
             row=row,
         )
+
         self.section = section
 
     async def callback(self, interaction: discord.Interaction):
@@ -162,12 +165,17 @@ class HelpSectionButton(discord.ui.Button):
         else:
             embed = build_player_help_embed()
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             embed=embed,
             view=HelpView(current_section=self.section),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, SLASH_PANEL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                SLASH_PANEL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -180,12 +188,17 @@ class BackToHelpHomeButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             embed=build_help_home_embed(),
             view=HelpView(),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, SLASH_PANEL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                SLASH_PANEL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -198,12 +211,10 @@ class CloseHelpButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
-            content="Help panel closed.",
-            embed=None,
-            view=None,
+        await close_panel(
+            interaction,
+            message="Help panel closed.",
         )
-        asyncio.create_task(delete_interaction_after(interaction, 1))
 
 
 class HelpView(discord.ui.View):

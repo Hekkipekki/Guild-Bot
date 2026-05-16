@@ -5,10 +5,13 @@ from services.signup.signup_service import (
     get_signup_user,
     set_user_status_with_note,
 )
+
 from services.signup.signup_ui_service import (
     refresh_and_show_signup_options_from_channel,
 )
-from utils.discord_utils import delete_interaction_after, delete_message_after
+
+from utils.panel_helpers import send_panel_error
+
 from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     SIGNUP_OPTIONS_AUTO_DELETE_SECONDS,
@@ -16,7 +19,14 @@ from utils.ui_timing import (
 
 
 class RequiredStatusNoteModal(discord.ui.Modal):
-    def __init__(self, *, raid_id: int, guild_id: int, user_id: int, status: str):
+    def __init__(
+        self,
+        *,
+        raid_id: int,
+        guild_id: int,
+        user_id: int,
+        status: str,
+    ):
         if status == "late":
             title = "Late Note"
         elif status == "tentative":
@@ -31,8 +41,14 @@ class RequiredStatusNoteModal(discord.ui.Modal):
         self.user_id = user_id
         self.status = status
 
-        existing_entry = get_signup_user(self.raid_id, str(self.user_id)) or {}
-        existing_note = (existing_entry.get("note") or "").strip()
+        existing_entry = get_signup_user(
+            self.raid_id,
+            str(self.user_id),
+        ) or {}
+
+        existing_note = (
+            existing_entry.get("note") or ""
+        ).strip()
 
         self.note_input = discord.ui.TextInput(
             label="Note",
@@ -43,26 +59,24 @@ class RequiredStatusNoteModal(discord.ui.Modal):
             max_length=200,
             default=existing_note,
         )
+
         self.add_item(self.note_input)
 
-    async def _send_error(self, interaction: discord.Interaction, message: str) -> None:
-        if interaction.response.is_done():
-            msg = await interaction.followup.send(
-                message,
-                ephemeral=True,
-                wait=True,
-            )
-            asyncio.create_task(
-                delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-            )
-            return
-
-        await interaction.response.send_message(message, ephemeral=True)
-        asyncio.create_task(
-            delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+    async def _send_error(
+        self,
+        interaction: discord.Interaction,
+        message: str,
+    ) -> None:
+        await send_panel_error(
+            interaction,
+            message,
+            delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
         )
 
-    async def on_submit(self, interaction: discord.Interaction):
+    async def on_submit(
+        self,
+        interaction: discord.Interaction,
+    ):
         ok, error_message = set_user_status_with_note(
             raid_id=self.raid_id,
             user_id=str(self.user_id),

@@ -11,7 +11,7 @@ from utils.ui_timing import (
 
 
 async def _send_choice_error(interaction: discord.Interaction, message: str) -> None:
-    if interaction.response.is_done():
+    await send_panel_error(...)
         msg = await interaction.followup.send(
             message,
             ephemeral=True,
@@ -56,7 +56,7 @@ class BuildCompOptionButton(discord.ui.Button):
             steps = comp_data.get("bench_choice_steps", [])
 
             if steps:
-                await interaction.response.edit_message(
+                await safe_panel_edit(
                     content=_build_bench_prompt(comp_data),
                     view=CompBenchView(comp_data),
                 )
@@ -68,7 +68,7 @@ class BuildCompOptionButton(discord.ui.Button):
             )
 
             if not ok:
-                await interaction.response.edit_message(
+                await safe_panel_edit(
                     content=message,
                     view=None,
                 )
@@ -77,7 +77,7 @@ class BuildCompOptionButton(discord.ui.Button):
                 )
                 return
 
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="Comp posted.",
                 view=None,
             )
@@ -101,7 +101,7 @@ class CancelCompChoiceButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
+        await safe_panel_edit(
             content="Comp build cancelled.",
             view=None,
         )

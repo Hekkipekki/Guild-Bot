@@ -74,7 +74,7 @@ class RemoveCharacterSelect(discord.ui.Select):
         try:
             selected_index = int(value)
         except ValueError:
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="⚠ Invalid character selection.",
                 view=ManageCharactersView(
                     self.guild_id,
@@ -89,7 +89,7 @@ class RemoveCharacterSelect(discord.ui.Select):
             return
 
         if not (0 <= selected_index < len(self.filtered_characters)):
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="⚠ Character not found.",
                 view=ManageCharactersView(
                     self.guild_id,
@@ -112,7 +112,7 @@ class RemoveCharacterSelect(discord.ui.Select):
         )
 
         if real_index is None:
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="⚠ Character not found.",
                 view=ManageCharactersView(
                     self.guild_id,
@@ -128,7 +128,7 @@ class RemoveCharacterSelect(discord.ui.Select):
 
         removed = remove_user_character(self.guild_id, self.user_id, real_index)
         if not removed:
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="⚠ Could not remove character.",
                 view=ManageCharactersView(
                     self.guild_id,
@@ -142,7 +142,7 @@ class RemoveCharacterSelect(discord.ui.Select):
             )
             return
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
             content=f"🗑 Removed **{char_to_remove['name']}**",
             view=ManageCharactersView(
                 self.guild_id,

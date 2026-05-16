@@ -81,7 +81,7 @@ class CharacterSelect(discord.ui.Select):
 
         # ADD CHARACTER
         if value == "add":
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="Choose a class to save as a character:",
                 view=AddCharacterClassView(
                     self.guild_id,
@@ -100,7 +100,7 @@ class CharacterSelect(discord.ui.Select):
 
         # MANAGE CHARACTERS
         if value == "manage":
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="Manage your saved characters:",
                 view=ManageCharactersView(
                     self.guild_id,
@@ -121,7 +121,7 @@ class CharacterSelect(discord.ui.Select):
         try:
             index = int(value)
         except ValueError:
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="⚠ Invalid selection.",
                 view=CharacterView(
                     self.guild_id,
@@ -139,7 +139,7 @@ class CharacterSelect(discord.ui.Select):
             return
 
         if index >= len(self.filtered_characters):
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="⚠ Character not found.",
                 view=CharacterView(
                     self.guild_id,
@@ -169,7 +169,7 @@ class CharacterSelect(discord.ui.Select):
         )
 
         if not ok:
-            await interaction.response.edit_message(
+            await safe_panel_edit(
                 content="⚠ Raid signup no longer exists.",
                 view=None,
             )

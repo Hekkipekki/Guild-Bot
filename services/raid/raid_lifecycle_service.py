@@ -8,7 +8,7 @@ from services.signup.signup_preset_service import build_signup_payload
 
 SWEDEN_TZ = ZoneInfo("Europe/Stockholm")
 
-RAID_RETENTION_AFTER_START_SECONDS = 30 * 60 #30 minutes
+RAID_RETENTION_AFTER_START_SECONDS = 60 #30 minutes
 
 def is_signup_due_for_lifecycle(signup: dict, now_ts: int) -> bool:
     start_ts = signup.get("start_ts")

@@ -1,8 +1,10 @@
 import asyncio
 import discord
 
-from utils.ui_timing import RAID_CONTROL_AUTO_DELETE_SECONDS
 from utils.discord_utils import delete_interaction_after
+from utils.panel_helpers import safe_panel_edit
+from utils.ui_timing import RAID_CONTROL_AUTO_DELETE_SECONDS
+
 from views.signup.settings.raid_settings_modals import (
     EditRaidTitleModal,
     EditRaidDescriptionModal,
@@ -10,6 +12,23 @@ from views.signup.settings.raid_settings_modals import (
     EditRaidDateModal,
     EditRaidTimeModal,
 )
+
+
+def build_recurring_options_content(raid_id: str) -> str:
+    from services.raid.raid_control_service import get_recurring_settings
+
+    settings = get_recurring_settings(raid_id)
+    enabled = bool(settings.get("enabled"))
+    interval = settings.get("interval")
+
+    status_text = "✅ Enabled" if enabled else "❌ Disabled"
+    interval_text = f"{interval} days" if interval else "Not set"
+
+    return (
+        "**Recurring raid settings**\n\n"
+        f"Status: {status_text}\n"
+        f"Interval: {interval_text}"
+    )
 
 
 class EditRaidTitleButton(discord.ui.Button):
@@ -77,10 +96,6 @@ class EditRaidTimeButton(discord.ui.Button):
         await interaction.response.send_modal(EditRaidTimeModal(int(self.raid_id)))
 
 
-# -----------------------------
-# RECURRING FLOW
-# -----------------------------
-
 class RecurringOptionsButton(discord.ui.Button):
     def __init__(self, raid_id: str):
         super().__init__(
@@ -91,22 +106,28 @@ class RecurringOptionsButton(discord.ui.Button):
         self.raid_id = raid_id
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
-            content="Recurring raid settings",
+        await safe_panel_edit(
+            interaction,
+            content=build_recurring_options_content(self.raid_id),
             view=RecurringOptionsView(self.raid_id),
         )
 
 
 class ToggleRecurringButton(discord.ui.Button):
     def __init__(self, raid_id: str):
+        from services.raid.raid_control_service import get_recurring_settings
+
+        settings = get_recurring_settings(raid_id)
+        enabled = bool(settings.get("enabled"))
+
         super().__init__(
-            label="Enable / Disable Recurring",
-            style=discord.ButtonStyle.secondary,
+            label="Disable Recurring" if enabled else "Enable Recurring",
+            style=discord.ButtonStyle.danger if enabled else discord.ButtonStyle.success,
+            row=0,
         )
         self.raid_id = raid_id
 
     async def callback(self, interaction: discord.Interaction):
-
         from services.raid.raid_control_service import toggle_recurring
         from services.signup.signup_refresh_service import refresh_signup_message_by_id
 
@@ -121,14 +142,14 @@ class ToggleRecurringButton(discord.ui.Button):
 
         await refresh_signup_message_by_id(interaction.channel, int(self.raid_id))
 
-        await interaction.response.edit_message(
-            content="Recurring setting updated.",
+        await safe_panel_edit(
+            interaction,
+            content=build_recurring_options_content(self.raid_id),
             view=RecurringOptionsView(self.raid_id),
         )
 
 
 class RecurringIntervalModal(discord.ui.Modal, title="Set Recurring Interval"):
-
     interval = discord.ui.TextInput(
         label="Interval (days)",
         placeholder="7",
@@ -140,7 +161,6 @@ class RecurringIntervalModal(discord.ui.Modal, title="Set Recurring Interval"):
         self.raid_id = raid_id
 
     async def on_submit(self, interaction: discord.Interaction):
-
         from services.raid.raid_control_service import set_recurring_interval
         from services.signup.signup_refresh_service import refresh_signup_message_by_id
 
@@ -149,6 +169,13 @@ class RecurringIntervalModal(discord.ui.Modal, title="Set Recurring Interval"):
         except ValueError:
             await interaction.response.send_message(
                 "Interval must be a number.",
+                ephemeral=True,
+            )
+            return
+
+        if days <= 0:
+            await interaction.response.send_message(
+                "Interval must be at least 1 day.",
                 ephemeral=True,
             )
             return
@@ -164,18 +191,19 @@ class RecurringIntervalModal(discord.ui.Modal, title="Set Recurring Interval"):
 
         await refresh_signup_message_by_id(interaction.channel, int(self.raid_id))
 
-        await interaction.response.send_message(
-            f"Recurring interval set to {days} days.",
-            ephemeral=True,
+        await safe_panel_edit(
+            interaction,
+            content=build_recurring_options_content(self.raid_id),
+            view=RecurringOptionsView(self.raid_id),
         )
 
 
 class SetRecurringIntervalButton(discord.ui.Button):
-
     def __init__(self, raid_id: str):
         super().__init__(
             label="Set Interval",
             style=discord.ButtonStyle.secondary,
+            row=0,
         )
         self.raid_id = raid_id
 
@@ -185,18 +213,7 @@ class SetRecurringIntervalButton(discord.ui.Button):
         )
 
 
-class RecurringOptionsView(discord.ui.View):
-
-    def __init__(self, raid_id: str):
-        super().__init__(timeout=120)
-
-        self.add_item(ToggleRecurringButton(raid_id))
-        self.add_item(SetRecurringIntervalButton(raid_id))
-        self.add_item(BackToRaidSettingsButton(raid_id))
-
-
 class BackToRaidSettingsButton(discord.ui.Button):
-
     def __init__(self, raid_id: str):
         super().__init__(
             label="Back",
@@ -206,19 +223,23 @@ class BackToRaidSettingsButton(discord.ui.Button):
         self.raid_id = raid_id
 
     async def callback(self, interaction: discord.Interaction):
-
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="Raid settings",
             view=RaidSettingsView(self.raid_id),
         )
 
 
-# -----------------------------
-# MAIN SETTINGS VIEW
-# -----------------------------
+class RecurringOptionsView(discord.ui.View):
+    def __init__(self, raid_id: str):
+        super().__init__(timeout=120)
+
+        self.add_item(ToggleRecurringButton(raid_id))
+        self.add_item(SetRecurringIntervalButton(raid_id))
+        self.add_item(BackToRaidSettingsButton(raid_id))
+
 
 class BackToRaidControlButton(discord.ui.Button):
-
     def __init__(self, raid_id: str):
         super().__init__(
             label="Back to Raid Control",
@@ -228,10 +249,10 @@ class BackToRaidControlButton(discord.ui.Button):
         self.raid_id = raid_id
 
     async def callback(self, interaction: discord.Interaction):
-
         from views.signup.raid_control.raid_control_view import RaidControlView
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="Raid control panel",
             view=RaidControlView(self.raid_id),
         )
@@ -242,20 +263,13 @@ class BackToRaidControlButton(discord.ui.Button):
 
 
 class RaidSettingsView(discord.ui.View):
-
     def __init__(self, raid_id: str):
-
         super().__init__(timeout=120)
 
-        # Row 1
         self.add_item(EditRaidTitleButton(raid_id))
         self.add_item(EditRaidDescriptionButton(raid_id))
         self.add_item(EditRaidLeaderButton(raid_id))
         self.add_item(EditRaidDateButton(raid_id))
         self.add_item(EditRaidTimeButton(raid_id))
-
-        # Row 2
         self.add_item(RecurringOptionsButton(raid_id))
-
-        # Row 3
         self.add_item(BackToRaidControlButton(raid_id))

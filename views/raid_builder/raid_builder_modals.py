@@ -5,12 +5,18 @@ from services.raid.raid_template_service import (
     save_template,
     build_raid_data_from_template,
 )
+
 from utils.discord_utils import delete_interaction_after
+from utils.panel_helpers import safe_panel_edit
+
 from utils.ui_timing import (
     RAID_CONTROL_AUTO_DELETE_SECONDS,
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
 )
-from views.raid_builder.raid_builder_helpers import build_preview_embed
+
+from views.raid_builder.raid_builder_helpers import (
+    build_preview_embed,
+)
 
 
 class RaidTitleModal(discord.ui.Modal, title="Edit Raid Title"):
@@ -28,6 +34,7 @@ class RaidTitleModal(discord.ui.Modal, title="Edit Raid Title"):
         from views.raid_builder.raid_builder_view import RaidBuilderView
 
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -37,12 +44,17 @@ class RaidTitleModal(discord.ui.Modal, title="Edit Raid Title"):
 
         self.raid_data["title"] = str(self.new_title).strip()
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             embed=build_preview_embed(guild, self.raid_data),
             view=RaidBuilderView(self.raid_data),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -63,6 +75,7 @@ class RaidDescriptionModal(discord.ui.Modal, title="Edit Raid Description"):
         from views.raid_builder.raid_builder_view import RaidBuilderView
 
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -72,12 +85,17 @@ class RaidDescriptionModal(discord.ui.Modal, title="Edit Raid Description"):
 
         self.raid_data["description"] = str(self.new_description).strip()
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             embed=build_preview_embed(guild, self.raid_data),
             view=RaidBuilderView(self.raid_data),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -96,6 +114,7 @@ class RaidLeaderModal(discord.ui.Modal, title="Edit Raid Leader"):
         from views.raid_builder.raid_builder_view import RaidBuilderView
 
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -105,12 +124,17 @@ class RaidLeaderModal(discord.ui.Modal, title="Edit Raid Leader"):
 
         self.raid_data["leader"] = str(self.new_leader).strip()
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             embed=build_preview_embed(guild, self.raid_data),
             view=RaidBuilderView(self.raid_data),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -129,6 +153,7 @@ class RaidDateModal(discord.ui.Modal, title="Edit Raid Date"):
         from views.raid_builder.raid_builder_view import RaidBuilderView
 
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -138,12 +163,17 @@ class RaidDateModal(discord.ui.Modal, title="Edit Raid Date"):
 
         self.raid_data["date"] = str(self.new_date).strip()
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             embed=build_preview_embed(guild, self.raid_data),
             view=RaidBuilderView(self.raid_data),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -162,6 +192,7 @@ class RaidTimeModal(discord.ui.Modal, title="Edit Raid Time"):
         from views.raid_builder.raid_builder_view import RaidBuilderView
 
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -171,12 +202,17 @@ class RaidTimeModal(discord.ui.Modal, title="Edit Raid Time"):
 
         self.raid_data["time"] = str(self.new_time).strip()
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             embed=build_preview_embed(guild, self.raid_data),
             view=RaidBuilderView(self.raid_data),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -196,6 +232,7 @@ class RecurringRaidModal(discord.ui.Modal, title="Recurring Raid Settings"):
         from views.raid_builder.raid_builder_view import RaidBuilderView
 
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -208,17 +245,24 @@ class RecurringRaidModal(discord.ui.Modal, title="Recurring Raid Settings"):
         if not raw:
             self.raid_data["is_recurring"] = False
             self.raid_data["recurring_interval_days"] = None
+
         else:
             try:
                 interval = int(raw)
+
             except ValueError:
                 await interaction.response.send_message(
                     "⚠ Interval must be a whole number.",
                     ephemeral=True,
                 )
+
                 asyncio.create_task(
-                    delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                    delete_interaction_after(
+                        interaction,
+                        ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                    )
                 )
+
                 return
 
             if interval <= 0:
@@ -226,22 +270,31 @@ class RecurringRaidModal(discord.ui.Modal, title="Recurring Raid Settings"):
                     "⚠ Interval must be greater than 0.",
                     ephemeral=True,
                 )
+
                 asyncio.create_task(
-                    delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                    delete_interaction_after(
+                        interaction,
+                        ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                    )
                 )
+
                 return
 
             self.raid_data["is_recurring"] = True
             self.raid_data["recurring_interval_days"] = interval
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             embed=build_preview_embed(guild, self.raid_data),
             view=RaidBuilderView(self.raid_data),
         )
-        asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
-        )
 
+        asyncio.create_task(
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
+        )
 
 class SaveTemplateModal(discord.ui.Modal, title="Save Raid Template"):
     template_name = discord.ui.TextInput(
@@ -252,6 +305,7 @@ class SaveTemplateModal(discord.ui.Modal, title="Save Raid Template"):
 
     def __init__(self, guild_id: int, raid_data: dict):
         super().__init__()
+
         self.guild_id = guild_id
         self.raid_data = dict(raid_data)
 
@@ -259,6 +313,7 @@ class SaveTemplateModal(discord.ui.Modal, title="Save Raid Template"):
         from views.raid_builder.raid_builder_view import RaidBuilderView
 
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -267,26 +322,45 @@ class SaveTemplateModal(discord.ui.Modal, title="Save Raid Template"):
             return
 
         name = str(self.template_name).strip()
-        ok = save_template(self.guild_id, name, self.raid_data)
+
+        ok = save_template(
+            self.guild_id,
+            name,
+            self.raid_data,
+        )
 
         if ok:
-            await interaction.response.edit_message(
+            await safe_panel_edit(
+                interaction,
                 content="✅ Template saved.",
                 embed=build_preview_embed(guild, self.raid_data),
                 view=RaidBuilderView(self.raid_data),
             )
+
             asyncio.create_task(
-                delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+                delete_interaction_after(
+                    interaction,
+                    RAID_CONTROL_AUTO_DELETE_SECONDS,
+                )
             )
+
             return
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=f"⚠ A template named **{name}** already exists.",
             embed=build_preview_embed(guild, self.raid_data),
-            view=RaidBuilderView(self.raid_data, existing_template_name=name),
+            view=RaidBuilderView(
+                self.raid_data,
+                existing_template_name=name,
+            ),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -297,8 +371,14 @@ class TemplateDateModal(discord.ui.Modal, title="Set Raid Date from Template"):
         max_length=10,
     )
 
-    def __init__(self, guild_id: int, channel_id: int, template_name: str):
+    def __init__(
+        self,
+        guild_id: int,
+        channel_id: int,
+        template_name: str,
+    ):
         super().__init__()
+
         self.guild_id = guild_id
         self.channel_id = channel_id
         self.template_name = template_name
@@ -307,6 +387,7 @@ class TemplateDateModal(discord.ui.Modal, title="Set Raid Date from Template"):
         from views.raid_builder.raid_builder_view import RaidBuilderView
 
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -326,16 +407,26 @@ class TemplateDateModal(discord.ui.Modal, title="Set Raid Date from Template"):
                 "⚠ Could not load that template.",
                 ephemeral=True,
             )
+
             asyncio.create_task(
-                delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                delete_interaction_after(
+                    interaction,
+                    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                )
             )
+
             return
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=None,
             embed=build_preview_embed(guild, raid_data),
             view=RaidBuilderView(raid_data),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )

@@ -3,15 +3,20 @@ import discord
 
 from services.raid.raid_template_service import (
     list_templates,
-    build_raid_data_from_template,
     delete_template,
 )
+
 from utils.discord_utils import delete_interaction_after
+from utils.panel_helpers import safe_panel_edit
+
 from utils.ui_timing import (
     RAID_CONTROL_AUTO_DELETE_SECONDS,
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
 )
-from views.raid_builder.raid_builder_helpers import build_preview_embed
+
+from views.raid_builder.raid_builder_helpers import (
+    build_preview_embed,
+)
 
 
 class RaidChannelSelect(discord.ui.ChannelSelect):
@@ -30,6 +35,7 @@ class RaidChannelSelect(discord.ui.ChannelSelect):
         from views.raid_builder.raid_builder_view import RaidBuilderView
 
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -38,14 +44,20 @@ class RaidChannelSelect(discord.ui.ChannelSelect):
             return
 
         channel = self.values[0]
+
         self.raid_data["channel_id"] = channel.id
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             embed=build_preview_embed(guild, self.raid_data),
             view=RaidBuilderView(self.raid_data),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -53,9 +65,11 @@ class RaidTemplateSelect(discord.ui.Select):
     def __init__(self, guild_id: int, channel_id: int):
         self.guild_id = guild_id
         self.channel_id = channel_id
+
         self.templates = list_templates(guild_id)
 
         options = []
+
         for template in self.templates[:25]:
             options.append(
                 discord.SelectOption(
@@ -83,7 +97,9 @@ class RaidTemplateSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        from views.raid_builder.raid_builder_modals import TemplateDateModal
+        from views.raid_builder.raid_builder_modals import (
+            TemplateDateModal,
+        )
 
         selected_name = self.values[0]
 
@@ -92,13 +108,22 @@ class RaidTemplateSelect(discord.ui.Select):
                 "⚠ No templates are saved for this server yet.",
                 ephemeral=True,
             )
+
             asyncio.create_task(
-                delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                delete_interaction_after(
+                    interaction,
+                    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                )
             )
+
             return
 
         await interaction.response.send_modal(
-            TemplateDateModal(self.guild_id, self.channel_id, selected_name)
+            TemplateDateModal(
+                self.guild_id,
+                self.channel_id,
+                selected_name,
+            )
         )
 
 
@@ -106,9 +131,11 @@ class DeleteTemplateSelect(discord.ui.Select):
     def __init__(self, guild_id: int, channel_id: int):
         self.guild_id = guild_id
         self.channel_id = channel_id
+
         self.templates = list_templates(guild_id)
 
         options = []
+
         for template in self.templates[:25]:
             options.append(
                 discord.SelectOption(
@@ -136,7 +163,9 @@ class DeleteTemplateSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        from views.raid_builder.raid_builder_view import RaidTemplateView
+        from views.raid_builder.raid_builder_view import (
+            RaidTemplateView,
+        )
 
         selected_name = self.values[0]
 
@@ -145,27 +174,49 @@ class DeleteTemplateSelect(discord.ui.Select):
                 "⚠ No templates are saved for this server yet.",
                 ephemeral=True,
             )
+
             asyncio.create_task(
-                delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                delete_interaction_after(
+                    interaction,
+                    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                )
             )
+
             return
 
-        ok = delete_template(self.guild_id, selected_name)
+        ok = delete_template(
+            self.guild_id,
+            selected_name,
+        )
+
         if not ok:
             await interaction.response.send_message(
                 "⚠ Could not delete that template.",
                 ephemeral=True,
             )
+
             asyncio.create_task(
-                delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+                delete_interaction_after(
+                    interaction,
+                    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                )
             )
+
             return
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=f"✅ Deleted template **{selected_name}**.",
             embed=None,
-            view=RaidTemplateView(self.guild_id, self.channel_id),
+            view=RaidTemplateView(
+                self.guild_id,
+                self.channel_id,
+            ),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )

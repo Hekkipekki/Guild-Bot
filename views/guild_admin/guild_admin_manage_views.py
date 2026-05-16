@@ -8,10 +8,15 @@ from services.guild.guild_settings_service import (
     remove_expected_player,
     set_weakauras_channel_id,
 )
+
 from utils.discord_utils import delete_interaction_after
 from utils.emoji_helpers import parse_button_emoji
 from utils.ui_timing import RAID_CONTROL_AUTO_DELETE_SECONDS
-from views.guild_admin.guild_admin_helpers import build_guild_config_embed
+from utils.panel_helpers import safe_panel_edit
+
+from views.guild_admin.guild_admin_helpers import (
+    build_guild_config_embed,
+)
 
 
 async def _return_to_setup_overview(
@@ -20,6 +25,7 @@ async def _return_to_setup_overview(
     content: str | None = None,
 ) -> None:
     guild = interaction.guild
+
     if guild is None:
         await interaction.response.send_message(
             "⚠ This command can only be used in a server.",
@@ -29,13 +35,18 @@ async def _return_to_setup_overview(
 
     from views.guild_admin.guild_admin_view import GuildSetupView
 
-    await interaction.response.edit_message(
+    await safe_panel_edit(
+        interaction,
         content=content,
         embed=build_guild_config_embed(guild),
         view=GuildSetupView(),
     )
+
     asyncio.create_task(
-        delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+        delete_interaction_after(
+            interaction,
+            RAID_CONTROL_AUTO_DELETE_SECONDS,
+        )
     )
 
 
@@ -49,12 +60,16 @@ class BackToSetupButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await _return_to_setup_overview(interaction, content=None)
+        await _return_to_setup_overview(
+            interaction,
+            content=None,
+        )
 
 
 class RaidAdminUserSelect(discord.ui.UserSelect):
     def __init__(self, mode: str):
         self.mode = mode
+
         placeholder = (
             "Select users to add as raid admins / leaders..."
             if mode == "add"
@@ -70,6 +85,7 @@ class RaidAdminUserSelect(discord.ui.UserSelect):
 
     async def callback(self, interaction: discord.Interaction):
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -78,6 +94,7 @@ class RaidAdminUserSelect(discord.ui.UserSelect):
             return
 
         changed = 0
+
         for member in self.values:
             if self.mode == "add":
                 if add_raid_control_user(guild.id, member.id):
@@ -95,6 +112,7 @@ class RaidAdminUserSelect(discord.ui.UserSelect):
 class RaidTeamUserSelect(discord.ui.UserSelect):
     def __init__(self, mode: str):
         self.mode = mode
+
         placeholder = (
             "Select users to add to the raid team..."
             if mode == "add"
@@ -110,6 +128,7 @@ class RaidTeamUserSelect(discord.ui.UserSelect):
 
     async def callback(self, interaction: discord.Interaction):
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -118,6 +137,7 @@ class RaidTeamUserSelect(discord.ui.UserSelect):
             return
 
         changed = 0
+
         for member in self.values:
             if self.mode == "add":
                 if add_expected_player(guild.id, member.id):
@@ -135,32 +155,62 @@ class RaidTeamUserSelect(discord.ui.UserSelect):
 class RaidAdminManageView(discord.ui.View):
     def __init__(self, mode: str):
         super().__init__(timeout=120)
-        self.add_item(RaidAdminUserSelect(mode))
-        self.add_item(BackToSetupButton())
+
+        self.add_item(
+            RaidAdminUserSelect(mode)
+        )
+
+        self.add_item(
+            BackToSetupButton()
+        )
 
 
 class RaidTeamManageView(discord.ui.View):
     def __init__(self, mode: str):
         super().__init__(timeout=120)
-        self.add_item(RaidTeamUserSelect(mode))
-        self.add_item(BackToSetupButton())
+
+        self.add_item(
+            RaidTeamUserSelect(mode)
+        )
+
+        self.add_item(
+            BackToSetupButton()
+        )
 
 
 class RaidAdminManageChoiceView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=120)
 
-    @discord.ui.button(label="Add Leader", style=discord.ButtonStyle.secondary, row=0)
-    async def add_admin(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(
+    @discord.ui.button(
+        label="Add Leader",
+        style=discord.ButtonStyle.secondary,
+        row=0,
+    )
+    async def add_admin(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
+        await safe_panel_edit(
+            interaction,
             content="Select users to add as raid admins / leaders.",
             embed=None,
             view=RaidAdminManageView("add"),
         )
 
-    @discord.ui.button(label="Remove Leader", style=discord.ButtonStyle.secondary, row=0)
-    async def remove_admin(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(
+    @discord.ui.button(
+        label="Remove Leader",
+        style=discord.ButtonStyle.secondary,
+        row=0,
+    )
+    async def remove_admin(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
+        await safe_panel_edit(
+            interaction,
             content="Select users to remove from raid admins / leaders.",
             embed=None,
             view=RaidAdminManageView("remove"),
@@ -172,25 +222,50 @@ class RaidAdminManageChoiceView(discord.ui.View):
         style=discord.ButtonStyle.secondary,
         row=0,
     )
-    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await _return_to_setup_overview(interaction, content=None)
+    async def back(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
+        await _return_to_setup_overview(
+            interaction,
+            content=None,
+        )
 
 
 class RaidTeamManageChoiceView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=120)
 
-    @discord.ui.button(label="Add Raid Member", style=discord.ButtonStyle.secondary, row=0)
-    async def add_team(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(
+    @discord.ui.button(
+        label="Add Raid Member",
+        style=discord.ButtonStyle.secondary,
+        row=0,
+    )
+    async def add_team(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
+        await safe_panel_edit(
+            interaction,
             content="Select users to add to the raid team.",
             embed=None,
             view=RaidTeamManageView("add"),
         )
 
-    @discord.ui.button(label="Remove Raid Member", style=discord.ButtonStyle.secondary, row=0)
-    async def remove_team(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(
+    @discord.ui.button(
+        label="Remove Raid Member",
+        style=discord.ButtonStyle.secondary,
+        row=0,
+    )
+    async def remove_team(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
+        await safe_panel_edit(
+            interaction,
             content="Select users to remove from the raid team.",
             embed=None,
             view=RaidTeamManageView("remove"),
@@ -202,8 +277,15 @@ class RaidTeamManageChoiceView(discord.ui.View):
         style=discord.ButtonStyle.secondary,
         row=0,
     )
-    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await _return_to_setup_overview(interaction, content=None)
+    async def back(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
+        await _return_to_setup_overview(
+            interaction,
+            content=None,
+        )
 
 
 class WeakAurasChannelSelect(discord.ui.ChannelSelect):
@@ -218,6 +300,7 @@ class WeakAurasChannelSelect(discord.ui.ChannelSelect):
 
     async def callback(self, interaction: discord.Interaction):
         guild = interaction.guild
+
         if guild is None:
             await interaction.response.send_message(
                 "⚠ This command can only be used in a server.",
@@ -226,12 +309,23 @@ class WeakAurasChannelSelect(discord.ui.ChannelSelect):
             return
 
         channel = self.values[0]
-        set_weakauras_channel_id(guild.id, channel.id)
 
-        from services.guild.weakauras_panel_service import ensure_weakauras_panel_for_guild
-        ok, message = await ensure_weakauras_panel_for_guild(interaction.client, guild)
+        set_weakauras_channel_id(
+            guild.id,
+            channel.id,
+        )
+
+        from services.guild.weakauras_panel_service import (
+            ensure_weakauras_panel_for_guild,
+        )
+
+        ok, message = await ensure_weakauras_panel_for_guild(
+            interaction.client,
+            guild,
+        )
 
         status_line = f"✅ WeakAuras channel set to {channel.mention}."
+
         if message:
             status_line += f"\n{message}"
 
@@ -244,5 +338,11 @@ class WeakAurasChannelSelect(discord.ui.ChannelSelect):
 class WeakAurasChannelManageView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=120)
-        self.add_item(WeakAurasChannelSelect())
-        self.add_item(BackToSetupButton())
+
+        self.add_item(
+            WeakAurasChannelSelect()
+        )
+
+        self.add_item(
+            BackToSetupButton()
+        )

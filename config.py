@@ -229,4 +229,7 @@ BUTTON_EMOJIS = {
     "create_template": "<:create_template:1482050738342461510>",
     "submit_raid": "<:submit_raid:1482050736840900701>",
     "cancel_raid": "<:cancel_raid:1482050734672314518>",
+    "spec": "<:Config:1482050761507471390>",
+    "attendance": "<:create_template:1482050738342461510>",
+    "comp": "<:create_raid:1482050739625787581>",
 }

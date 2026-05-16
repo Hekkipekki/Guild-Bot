@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from data.signup_store import find_message_signup, load_signups
+from data.signup_store import (
+    find_message_signup,
+    load_signups,
+)
 
 import discord
 
@@ -8,14 +11,28 @@ from services.attendance.attendance_queries import (
     get_reference_guild_id,
     get_sorted_attendance_players,
 )
-from services.attendance.attendance_report_service import get_guild_attendance_records
+
+from services.attendance.attendance_report_service import (
+    get_guild_attendance_records,
+)
+
 from services.attendance.attendance_rules import (
     get_attendance_status_label,
     normalize_attendance_status,
 )
+
 from services.attendance.attendance_service import (
     get_attendance_record,
     summarize_attendance_record,
+)
+
+from constants.statuses import (
+    ATTENDANCE_STATUS_ATTENDING,
+    ATTENDANCE_STATUS_BENCHED,
+    ATTENDANCE_STATUS_LATE,
+    ATTENDANCE_STATUS_TENTATIVE,
+    ATTENDANCE_STATUS_ABSENT,
+    ATTENDANCE_STATUS_NO_SIGN,
 )
 
 
@@ -29,6 +46,7 @@ def get_player_display_name(player: dict) -> str:
 
 def format_raid_label(record: dict) -> str:
     title = (record.get("title") or "Raid").strip()
+
     start_ts = record.get("start_ts")
 
     if start_ts:
@@ -53,6 +71,7 @@ def build_panel_content(
     start_ts = record.get("start_ts")
 
     summary = summarize_attendance_record(record)
+
     total_players = len(record.get("players", {}))
 
     lines = [
@@ -62,9 +81,13 @@ def build_panel_content(
     ]
 
     if start_ts:
-        lines.insert(1, f"**Date:** <t:{int(start_ts)}:F>")
+        lines.insert(
+            1,
+            f"**Date:** <t:{int(start_ts)}:F>",
+        )
 
     lines.append("")
+
     lines.append(
         (
             f"**Summary:** "
@@ -79,23 +102,38 @@ def build_panel_content(
 
     if selected_user_id:
         player = record.get("players", {}).get(str(selected_user_id))
+
         if player:
             lines.append("")
-            lines.append(f"**Selected Player:** {get_player_display_name(player)}")
-            lines.append(f"**Class:** {player.get('class') or 'Unknown'}")
             lines.append(
-                f"**Current Status:** {get_attendance_status_label(player.get('attendance_status'))}"
+                f"**Selected Player:** {get_player_display_name(player)}"
             )
+
             lines.append(
-                f"**Auto Status:** {get_attendance_status_label(player.get('auto_status'))}"
+                f"**Class:** {player.get('class') or 'Unknown'}"
             )
+
             lines.append(
-                f"**Manual Override:** {'Yes' if player.get('manual_override') else 'No'}"
+                f"**Current Status:** "
+                f"{get_attendance_status_label(player.get('attendance_status'))}"
+            )
+
+            lines.append(
+                f"**Auto Status:** "
+                f"{get_attendance_status_label(player.get('auto_status'))}"
+            )
+
+            lines.append(
+                f"**Manual Override:** "
+                f"{'Yes' if player.get('manual_override') else 'No'}"
             )
 
     if selected_action:
         lines.append("")
-        lines.append(f"**Pending Action:** {get_attendance_status_label(selected_action)}")
+        lines.append(
+            f"**Pending Action:** "
+            f"{get_attendance_status_label(selected_action)}"
+        )
 
     return "\n".join(lines)
 
@@ -123,8 +161,12 @@ def build_raid_options(
     guild_id = get_reference_guild_id(
         get_attendance_record,
         current_raid_id,
-        signup_record_getter=lambda raid_id: find_message_signup(signups, raid_id),
+        signup_record_getter=lambda raid_id: find_message_signup(
+            signups,
+            raid_id,
+        ),
     )
+
     if guild_id is None:
         return [
             discord.SelectOption(
@@ -134,7 +176,11 @@ def build_raid_options(
             )
         ]
 
-    records = get_guild_attendance_records(guild_id, finalized_only=False)
+    records = get_guild_attendance_records(
+        guild_id,
+        finalized_only=False,
+    )
+
     if not records:
         return [
             discord.SelectOption(
@@ -145,13 +191,18 @@ def build_raid_options(
         ]
 
     options: list[discord.SelectOption] = []
+
     for record in records[:25]:
         raid_id = str(record.get("raid_id"))
+
         options.append(
             discord.SelectOption(
                 label=format_raid_label(record),
                 value=raid_id,
-                description=f"Finalized: {'Yes' if record.get('finalized') else 'No'}"[:100],
+                description=(
+                    f"Finalized: "
+                    f"{'Yes' if record.get('finalized') else 'No'}"
+                )[:100],
                 default=raid_id == str(selected_raid_id or current_raid_id),
             )
         )
@@ -165,6 +216,7 @@ def build_player_options(
     selected_user_id: str | None = None,
 ) -> list[discord.SelectOption]:
     record = get_attendance_record(selected_raid_id)
+
     if not record:
         return [
             discord.SelectOption(
@@ -177,9 +229,14 @@ def build_player_options(
     sorted_players = get_sorted_attendance_players(record)
 
     options: list[discord.SelectOption] = []
+
     for user_id, player in sorted_players[:25]:
         name = get_player_display_name(player)
-        status = get_attendance_status_label(player.get("attendance_status"))
+
+        status = get_attendance_status_label(
+            player.get("attendance_status")
+        )
+
         wow_class = player.get("class") or "Unknown"
 
         options.append(
@@ -207,12 +264,12 @@ def build_action_options(
     selected_action: str | None = None,
 ) -> list[discord.SelectOption]:
     statuses = [
-        "attending",
-        "benched",
-        "late",
-        "tentative",
-        "absent",
-        "no_sign",
+        ATTENDANCE_STATUS_ATTENDING,
+        ATTENDANCE_STATUS_BENCHED,
+        ATTENDANCE_STATUS_LATE,
+        ATTENDANCE_STATUS_TENTATIVE,
+        ATTENDANCE_STATUS_ABSENT,
+        ATTENDANCE_STATUS_NO_SIGN,
     ]
 
     return [

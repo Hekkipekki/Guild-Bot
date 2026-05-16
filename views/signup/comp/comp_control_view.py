@@ -10,9 +10,11 @@ from services.comp.comp_control_service import (
     cancel_posted_comp,
     get_comp_control_players,
 )
-from utils.discord_utils import delete_interaction_after, delete_message_after
+
+from utils.discord_utils import delete_interaction_after
 from utils.emoji_helpers import parse_button_emoji
 from utils.permissions import can_manage_raid_tools
+from utils.panel_helpers import send_panel_error, safe_panel_edit
 from utils.ui_timing import (
     ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     RAID_CONTROL_AUTO_DELETE_SECONDS,
@@ -23,20 +25,10 @@ async def _send_comp_control_error(
     interaction: discord.Interaction,
     message: str,
 ) -> None:
-    if interaction.response.is_done():
-        msg = await interaction.followup.send(
-            message,
-            ephemeral=True,
-            wait=True,
-        )
-        asyncio.create_task(
-            delete_message_after(msg, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
-        )
-        return
-
-    await interaction.response.send_message(message, ephemeral=True)
-    asyncio.create_task(
-        delete_interaction_after(interaction, ERROR_MESSAGE_AUTO_DELETE_SECONDS)
+    await send_panel_error(
+        interaction,
+        message,
+        delete_after=ERROR_MESSAGE_AUTO_DELETE_SECONDS,
     )
 
 
@@ -52,6 +44,7 @@ def _player_description(player: dict) -> str:
     wow_class = player.get("class") or "Unknown"
     spec = player.get("spec") or "Unknown"
     status = player.get("status") or "Unknown"
+
     return f"{wow_class} • {spec} • {status}"[:100]
 
 
@@ -61,10 +54,12 @@ def build_comp_player_options(
     selected_user_id: str | None = None,
 ) -> list[discord.SelectOption]:
     players = get_comp_control_players(raid_id)
+
     options: list[discord.SelectOption] = []
 
     for player in players[:25]:
         user_id = str(player.get("user_id"))
+
         options.append(
             discord.SelectOption(
                 label=_player_label(player)[:100],
@@ -126,6 +121,7 @@ class CompPlayerSelect(discord.ui.Select):
             return
 
         self.view.selected_user_id = self.values[0]
+
         await self.view.refresh_panel(interaction)
 
 
@@ -135,12 +131,15 @@ class CompActionSelect(discord.ui.Select):
             placeholder="Select comp action...",
             min_values=1,
             max_values=1,
-            options=build_comp_action_options(selected_action=selected_action),
+            options=build_comp_action_options(
+                selected_action=selected_action,
+            ),
             row=1,
         )
 
     async def callback(self, interaction: discord.Interaction):
         self.view.selected_action = self.values[0]
+
         await self.view.refresh_panel(interaction)
 
 
@@ -178,15 +177,23 @@ class ApplyCompActionButton(discord.ui.Button):
         )
 
         if not ok:
-            await _send_comp_control_error(interaction, f"⚠ {message}")
+            await _send_comp_control_error(
+                interaction,
+                f"⚠ {message}",
+            )
             return
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=f"✅ {message}",
             view=CompControlView(view.raid_id),
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -209,7 +216,8 @@ class OpenRaidSettingsButton(discord.ui.Button):
 
         from views.signup.settings.raid_settings_view import RaidSettingsView
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="Raid settings",
             view=RaidSettingsView(self.view.raid_id),
         )
@@ -225,12 +233,17 @@ class CloseCompControlButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content="Comp control closed.",
             view=None,
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -259,15 +272,23 @@ class CancelCompButton(discord.ui.Button):
         )
 
         if not ok:
-            await _send_comp_control_error(interaction, f"⚠ {message}")
+            await _send_comp_control_error(
+                interaction,
+                f"⚠ {message}",
+            )
             return
 
-        await interaction.response.edit_message(
+        await safe_panel_edit(
+            interaction,
             content=f"✅ {message}",
             view=None,
         )
+
         asyncio.create_task(
-            delete_interaction_after(interaction, RAID_CONTROL_AUTO_DELETE_SECONDS)
+            delete_interaction_after(
+                interaction,
+                RAID_CONTROL_AUTO_DELETE_SECONDS,
+            )
         )
 
 
@@ -280,6 +301,7 @@ class CompControlView(discord.ui.View):
         selected_action: str | None = None,
     ):
         super().__init__(timeout=120)
+
         self.raid_id = str(raid_id)
         self.selected_user_id = selected_user_id
         self.selected_action = selected_action
@@ -290,18 +312,24 @@ class CompControlView(discord.ui.View):
                 selected_user_id=self.selected_user_id,
             )
         )
+
         self.add_item(
             CompActionSelect(
                 selected_action=self.selected_action,
             )
         )
+
         self.add_item(ApplyCompActionButton())
         self.add_item(OpenRaidSettingsButton())
         self.add_item(CloseCompControlButton())
         self.add_item(CancelCompButton())
 
-    async def refresh_panel(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
+    async def refresh_panel(
+        self,
+        interaction: discord.Interaction,
+    ):
+        await safe_panel_edit(
+            interaction,
             content="Comp control panel",
             view=CompControlView(
                 self.raid_id,
