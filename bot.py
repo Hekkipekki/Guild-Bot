@@ -9,6 +9,7 @@ from data.signup_store import load_signups
 from services.guild.guild_settings_service import sync_guild_identity
 from services.guild.weakauras_panel_service import ensure_weakauras_panel_for_guild
 from views.raidpack_views import RaidPackView
+from views.signup.comp.comp_message_view import CompMessageView
 from views.signup_views import SignupView
 
 
@@ -20,7 +21,6 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 _views_registered = False
 _commands_synced = False
 
-# Only active cogs should be listed here.
 EXTENSIONS = [
     "cogs.signup",
     "cogs.reminders",
@@ -32,11 +32,6 @@ EXTENSIONS = [
 ]
 
 
-def _get_persistent_signup_ids() -> list[str]:
-    signups = load_signups()
-    return list(signups.keys())
-
-
 def _register_persistent_views() -> None:
     global _views_registered
 
@@ -45,11 +40,22 @@ def _register_persistent_views() -> None:
 
     bot.add_view(RaidPackView())
 
-    for message_id in _get_persistent_signup_ids():
+    signups = load_signups()
+
+    for message_id in signups.keys():
         try:
             bot.add_view(SignupView(str(message_id)))
         except Exception as e:
             print(f"Failed to register SignupView for message {message_id}: {e}")
+
+    for raid_id, signup in signups.items():
+        if not signup.get("comp_message_id"):
+            continue
+
+        try:
+            bot.add_view(CompMessageView(str(raid_id)))
+        except Exception as e:
+            print(f"Failed to register CompMessageView for raid {raid_id}: {e}")
 
     _views_registered = True
 

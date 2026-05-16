@@ -74,30 +74,3 @@ class RaidPackView(discord.ui.View):
     )
     async def b5(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.send_wa(interaction, "tot_assignments")
-
-    @discord.ui.button(
-        label=config.PACKS["msv"]["label"],
-        style=discord.ButtonStyle.primary,
-        custom_id="msv",
-        row=2,
-    )
-    async def b6(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.send_wa(interaction, "msv")
-
-    @discord.ui.button(
-        label=config.PACKS["hof"]["label"],
-        style=discord.ButtonStyle.primary,
-        custom_id="hof",
-        row=2,
-    )
-    async def b7(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.send_wa(interaction, "hof")
-
-    @discord.ui.button(
-        label=config.PACKS["toes"]["label"],
-        style=discord.ButtonStyle.primary,
-        custom_id="toes",
-        row=2,
-    )
-    async def b8(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.send_wa(interaction, "toes")

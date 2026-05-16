@@ -3,6 +3,7 @@ import discord
 from data.signup_store import load_signups, save_signups, find_message_signup
 from logic.embed.comp_embed import build_comp_embed
 from services.attendance.attendance_service import sync_attendance_from_comp
+from views.signup.comp.comp_message_view import CompMessageView
 
 
 def _apply_signup_metadata_to_comp_data(signup: dict, comp_data: dict) -> dict:
@@ -45,18 +46,24 @@ async def post_comp_message(channel, comp_data: dict) -> tuple[bool, str]:
     embed = build_comp_embed(comp_data)
     mentions = " ".join(comp_data.get("mentions", []))
     message_id = signup.get("comp_message_id")
+    view = CompMessageView(str(raid_id))
 
     try:
         if message_id:
             try:
-                msg = await channel.fetch_message(message_id)
-                await msg.edit(content=mentions, embed=embed)
+                msg = await channel.fetch_message(int(message_id))
+                await msg.edit(
+                    content=mentions,
+                    embed=embed,
+                    view=view,
+                )
 
                 _persist_comp_data(signup, msg.id, comp_data)
                 _sync_attendance(signup, msg.id, comp_data)
                 save_signups(data)
 
                 return True, "Comp updated."
+
             except discord.NotFound:
                 signup["comp_message_id"] = None
                 save_signups(data)
@@ -64,6 +71,7 @@ async def post_comp_message(channel, comp_data: dict) -> tuple[bool, str]:
         msg = await channel.send(
             content=mentions,
             embed=embed,
+            view=view,
         )
 
         _persist_comp_data(signup, msg.id, comp_data)
@@ -92,10 +100,15 @@ async def refresh_existing_comp_message(channel, raid_id: int | str) -> tuple[bo
     updated_comp_data = _apply_signup_metadata_to_comp_data(signup, last_comp_data)
     embed = build_comp_embed(updated_comp_data)
     mentions = " ".join(updated_comp_data.get("mentions", []))
+    view = CompMessageView(str(raid_id))
 
     try:
-        msg = await channel.fetch_message(comp_message_id)
-        await msg.edit(content=mentions, embed=embed)
+        msg = await channel.fetch_message(int(comp_message_id))
+        await msg.edit(
+            content=mentions,
+            embed=embed,
+            view=view,
+        )
 
         _persist_comp_data(signup, msg.id, updated_comp_data)
         _sync_attendance(signup, msg.id, updated_comp_data)

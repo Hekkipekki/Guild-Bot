@@ -22,7 +22,7 @@ except ImportError:
 PACKS = {
     "tot_01_06": {
         "label": "ToT Boss 1–6",
-        "file": "files/Fojji_-_T1501-06_Throne_of_Thunder-3.0.2.txt",
+        "file": "files/Fojji_-_T1501-06_Throne_of_Thunder-3.0.4.txt",
         "title": "Fojji - Throne of Thunder [01–06]",
         "version": "v3.0.2",
     },
@@ -49,24 +49,6 @@ PACKS = {
         "file": "files/Fojji - Raid Assignments [TOT][Raid Leader][1.0.1].txt",
         "title": "Fojji - Raid Assignments [ToT] (Raid Leader)",
         "version": "v1.0.1",
-    },
-    "msv": {
-        "label": "Fojji - Mogu'Shan Vaults v1.0.20",
-        "file": "files/Fojji-MoguShan-v1.0.20.txt",
-        "title": "Fojji - Mogu'Shan Vaults",
-        "version": "v1.0.20",
-    },
-    "hof": {
-        "label": "Fojji - Heart of Fear v1.0.10",
-        "file": "files/Fojji-Heart-of-Fear-v1.0.10.txt",
-        "title": "Fojji - Heart of Fear",
-        "version": "v1.0.10",
-    },
-    "toes": {
-        "label": "Fojji - Terrace of Endless Springs v3.0.9",
-        "file": "files/Fojji-Terrace-of-Endless-Springs-v3.0.9.txt",
-        "title": "Fojji - Terrace of Endless Springs",
-        "version": "v3.0.9",
     },
 }
 

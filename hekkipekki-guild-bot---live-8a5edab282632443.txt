@@ -366,7 +366,7 @@ except ImportError:
 PACKS = {
     "tot_01_06": {
         "label": "ToT Boss 1–6",
-        "file": "files/Fojji_-_T1501-06_Throne_of_Thunder-3.0.2.txt",
+        "file": "files/Fojji_-_T1501-06_Throne_of_Thunder-3.0.4.txt",
         "title": "Fojji - Throne of Thunder [01–06]",
         "version": "v3.0.2",
     },
