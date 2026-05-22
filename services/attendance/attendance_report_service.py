@@ -148,7 +148,7 @@ def build_attendance_matrix(
         record_expected_ids = _get_record_expected_players(record)
 
         if current_raid_team_ids:
-            relevant_user_ids = current_raid_team_ids & record_expected_ids
+            relevant_user_ids = current_raid_team_ids
         else:
             relevant_user_ids = record_expected_ids
 
