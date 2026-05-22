@@ -1,4 +1,7 @@
-from services.guild.guild_settings_service import get_expected_players
+from services.guild.guild_settings_service import (
+    get_expected_players,
+    get_signup_theme,
+)
 
 
 def build_signup_payload(
@@ -18,6 +21,7 @@ def build_signup_payload(
         "start_ts": start_ts,
         "channel_id": channel_id,
         "guild_id": guild_id,
+        "signup_theme": get_signup_theme(guild_id),
         "users": dict(users) if users else {},
         "expected_players": get_expected_players(guild_id),
         "missing_signup_reminders_sent": {

@@ -21,6 +21,11 @@ def _persist_comp_data(signup: dict, comp_message_id: int | None, comp_data: dic
     signup["attendance_snapshot_created"] = True
     signup["attendance_record_id"] = str(comp_data["raid_id"])
 
+    # Live hotfix:
+    # Reminders should ignore this signup after comp has been posted.
+    signup["reminders_disabled"] = True
+    signup["reminders_disabled_reason"] = "comp_posted"
+
 
 def _sync_attendance(signup: dict, comp_message_id: int | None, comp_data: dict) -> None:
     sync_attendance_from_comp(

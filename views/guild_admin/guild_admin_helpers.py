@@ -1,7 +1,6 @@
 import discord
 
 from services.guild.guild_settings_service import get_guild_defaults
-
 from utils.embed_theme import build_panel_embed
 
 
@@ -11,6 +10,7 @@ def build_guild_config_embed(guild: discord.Guild) -> discord.Embed:
     raid_admins = settings.get("raid_control_user_ids", [])
     raid_team = settings.get("expected_players", [])
     weakauras_channel_id = settings.get("weakauras_channel_id")
+    signup_theme_label = settings.get("signup_theme_label", "Classic")
 
     raid_admin_text = (
         "\n".join(f"• <@{user_id}>" for user_id in raid_admins)
@@ -44,6 +44,12 @@ def build_guild_config_embed(guild: discord.Guild) -> discord.Embed:
     embed.add_field(
         name="Raid Team",
         value=raid_team_text,
+        inline=False,
+    )
+
+    embed.add_field(
+        name="Signup Theme",
+        value=signup_theme_label,
         inline=False,
     )
 

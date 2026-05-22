@@ -2,11 +2,14 @@ import asyncio
 import discord
 
 from services.guild.guild_settings_service import (
+    VALID_SIGNUP_THEMES,
     add_raid_control_user,
     remove_raid_control_user,
     add_expected_player,
     remove_expected_player,
     set_weakauras_channel_id,
+    get_signup_theme,
+    set_signup_theme,
 )
 
 from utils.discord_utils import delete_interaction_after
@@ -149,6 +152,79 @@ class RaidTeamUserSelect(discord.ui.UserSelect):
         await _return_to_setup_overview(
             interaction,
             content=f"✅ Updated raid team. Changed {changed} user(s).",
+        )
+
+
+class SignupThemeSelect(discord.ui.Select):
+    def __init__(self, guild_id: int):
+        current_theme = get_signup_theme(guild_id)
+
+        options = [
+            discord.SelectOption(
+                label=label,
+                value=theme,
+                description=_theme_description(theme),
+                default=theme == current_theme,
+            )
+            for theme, label in VALID_SIGNUP_THEMES.items()
+        ]
+
+        super().__init__(
+            placeholder="Select signup embed theme...",
+            min_values=1,
+            max_values=1,
+            options=options,
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        guild = interaction.guild
+
+        if guild is None:
+            await interaction.response.send_message(
+                "⚠ This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        selected_theme = self.values[0]
+        ok = set_signup_theme(guild.id, selected_theme)
+
+        if not ok:
+            await _return_to_setup_overview(
+                interaction,
+                content="⚠ Invalid signup theme selected.",
+            )
+            return
+
+        label = VALID_SIGNUP_THEMES.get(selected_theme, selected_theme)
+
+        await _return_to_setup_overview(
+            interaction,
+            content=f"✅ Signup theme set to **{label}**.",
+        )
+
+
+def _theme_description(theme: str) -> str:
+    if theme == "classic":
+        return "Current stable signup layout."
+    if theme == "compact":
+        return "Future compact Raid-Helper-inspired layout."
+    if theme == "split_by_class":
+        return "Future class-grouped signup layout."
+    return "Signup layout theme."
+
+
+class SignupThemeManageView(discord.ui.View):
+    def __init__(self, guild_id: int):
+        super().__init__(timeout=120)
+
+        self.add_item(
+            SignupThemeSelect(guild_id)
+        )
+
+        self.add_item(
+            BackToSetupButton()
         )
 
 

@@ -116,6 +116,12 @@ class ReminderCog(commands.Cog):
             signed_reminder_message_id = signup.get("signed_reminder_message_id")
             comp_message_id = signup.get("comp_message_id")
 
+            # Live hotfix:
+            # Once a comp has been posted / attendance has been created,
+            # stop all signup reminder handling for this raid.
+            if comp_message_id or signup.get("attendance_snapshot_created"):
+                continue
+
             # -------------------------
             # 1) Missing signup reminders
             # -------------------------
@@ -150,6 +156,9 @@ class ReminderCog(commands.Cog):
             # -------------------------
             # 2) Signed player reminder
             # Only send if a comp has been posted
+            #
+            # Disabled by the hotfix above, because live should not post
+            # any reminders after comp has been posted.
             # -------------------------
             signed_players = get_signed_players(signup)
             if signed_players and comp_message_id:

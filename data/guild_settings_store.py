@@ -11,6 +11,7 @@ DEFAULT_GUILD_SETTINGS = {
     "expected_players": [],
     "default_leader": "",
     "default_description": "",
+    "signup_theme": "classic",
     "weakauras_channel_id": None,
     "weakauras_message_id": None,
 }
@@ -25,13 +26,13 @@ def _build_default_settings() -> dict[str, Any]:
 
 
 def _normalize_guild_block(block: dict[str, Any] | Any) -> dict[str, Any]:
-    """
-    Ensures older guild blocks are upgraded with any newly added keys.
-    """
     normalized = _build_default_settings()
 
     if isinstance(block, dict):
         normalized.update(block)
+
+    if normalized.get("signup_theme") not in ("classic", "compact", "split_by_class"):
+        normalized["signup_theme"] = "classic"
 
     return normalized
 
@@ -120,6 +121,7 @@ def update_guild_settings(
         data[key] = _normalize_guild_block(data[key])
 
     data[key].update(updates)
+    data[key] = _normalize_guild_block(data[key])
 
     if guild_name is not None and str(guild_name).strip():
         data[key]["guild_name"] = str(guild_name).strip()

@@ -5,6 +5,13 @@ from data.guild_settings_store import (
 )
 
 
+VALID_SIGNUP_THEMES = {
+    "classic": "Classic",
+    "compact": "Compact",
+    "split_by_class": "Split by Class",
+}
+
+
 def _get_list_setting(guild_id: int, key: str) -> list[str]:
     settings = ensure_guild_settings(guild_id)
     return [str(x) for x in settings.get(key, [])]
@@ -89,6 +96,28 @@ def set_default_description(guild_id: int, description: str) -> None:
     update_guild_settings(guild_id, {"default_description": description.strip()})
 
 
+def get_signup_theme(guild_id: int) -> str:
+    settings = ensure_guild_settings(guild_id)
+    theme = str(settings.get("signup_theme", "classic") or "classic")
+
+    if theme not in VALID_SIGNUP_THEMES:
+        return "classic"
+
+    return theme
+
+
+def get_signup_theme_label(theme: str) -> str:
+    return VALID_SIGNUP_THEMES.get(theme, "Classic")
+
+
+def set_signup_theme(guild_id: int, theme: str) -> bool:
+    if theme not in VALID_SIGNUP_THEMES:
+        return False
+
+    update_guild_settings(guild_id, {"signup_theme": theme})
+    return True
+
+
 def get_weakauras_channel_id(guild_id: int) -> int | None:
     settings = ensure_guild_settings(guild_id)
     value = settings.get("weakauras_channel_id")
@@ -108,12 +137,16 @@ def set_weakauras_channel_id(guild_id: int, channel_id: int | None) -> None:
 
 def get_guild_defaults(guild_id: int) -> dict:
     settings = ensure_guild_settings(guild_id)
+    signup_theme = get_signup_theme(guild_id)
+
     return {
         "guild_name": str(settings.get("guild_name", "") or ""),
         "raid_control_user_ids": [str(x) for x in settings.get("raid_control_user_ids", [])],
         "expected_players": [str(x) for x in settings.get("expected_players", [])],
         "default_leader": str(settings.get("default_leader", "") or ""),
         "default_description": str(settings.get("default_description", "") or ""),
+        "signup_theme": signup_theme,
+        "signup_theme_label": get_signup_theme_label(signup_theme),
         "weakauras_channel_id": settings.get("weakauras_channel_id"),
     }
 
