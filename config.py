@@ -38,35 +38,29 @@ except ImportError:
 
 
 PACKS = {
-    "tot_01_06": {
-        "label": "ToT Boss 1–6",
-        "file": "files/Fojji_-_T1501-06_Throne_of_Thunder-3.0.4.txt",
-        "title": "Fojji - Throne of Thunder [01–06]",
+    "SoO_01_08": {
+        "label": "SoO Boss 1–8",
+        "file": "files/Fojji-T1601-08-Siege-of-Orgrimmar_v3.0.1.txt",
+        "title": "Fojji - Siege of Orgrimmar[01–08]",
+        "version": "v3.0.1",
+    },
+    "SoO_09_14": {
+        "label": "SoO Boss 9–14",
+        "file": "files/Fojji-T1609-14-Siege-of-Orgrimmar-v3.0.4.txt",
+        "title": "Fojji - Siege of Orgrimmar [09–14]",
+        "version": "v3.0.4",
+    },
+    "SoO_frames": {
+        "label": "Siege of Orgrimmar Raid Frames",
+        "file": "files/Fojji-T16Raid_Frame_Siege_of_Orgrimmar-v3.0.2.txt",
+        "title": "Fojji - Siege of Orgrimmar Raid Frames",
         "version": "v3.0.2",
     },
-    "tot_07_13": {
-        "label": "ToT Boss 7–13",
-        "file": "files/Fojji_-_T1507-13_Throne_of_Thunder-3.0.3.txt",
-        "title": "Fojji - Throne of Thunder [07–13]",
-        "version": "v3.0.3",
-    },
-    "tot_frames": {
-        "label": "ToT Raid Frames",
-        "file": "files/Fojji_-_T15Raid_Frame_Throne_of_Thunder-3.0.2.txt",
-        "title": "Fojji - Throne of Thunder Raid Frames",
-        "version": "v3.0.2",
-    },
-    "tot_personal_assignments": {
-        "label": "ToT Assignments",
-        "file": "files/Fojji-ToT-Personal-Assignments[1.0.0].txt",
-        "title": "Fojji - ToT Personal Assignments",
+    "SoO_assignments": {
+        "label": "Fojji - Raid Assignments [SOO][Raid Leader][1.0.0]",
+        "file": "files/Fojji - Raid Assignments [SoO][Raid Leader][1.0.0].txt",
+        "title": "Fojji - Raid Assignments [SOO][Raid Leader]",
         "version": "v1.0.0",
-    },
-    "tot_assignments": {
-        "label": "Fojji - Raid Assignments [TOT][Raid Leader][1.0.1]",
-        "file": "files/Fojji - Raid Assignments [TOT][Raid Leader][1.0.1].txt",
-        "title": "Fojji - Raid Assignments [ToT] (Raid Leader)",
-        "version": "v1.0.1",
     },
 }
 

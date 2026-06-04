@@ -31,46 +31,37 @@ class RaidPackView(discord.ui.View):
         )
 
     @discord.ui.button(
-        label=config.PACKS["tot_01_06"]["label"],
+        label=config.PACKS["SoO_01_08"]["label"],
         style=discord.ButtonStyle.primary,
-        custom_id="tot_01_06",
+        custom_id="SoO_01_08",
         row=0,
     )
     async def b1(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.send_wa(interaction, "tot_01_06")
+        await self.send_wa(interaction, "SoO_01_08")
 
     @discord.ui.button(
-        label=config.PACKS["tot_07_13"]["label"],
+        label=config.PACKS["SoO_09_14"]["label"],
         style=discord.ButtonStyle.primary,
-        custom_id="tot_07_13",
+        custom_id="SoO_09_14",
         row=0,
     )
     async def b2(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.send_wa(interaction, "tot_07_13")
+        await self.send_wa(interaction, "SoO_09_14")
 
     @discord.ui.button(
-        label=config.PACKS["tot_frames"]["label"],
+        label=config.PACKS["SoO_frames"]["label"],
         style=discord.ButtonStyle.primary,
-        custom_id="tot_frames",
+        custom_id="SoO_frames",
         row=0,
     )
     async def b3(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.send_wa(interaction, "tot_frames")
+        await self.send_wa(interaction, "SoO_frames")
 
     @discord.ui.button(
-        label=config.PACKS["tot_personal_assignments"]["label"],
-        style=discord.ButtonStyle.primary,
-        custom_id="tot_personal_assignments",
-        row=0,
-    )
-    async def b4(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.send_wa(interaction, "tot_personal_assignments")
-
-    @discord.ui.button(
-        label=config.PACKS["tot_assignments"]["label"],
+        label=config.PACKS["SoO_assignments"]["label"],
         style=discord.ButtonStyle.secondary,
-        custom_id="tot_assignments",
+        custom_id="SoO_assignments",
         row=1,
     )
     async def b5(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.send_wa(interaction, "tot_assignments")
+        await self.send_wa(interaction, "SoO_assignments")

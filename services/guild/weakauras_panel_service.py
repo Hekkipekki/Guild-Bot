@@ -7,36 +7,41 @@ from services.guild.guild_settings_service import (
 )
 from views.raidpack_views import RaidPackView
 
-
 WA_PANEL_TEXT = """# Must Have Addons & WA's
+
+## Required
 - [Method Raid Tools](https://www.curseforge.com/wow/addons/method-raid-tools)
 - [RC Loot Council](https://www.curseforge.com/wow/addons/rclootcouncil-classic)
 - <:fojji:1482050733258838087> [Fojjicore](https://www.curseforge.com/wow/addons/fojjicore)
-- <:fojji:1482050733258838087> [Fojji - Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `turmeric123`
+- <:fojji:1482050733258838087> [Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `turmeric123`
 - <:fojji:1482050733258838087> [Raid Anchors WA](https://wago.io/FojjiRaidAnchors-MoP)
+- <:fojji:1482050733258838087> [Stormlash & Skull Banner Rotation](https://wago.io/Fojji-StormlashBanner-Rotations)
 
-**Raid Weakauras (Check buttons at bottom)**
+## Raid WeakAuras
+Use the buttons below to download the raid packs.
 
-### RAIDLEADER ONLY
-- <:fojji:1482050733258838087> [Fojji - [T15][Raid Leader] Throne of Thunder](https://wago.io/Fojji-ToT-RL) > `macaron123`
+### Raidleader Only
+- <:fojji:1482050733258838087> [Fojji SoO Raid Leader](https://wago.io/Fojji-SoO-RL) > `cucumber123`
 
-# Optional WeakAuras
+## Optional WeakAuras
+- <:fojji:1482050733258838087> [Numen Core](https://wago.io/Fojji-NumenCoreMoP) > `zoodle123` (External Requests)
 - <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP) > `nutella123`
-- <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP-PF) > `paprika123`
-- <:fojji:1482050733258838087> [Fojji - Gear Checker](https://wago.io/Fojji-GearChecker) > `cucina123`
-- <:fojji:1482050733258838087> [Fojji Trinket/Proc Tracker](https://wago.io/FojjiTrinkets-MoP)
-- <:fojji:1482050733258838087> [Fojji Bonus Loot History](https://wago.io/Fojji-BonusLoot) > `turkey123`
-- <:fojji:1482050733258838087> [Fojji Cooldown Pulse [MoP]](https://wago.io/FojjiCooldownPulse-MoP)  > `bukayo123`
-- <:fojji:1482050733258838087> [Fojji - Raid Ability Timeline](https://wago.io/FojjiRaidAbilityTimeline) > `turnip123`
+- <:fojji:1482050733258838087> [Dungeon Pack PF](https://wago.io/Fojji-Dungeons-MoP-PF) > `paprika123`
+- <:fojji:1482050733258838087> [Gear Checker](https://wago.io/Fojji-GearChecker) > `cucina123`
+- <:fojji:1482050733258838087> [Trinket/Proc Tracker](https://wago.io/FojjiTrinkets-MoP)
+- <:fojji:1482050733258838087> [Bonus Loot History](https://wago.io/Fojji-BonusLoot) > `turkey123`
+- <:fojji:1482050733258838087> [Cooldown Pulse](https://wago.io/FojjiCooldownPulse-MoP) > `bukayo123`
+- <:fojji:1482050733258838087> [Raid Ability Timeline](https://wago.io/FojjiRaidAbilityTimeline) > `turnip123`
+- <:fojji:1482050733258838087> [Glyph/Talent/Set Reminders](https://wago.io/FojjiGlyphTalentSet-Reminders-MoP) > `ketchup123`
 
-# Class WA's
-- <:fojji:1482050733258838087> [Fojji Class WA's](https://discord.com/channels/1423706462773051542/1445447282559422545) > `<--Click here!`
+## Class WA's
+- <:fojji:1482050733258838087> [Fojji Class WA's](https://discord.com/channels/1423706462773051542/1445447282559422545)
 
-**Click the buttons below to download the Raid Pack WAs**
-Click *"Dismiss this message"* if it shows an old version, then re-click the button.
-> Last updated `2026-05-12`
+**Click the buttons below to download the Raid Pack WAs.**
+
+> Last updated `2026-06-04`
 """
-
+print(f"[WA] Panel text length: {len(WA_PANEL_TEXT)}")
 
 async def ensure_weakauras_panel_for_guild(bot, guild: discord.Guild) -> tuple[bool, str]:
     channel_id = get_weakauras_channel_id(guild.id)
