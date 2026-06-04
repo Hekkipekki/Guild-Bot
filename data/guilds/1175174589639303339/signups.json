@@ -1,0 +1,171 @@
+{
+  "1511054112245158082": {
+    "title": "SoO",
+    "description": "Raid signup",
+    "leader": "Raid Leader",
+    "start_ts": 1780855200,
+    "channel_id": 1344375353245696143,
+    "guild_id": 1175174589639303339,
+    "signup_theme": "classic",
+    "users": {
+      "219053149216964608": {
+        "class": "Warrior",
+        "spec": "Fury",
+        "role": "Melee",
+        "timestamp": 1780333786.0464878,
+        "name": "Nani",
+        "note": "",
+        "display_name": "Nani/Klamydia",
+        "status": "sign"
+      },
+      "733947209845833730": {
+        "class": "Shaman",
+        "spec": "Elemental",
+        "role": "Ranged",
+        "timestamp": 1780333823.8961675,
+        "name": "Frikadella",
+        "note": "",
+        "display_name": "Frikadella",
+        "status": "sign"
+      },
+      "451796745936961556": {
+        "class": "Shaman",
+        "spec": "Elemental",
+        "role": "Ranged",
+        "timestamp": 1780334451.0618672,
+        "name": "Copperagnus",
+        "note": "",
+        "display_name": "Copperagnus",
+        "status": "sign"
+      },
+      "676385985008893982": {
+        "class": "Priest",
+        "spec": "Discipline",
+        "role": "Healer",
+        "timestamp": 1780334478.4409661,
+        "name": "Tickle",
+        "note": "",
+        "display_name": "Pingi/Aladama",
+        "status": "sign"
+      },
+      "185836617112485889": {
+        "class": "Monk",
+        "spec": "Brewmaster",
+        "role": "Tank",
+        "timestamp": 1780336122.0968404,
+        "name": "Tickle",
+        "note": "",
+        "display_name": "Tickle",
+        "status": "sign"
+      },
+      "182816419078078464": {
+        "class": "Paladin",
+        "spec": "ProtectionPaladin",
+        "role": "Tank",
+        "timestamp": 1780404801.982443,
+        "name": "Särpär",
+        "note": "",
+        "display_name": "Särpär",
+        "status": "sign"
+      },
+      "747110982136103035": {
+        "class": "Hunter",
+        "spec": "Survival",
+        "role": "Ranged",
+        "timestamp": 1780499199.0748584,
+        "name": "Ingen",
+        "note": "",
+        "display_name": "Fläktarn",
+        "status": "sign"
+      },
+      "196533947256012800": {
+        "class": "Druid",
+        "spec": "RestorationDruid",
+        "role": "Healer",
+        "timestamp": 1780586142.9926684,
+        "name": "Charoma",
+        "note": "",
+        "display_name": "Charoma",
+        "status": "sign"
+      }
+    },
+    "expected_players": [
+      "747110982136103035",
+      "733947209845833730",
+      "676385985008893982",
+      "451796745936961556",
+      "219053149216964608",
+      "209344159943753729",
+      "196533947256012800",
+      "185836617112485889",
+      "182816419078078464"
+    ],
+    "missing_signup_reminders_sent": {
+      "2880": false,
+      "1440": false
+    },
+    "signed_player_reminders_sent": {
+      "60": false
+    },
+    "missing_reminder_message_id": null,
+    "signed_reminder_message_id": null,
+    "is_recurring": true,
+    "recurring_interval_days": 7,
+    "recurring_created_next": false
+  },
+  "1511845276682420355": {
+    "title": "SoO",
+    "description": "Raid signup",
+    "leader": "Raid Leader",
+    "start_ts": 1781114400,
+    "channel_id": 1344375248283238452,
+    "guild_id": 1175174589639303339,
+    "signup_theme": "classic",
+    "users": {
+      "733947209845833730": {
+        "class": "Shaman",
+        "spec": "Elemental",
+        "role": "Ranged",
+        "timestamp": 1780522408.4937565,
+        "name": "Frikadella",
+        "note": "",
+        "display_name": "Frikadella",
+        "status": "sign"
+      },
+      "451796745936961556": {
+        "class": "Shaman",
+        "spec": "Elemental",
+        "role": "Ranged",
+        "timestamp": 1780549241.3673866,
+        "name": "Copperagnus",
+        "note": "",
+        "display_name": "Copperagnus",
+        "status": "sign"
+      }
+    },
+    "expected_players": [
+      "747110982136103035",
+      "733947209845833730",
+      "676385985008893982",
+      "451796745936961556",
+      "219053149216964608",
+      "209344159943753729",
+      "196533947256012800",
+      "185836617112485889",
+      "182816419078078464",
+      "228227494627639297"
+    ],
+    "missing_signup_reminders_sent": {
+      "2880": false,
+      "1440": false
+    },
+    "signed_player_reminders_sent": {
+      "60": false
+    },
+    "missing_reminder_message_id": null,
+    "signed_reminder_message_id": null,
+    "is_recurring": true,
+    "recurring_interval_days": 7,
+    "recurring_created_next": false
+  }
+}

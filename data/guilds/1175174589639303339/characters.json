@@ -1,0 +1,120 @@
+{
+  "219053149216964608": [
+    {
+      "name": "Nani",
+      "class": "Warrior",
+      "spec": "Fury",
+      "role": "Melee"
+    }
+  ],
+  "209344159943753729": [
+    {
+      "name": "Rumpestuss",
+      "class": "Druid",
+      "spec": "Balance",
+      "role": "Ranged"
+    }
+  ],
+  "733947209845833730": [
+    {
+      "name": "Frikadella",
+      "class": "Shaman",
+      "spec": "Elemental",
+      "role": "Ranged"
+    },
+    {
+      "name": "Frikadotto",
+      "class": "Warlock",
+      "spec": "Affliction",
+      "role": "Ranged"
+    }
+  ],
+  "182816419078078464": [
+    {
+      "name": "Särpär",
+      "class": "Paladin",
+      "spec": "ProtectionPaladin",
+      "role": "Tank"
+    }
+  ],
+  "196533947256012800": [
+    {
+      "name": "Charoma",
+      "class": "Druid",
+      "spec": "RestorationDruid",
+      "role": "Healer"
+    }
+  ],
+  "451796745936961556": [
+    {
+      "name": "Copperagnus",
+      "class": "Shaman",
+      "spec": "Elemental",
+      "role": "Ranged"
+    }
+  ],
+  "1462420346631360607": [
+    {
+      "name": "busmus",
+      "class": "Death Knight",
+      "spec": "FrostDK",
+      "role": "Melee"
+    }
+  ],
+  "747110982136103035": [
+    {
+      "name": "Ingen",
+      "class": "Hunter",
+      "spec": "Survival",
+      "role": "Ranged"
+    }
+  ],
+  "676385985008893982": [
+    {
+      "name": "Tickle",
+      "class": "Priest",
+      "spec": "Discipline",
+      "role": "Healer"
+    }
+  ],
+  "185836617112485889": [
+    {
+      "name": "Tickle",
+      "class": "Monk",
+      "spec": "Brewmaster",
+      "role": "Tank"
+    }
+  ],
+  "1472528485879775353": [
+    {
+      "name": "Busråttan",
+      "class": "Death Knight",
+      "spec": "FrostDK",
+      "role": "Melee"
+    }
+  ],
+  "102129568940306432": [
+    {
+      "name": "Molle",
+      "class": "Paladin",
+      "spec": "Retribution",
+      "role": "Melee"
+    }
+  ],
+  "252517353500311554": [
+    {
+      "name": "Minimördaren",
+      "class": "Rogue",
+      "spec": "Combat",
+      "role": "Melee"
+    }
+  ],
+  "228227494627639297": [
+    {
+      "name": "Gudnxx",
+      "class": "Mage",
+      "spec": "Frost",
+      "role": "Ranged"
+    }
+  ]
+}

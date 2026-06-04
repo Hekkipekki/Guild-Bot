@@ -1,0 +1,130 @@
+{
+  "771806222525267968": [
+    {
+      "name": "Shadé",
+      "class": "Rogue",
+      "spec": "Assassination",
+      "role": "Melee"
+    }
+  ],
+  "248796420880990208": [
+    {
+      "name": "Totemturit",
+      "class": "Shaman",
+      "spec": "Elemental",
+      "role": "Ranged"
+    }
+  ],
+  "260495039686246400": [
+    {
+      "name": "Raitila",
+      "class": "Paladin",
+      "spec": "HolyPaladin",
+      "role": "Healer"
+    }
+  ],
+  "251004817844076554": [
+    {
+      "name": "Magemil",
+      "class": "Mage",
+      "spec": "Arcane",
+      "role": "Ranged"
+    }
+  ],
+  "710915046200574073": [
+    {
+      "name": "Rhegaran",
+      "class": "Warrior",
+      "spec": "ProtectionWarrior",
+      "role": "Tank"
+    }
+  ],
+  "489526528309460993": [
+    {
+      "name": "Nickfury",
+      "class": "Warrior",
+      "spec": "Fury",
+      "role": "Melee"
+    }
+  ],
+  "239532428073500672": [
+    {
+      "name": "Darkpreacha",
+      "class": "Priest",
+      "spec": "Shadow",
+      "role": "Ranged"
+    }
+  ],
+  "344496860855009280": [
+    {
+      "name": "Lenef",
+      "class": "Warlock",
+      "spec": "Affliction",
+      "role": "Ranged"
+    }
+  ],
+  "321966396864987137": [
+    {
+      "name": "Thedope",
+      "class": "Paladin",
+      "spec": "ProtectionPaladin",
+      "role": "Tank"
+    },
+    {
+      "name": "Rajensen",
+      "class": "Death Knight",
+      "spec": "Blood",
+      "role": "Tank"
+    }
+  ],
+  "200572519504150528": [
+    {
+      "name": "Mágerick",
+      "class": "Mage",
+      "spec": "Frost",
+      "role": "Ranged"
+    },
+    {
+      "name": "Blitzerick",
+      "class": "Warrior",
+      "spec": "ProtectionWarrior",
+      "role": "Tank"
+    },
+    {
+      "name": "Màverickx",
+      "class": "Priest",
+      "spec": "Shadow",
+      "role": "Ranged"
+    },
+    {
+      "name": "Fisterick",
+      "class": "Monk",
+      "spec": "Brewmaster",
+      "role": "Tank"
+    }
+  ],
+  "141881090913599488": [
+    {
+      "name": "Hekkipekki",
+      "class": "Druid",
+      "spec": "Balance",
+      "role": "Ranged"
+    }
+  ],
+  "369109810311987200": [
+    {
+      "name": "Maverman",
+      "class": "Hunter",
+      "spec": "Survival",
+      "role": "Ranged"
+    }
+  ],
+  "174775176620277760": [
+    {
+      "name": "Turbotony",
+      "class": "Shaman",
+      "spec": "Elemental",
+      "role": "Ranged"
+    }
+  ]
+}
