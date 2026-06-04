@@ -1,101 +1,123 @@
-import json
-from pathlib import Path
+from data.guild_data import (
+    ensure_guild_files,
+    get_guild_file,
+    read_json,
+    write_json,
+)
 
 
-FILE = Path(__file__).resolve().parent / "characters.json"
+DATA_FILE_NAME = "characters.json"
 
 
-def _ensure_data_dir() -> None:
-    FILE.parent.mkdir(parents=True, exist_ok=True)
+def _get_characters_file(guild_id: int | str):
+    ensure_guild_files(guild_id)
+    return get_guild_file(guild_id, DATA_FILE_NAME)
 
 
-def load_characters() -> dict:
-    if not FILE.exists():
+def _normalize_characters_data(data: dict | object) -> dict[str, list[dict]]:
+    """
+    New guild-specific format:
+    {
+        "user_id": [
+            {"name": "...", "class": "...", "spec": "...", "role": "..."}
+        ]
+    }
+    """
+    if not isinstance(data, dict):
         return {}
 
-    try:
-        with open(FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data if isinstance(data, dict) else {}
-    except (json.JSONDecodeError, OSError):
+    normalized: dict[str, list[dict]] = {}
+
+    for user_id, chars in data.items():
+        if isinstance(chars, list):
+            normalized[str(user_id)] = [
+                char for char in chars if isinstance(char, dict)
+            ]
+
+    return normalized
+
+
+def load_characters(guild_id: int | str | None = None) -> dict:
+    """
+    Compatibility function.
+
+    Preferred:
+        load_characters(guild_id)
+
+    Old fallback:
+        load_characters()
+        returns all guild character files as:
+        {
+            guild_id: {
+                user_id: [characters]
+            }
+        }
+    """
+    if guild_id is not None:
+        path = _get_characters_file(guild_id)
+        return _normalize_characters_data(read_json(path, {}))
+
+    from data.guild_data import GUILDS_ROOT
+
+    if not GUILDS_ROOT.exists():
         return {}
 
+    result: dict[str, dict[str, list[dict]]] = {}
 
-def save_characters(data: dict) -> None:
-    _ensure_data_dir()
+    for guild_dir in GUILDS_ROOT.iterdir():
+        if not guild_dir.is_dir():
+            continue
 
-    with open(FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+        path = guild_dir / DATA_FILE_NAME
+        result[guild_dir.name] = _normalize_characters_data(read_json(path, {}))
+
+    return result
 
 
-def _is_legacy_user_only_format(data: dict) -> bool:
+def save_characters(data: dict, guild_id: int | str | None = None) -> None:
     """
-    Legacy format:
-    {
-        "user_id": [characters]
-    }
+    Compatibility function.
 
-    New format:
-    {
-        "guild_id": {
-            "user_id": [characters]
+    Preferred:
+        save_characters(data, guild_id)
+
+    Old fallback:
+        save_characters(all_data)
+        expects:
+        {
+            guild_id: {
+                user_id: [characters]
+            }
         }
-    }
     """
-    if not data:
-        return False
+    if guild_id is not None:
+        path = _get_characters_file(guild_id)
+        write_json(path, _normalize_characters_data(data), indent=4)
+        return
 
-    return all(isinstance(value, list) for value in data.values())
+    if not isinstance(data, dict):
+        return
 
-
-def _migrate_legacy_data_to_guild(data: dict, guild_id: int) -> dict:
-    """
-    One-time lazy migration:
-    Move legacy flat user->characters data into the guild that first accesses it.
-    """
-    if not _is_legacy_user_only_format(data):
-        return data
-
-    migrated = {
-        str(guild_id): {
-            str(user_id): chars if isinstance(chars, list) else []
-            for user_id, chars in data.items()
-        }
-    }
-    save_characters(migrated)
-    return migrated
+    for maybe_guild_id, guild_data in data.items():
+        if isinstance(guild_data, dict):
+            path = _get_characters_file(maybe_guild_id)
+            write_json(path, _normalize_characters_data(guild_data), indent=4)
 
 
-def _get_guild_bucket(data: dict, guild_id: int) -> dict:
-    data = _migrate_legacy_data_to_guild(data, guild_id)
-
-    guild_key = str(guild_id)
-    guild_bucket = data.get(guild_key)
-
-    if not isinstance(guild_bucket, dict):
-        data[guild_key] = {}
-        save_characters(data)
-        guild_bucket = data[guild_key]
-
-    return guild_bucket
-
-
-def _get_user_list(data: dict, guild_id: int, user_id: int) -> list[dict]:
-    guild_bucket = _get_guild_bucket(data, guild_id)
+def _get_user_list(data: dict, user_id: int | str) -> list[dict]:
     user_key = str(user_id)
 
-    user_chars = guild_bucket.get(user_key, [])
+    user_chars = data.get(user_key, [])
     if not isinstance(user_chars, list):
-        guild_bucket[user_key] = []
-        save_characters(data)
+        data[user_key] = []
         return []
 
     return user_chars
 
 
 def get_user_characters(guild_id: int, user_id: int) -> list[dict]:
-    data = load_characters()
-    return _get_user_list(data, guild_id, user_id)
+    data = load_characters(guild_id)
+    return _get_user_list(data, user_id)
 
 
 def get_character_by_class(guild_id: int, user_id: int, class_name: str) -> dict | None:
@@ -109,37 +131,35 @@ def get_character_by_class(guild_id: int, user_id: int, class_name: str) -> dict
 
 
 def add_character(guild_id: int, user_id: int, char: dict) -> bool:
-    data = load_characters()
-    guild_bucket = _get_guild_bucket(data, guild_id)
+    data = load_characters(guild_id)
     user_key = str(user_id)
 
-    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
-        guild_bucket[user_key] = []
+    if user_key not in data or not isinstance(data[user_key], list):
+        data[user_key] = []
 
-    existing = guild_bucket[user_key]
+    existing = data[user_key]
 
     for saved in existing:
         if saved.get("class") == char.get("class"):
             return False
 
     existing.append(char)
-    save_characters(data)
+    save_characters(data, guild_id)
     return True
 
 
 def remove_character(guild_id: int, user_id: int, index: int) -> bool:
-    data = load_characters()
-    guild_bucket = _get_guild_bucket(data, guild_id)
+    data = load_characters(guild_id)
     user_key = str(user_id)
 
-    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+    if user_key not in data or not isinstance(data[user_key], list):
         return False
 
-    if not (0 <= index < len(guild_bucket[user_key])):
+    if not (0 <= index < len(data[user_key])):
         return False
 
-    guild_bucket[user_key].pop(index)
-    save_characters(data)
+    data[user_key].pop(index)
+    save_characters(data, guild_id)
     return True
 
 
@@ -149,17 +169,16 @@ def update_character_name_by_class(
     class_name: str,
     new_name: str,
 ) -> bool:
-    data = load_characters()
-    guild_bucket = _get_guild_bucket(data, guild_id)
+    data = load_characters(guild_id)
     user_key = str(user_id)
 
-    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+    if user_key not in data or not isinstance(data[user_key], list):
         return False
 
-    for char in guild_bucket[user_key]:
+    for char in data[user_key]:
         if char.get("class") == class_name:
             char["name"] = new_name.strip()
-            save_characters(data)
+            save_characters(data, guild_id)
             return True
 
     return False
@@ -172,18 +191,17 @@ def update_character_spec_by_class(
     new_spec: str,
     new_role: str,
 ) -> bool:
-    data = load_characters()
-    guild_bucket = _get_guild_bucket(data, guild_id)
+    data = load_characters(guild_id)
     user_key = str(user_id)
 
-    if user_key not in guild_bucket or not isinstance(guild_bucket[user_key], list):
+    if user_key not in data or not isinstance(data[user_key], list):
         return False
 
-    for char in guild_bucket[user_key]:
+    for char in data[user_key]:
         if char.get("class") == class_name:
             char["spec"] = new_spec
             char["role"] = new_role
-            save_characters(data)
+            save_characters(data, guild_id)
             return True
 
     return False

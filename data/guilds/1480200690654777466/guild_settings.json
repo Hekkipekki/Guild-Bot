@@ -1,0 +1,10 @@
+{
+  "guild_name": "Hekkipekkis server",
+  "raid_control_user_ids": [],
+  "expected_players": [],
+  "default_leader": "",
+  "default_description": "",
+  "signup_theme": "classic",
+  "weakauras_channel_id": null,
+  "weakauras_message_id": null
+}

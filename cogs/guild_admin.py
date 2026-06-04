@@ -3,6 +3,7 @@ import asyncio
 import discord
 from discord import app_commands
 from discord.ext import commands
+from data.guild_data import ensure_guild_files
 
 from utils.discord_utils import send_ephemeral_error, delete_interaction_after
 from utils.ui_timing import (
@@ -55,6 +56,8 @@ class GuildAdminCommands(commands.Cog):
         guild = await self._get_guild_or_fail(interaction)
         if guild is None:
             return
+
+        ensure_guild_files(guild.id)
 
         await interaction.response.send_message(
             embed=build_guild_config_embed(guild),

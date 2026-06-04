@@ -1,9 +1,9 @@
-from pathlib import Path
 import json
+from pathlib import Path
 from typing import Any
 
 
-DATA_ROOT = Path("data")
+DATA_ROOT = Path(__file__).resolve().parent
 GUILDS_ROOT = DATA_ROOT / "guilds"
 
 
@@ -39,14 +39,15 @@ def read_json(path: Path, default: Any) -> Any:
         return default
 
     try:
-        with path.open("r", encoding="utf-8") as f:
-            return json.load(f)
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if data is not None else default
     except (json.JSONDecodeError, OSError):
         return default
 
 
-def write_json(path: Path, data: Any) -> None:
+def write_json(path: Path, data: Any, *, indent: int = 2) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=indent, ensure_ascii=False)

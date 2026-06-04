@@ -1,9 +1,15 @@
-import json
-from pathlib import Path
 from typing import Any
 
+from data.guild_data import (
+    ensure_guild_files,
+    get_guild_file,
+    read_json,
+    write_json,
+)
 
-DATA_FILE = Path(__file__).resolve().parent / "guild_settings.json"
+
+LEGACY_DATA_FILE_NAME = "guild_settings.json"
+
 
 DEFAULT_GUILD_SETTINGS = {
     "guild_name": "",
@@ -15,10 +21,6 @@ DEFAULT_GUILD_SETTINGS = {
     "weakauras_channel_id": None,
     "weakauras_message_id": None,
 }
-
-
-def _ensure_data_dir() -> None:
-    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 
 def _build_default_settings() -> dict[str, Any]:
@@ -37,44 +39,61 @@ def _normalize_guild_block(block: dict[str, Any] | Any) -> dict[str, Any]:
     return normalized
 
 
+def _get_guild_settings_file(guild_id: int | str):
+    ensure_guild_files(guild_id)
+    return get_guild_file(guild_id, LEGACY_DATA_FILE_NAME)
+
+
 def load_guild_settings() -> dict[str, dict[str, Any]]:
-    if not DATA_FILE.exists():
+    """
+    Compatibility function.
+
+    Old system:
+        data/guild_settings.json
+        {
+            "guild_id": { settings }
+        }
+
+    New system:
+        data/guilds/<guild_id>/guild_settings.json
+        { settings }
+
+    This returns all guild settings by scanning data/guilds/.
+    """
+    from data.guild_data import GUILDS_ROOT
+
+    if not GUILDS_ROOT.exists():
         return {}
 
-    try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            if not isinstance(data, dict):
-                return {}
+    result: dict[str, dict[str, Any]] = {}
 
-            normalized_data: dict[str, dict[str, Any]] = {}
-            changed = False
+    for guild_dir in GUILDS_ROOT.iterdir():
+        if not guild_dir.is_dir():
+            continue
 
-            for guild_id, block in data.items():
-                normalized_block = _normalize_guild_block(block)
-                normalized_data[str(guild_id)] = normalized_block
+        guild_id = guild_dir.name
+        path = guild_dir / LEGACY_DATA_FILE_NAME
+        block = read_json(path, {})
+        result[guild_id] = _normalize_guild_block(block)
 
-                if not isinstance(block, dict) or block != normalized_block:
-                    changed = True
-
-            if changed:
-                save_guild_settings(normalized_data)
-
-            return normalized_data
-
-    except (json.JSONDecodeError, OSError):
-        return {}
+    return result
 
 
 def save_guild_settings(data: dict[str, dict[str, Any]]) -> None:
-    _ensure_data_dir()
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    """
+    Compatibility function.
+
+    Saves each guild block into its own guild-specific file.
+    """
+    for guild_id, block in data.items():
+        ensure_guild_files(guild_id)
+        path = _get_guild_settings_file(guild_id)
+        write_json(path, _normalize_guild_block(block), indent=2)
 
 
 def get_guild_settings(guild_id: int | str) -> dict[str, Any]:
-    data = load_guild_settings()
-    block = data.get(str(guild_id), {})
+    path = _get_guild_settings_file(guild_id)
+    block = read_json(path, {})
     return _normalize_guild_block(block)
 
 
@@ -82,29 +101,27 @@ def ensure_guild_settings(
     guild_id: int | str,
     guild_name: str | None = None,
 ) -> dict[str, Any]:
-    data = load_guild_settings()
-    key = str(guild_id)
-    changed = False
+    ensure_guild_files(guild_id)
 
-    if key not in data:
-        data[key] = _build_default_settings()
-        changed = True
-    else:
-        normalized = _normalize_guild_block(data[key])
-        if data[key] != normalized:
-            data[key] = normalized
-            changed = True
+    path = _get_guild_settings_file(guild_id)
+    current = _normalize_guild_block(read_json(path, {}))
+
+    changed = False
 
     if guild_name is not None and str(guild_name).strip():
         clean_name = str(guild_name).strip()
-        if data[key].get("guild_name") != clean_name:
-            data[key]["guild_name"] = clean_name
+        if current.get("guild_name") != clean_name:
+            current["guild_name"] = clean_name
             changed = True
 
-    if changed:
-        save_guild_settings(data)
+    # Always save once so missing/default keys are written.
+    if changed or not path.exists():
+        write_json(path, current, indent=2)
+    else:
+        # Also write back normalized data if keys were missing.
+        write_json(path, current, indent=2)
 
-    return data[key]
+    return current
 
 
 def update_guild_settings(
@@ -112,19 +129,16 @@ def update_guild_settings(
     updates: dict[str, Any],
     guild_name: str | None = None,
 ) -> dict[str, Any]:
-    data = load_guild_settings()
-    key = str(guild_id)
+    ensure_guild_files(guild_id)
 
-    if key not in data:
-        data[key] = _build_default_settings()
-    else:
-        data[key] = _normalize_guild_block(data[key])
+    path = _get_guild_settings_file(guild_id)
+    current = _normalize_guild_block(read_json(path, {}))
 
-    data[key].update(updates)
-    data[key] = _normalize_guild_block(data[key])
+    current.update(updates)
+    current = _normalize_guild_block(current)
 
     if guild_name is not None and str(guild_name).strip():
-        data[key]["guild_name"] = str(guild_name).strip()
+        current["guild_name"] = str(guild_name).strip()
 
-    save_guild_settings(data)
-    return data[key]
+    write_json(path, current, indent=2)
+    return current
