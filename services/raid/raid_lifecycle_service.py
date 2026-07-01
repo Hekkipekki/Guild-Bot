@@ -10,6 +10,7 @@ SWEDEN_TZ = ZoneInfo("Europe/Stockholm")
 
 RAID_RETENTION_AFTER_START_SECONDS = 60 #30 minutes
 
+
 def is_signup_due_for_lifecycle(signup: dict, now_ts: int) -> bool:
     start_ts = signup.get("start_ts")
 
@@ -28,7 +29,13 @@ def is_recurring_signup(signup: dict) -> bool:
     return isinstance(interval, int) and interval > 0
 
 
-def calculate_next_start_ts(start_ts: int, interval_days: int, now_ts: int) -> int:
+def calculate_next_start_ts(
+    start_ts: int,
+    interval_days: int,
+    now_ts: int,
+    *,
+    not_before_ts: int | None = None,
+) -> int:
     """
     Returns the first recurring occurrence that is not already expired.
 
@@ -39,6 +46,9 @@ def calculate_next_start_ts(start_ts: int, interval_days: int, now_ts: int) -> i
 
     This function skips missed occurrences and returns the first valid
     upcoming/current one in the recurring chain.
+
+    If not_before_ts is provided, occurrences before that timestamp are
+    skipped as well. This is used for temporary recurring raid pauses.
     """
 
     next_dt = datetime.fromtimestamp(start_ts, tz=SWEDEN_TZ)
@@ -47,6 +57,10 @@ def calculate_next_start_ts(start_ts: int, interval_days: int, now_ts: int) -> i
 
     while now_ts >= (int(next_dt.timestamp()) + RAID_RETENTION_AFTER_START_SECONDS):
         next_dt += timedelta(days=interval_days)
+
+    if isinstance(not_before_ts, int):
+        while int(next_dt.timestamp()) <= not_before_ts:
+            next_dt += timedelta(days=interval_days)
 
     return int(next_dt.timestamp())
 
@@ -58,11 +72,13 @@ def build_next_recurring_signup(previous_signup: dict, now_ts: int) -> dict:
 
     previous_start_ts = int(previous_signup.get("start_ts", now_ts))
     interval_days = int(previous_signup["recurring_interval_days"])
+    pause_until_ts = previous_signup.get("recurring_pause_until_ts")
 
     next_start_ts = calculate_next_start_ts(
         previous_start_ts,
         interval_days,
         now_ts,
+        not_before_ts=pause_until_ts if isinstance(pause_until_ts, int) else None,
     )
 
     signup = build_signup_payload(
