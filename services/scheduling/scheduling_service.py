@@ -196,9 +196,13 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
         iso_week = raid_date.isocalendar().week
 
         if iso_week != current_week:
+            if current_week is None:
+                lines.append("")
+
             current_week = iso_week
-            lines.append("")
             lines.append(f"## Week {iso_week}")
+        else:
+            lines.append("")
 
         players = absences.get(date_iso, {})
         absence_entries = sorted(
@@ -213,9 +217,7 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
             lines.append(f"❌ Missing ({len(absence_entries)})")
             lines.extend(f"> • {entry}" for entry in absence_entries)
         else:
-            lines.append("✅ Full roster")
-
-        lines.append("")
+            lines.append(":white_check_mark: Full roster")
 
     return "\n".join(lines).rstrip()
 
