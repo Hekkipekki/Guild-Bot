@@ -35,18 +35,30 @@ def get_scheduled_absences_for_date(
     return players if isinstance(players, dict) else {}
 
 
+def _get_scheduled_absence_note(absence: dict) -> str:
+    return (absence.get("reason") or "Scheduled absence").strip()
+
+
+def _apply_absence_to_signup_entry(entry: dict, absence: dict) -> None:
+    entry["status"] = "absence"
+    entry["note"] = _get_scheduled_absence_note(absence)
+    entry["timestamp"] = time.time()
+    entry["source"] = "scheduling"
+
+    if absence.get("name") and not entry.get("display_name"):
+        entry["display_name"] = absence["name"]
+
+    entry.setdefault("display_name", absence.get("name") or "")
+    entry.setdefault("name", "")
+    entry.setdefault("class", "")
+    entry.setdefault("spec", "Unknown")
+    entry.setdefault("role", "DPS")
+
+
 def _build_signup_absence_entry(absence: dict) -> dict:
-    return {
-        "status": "absence",
-        "note": (absence.get("reason") or "Scheduled absence").strip(),
-        "display_name": absence.get("name") or "",
-        "name": "",
-        "class": "",
-        "spec": "Unknown",
-        "role": "DPS",
-        "timestamp": time.time(),
-        "source": "scheduling",
-    }
+    entry: dict = {}
+    _apply_absence_to_signup_entry(entry, absence)
+    return entry
 
 
 def apply_scheduled_absences_to_signup(signup: dict) -> int:
@@ -73,9 +85,10 @@ def apply_scheduled_absences_to_signup(signup: dict) -> int:
         user_id = str(user_id)
 
         if user_id in users:
-            continue
+            _apply_absence_to_signup_entry(users[user_id], absence)
+        else:
+            users[user_id] = _build_signup_absence_entry(absence)
 
-        users[user_id] = _build_signup_absence_entry(absence)
         applied += 1
 
     return applied
