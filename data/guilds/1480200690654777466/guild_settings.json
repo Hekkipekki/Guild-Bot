@@ -5,6 +5,8 @@
   "default_leader": "",
   "default_description": "",
   "signup_theme": "classic",
-  "weakauras_channel_id": null,
-  "weakauras_message_id": null
+  "weakauras_channel_id": 1480200691938099263,
+  "weakauras_message_id": 1521818112968884224,
+  "scheduling_channel_id": 1480200691938099263,
+  "scheduling_message_id": 1521818866534056076
 }

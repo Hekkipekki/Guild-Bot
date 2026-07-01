@@ -25,7 +25,7 @@ Use the buttons below to download the raid packs.
 
 ## Optional WeakAuras
 - <:fojji:1482050733258838087> [Numen Core](https://wago.io/Fojji-NumenCoreMoP) > `zoodle123` (External Requests)
-- <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP) > `nutella123`
+- <:fojji:1482050733258838087> [Dungeon Pack](https://wago.io/Fojji-Dungeons-MoP) > `flounder123`
 - <:fojji:1482050733258838087> [Dungeon Pack PF](https://wago.io/Fojji-Dungeons-MoP-PF) > `paprika123`
 - <:fojji:1482050733258838087> [Gear Checker](https://wago.io/Fojji-GearChecker) > `cucina123`
 - <:fojji:1482050733258838087> [Trinket/Proc Tracker](https://wago.io/FojjiTrinkets-MoP)
@@ -39,7 +39,7 @@ Use the buttons below to download the raid packs.
 
 **Click the buttons below to download the Raid Pack WAs.**
 
-> Last updated `2026-06-04`
+> Last updated `2026-06-13`
 """
 print(f"[WA] Panel text length: {len(WA_PANEL_TEXT)}")
 

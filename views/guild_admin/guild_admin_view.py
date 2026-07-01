@@ -8,6 +8,7 @@ from views.guild_admin.guild_admin_manage_views import (
     RaidAdminManageChoiceView,
     RaidTeamManageChoiceView,
     WeakAurasChannelManageView,
+    SchedulingChannelManageView,
     SignupThemeManageView,
 )
 from utils.panel_helpers import safe_panel_edit
@@ -89,6 +90,21 @@ class WeakAurasSetupButton(discord.ui.Button):
             view=WeakAurasChannelManageView(),
         )
 
+class SchedulingSetupButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label="Scheduling Channel",
+            style=discord.ButtonStyle.secondary,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        await safe_panel_edit(
+            interaction,
+            content="Select the channel to use for raid scheduling.",
+            embed=None,
+            view=SchedulingChannelManageView(),
+        )
 
 class CloseSetupButton(discord.ui.Button):
     def __init__(self):
@@ -119,4 +135,6 @@ class GuildSetupView(discord.ui.View):
         self.add_item(RaidTeamSetupButton())
         self.add_item(SignupThemeSetupButton())
         self.add_item(WeakAurasSetupButton())
+        self.add_item(SchedulingSetupButton())
         self.add_item(CloseSetupButton())
+        

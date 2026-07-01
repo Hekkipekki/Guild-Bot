@@ -10,6 +10,7 @@ from services.guild.guild_settings_service import (
     set_weakauras_channel_id,
     get_signup_theme,
     set_signup_theme,
+    set_scheduling_channel_id,
 )
 
 from utils.discord_utils import delete_interaction_after
@@ -417,6 +418,65 @@ class WeakAurasChannelManageView(discord.ui.View):
 
         self.add_item(
             WeakAurasChannelSelect()
+        )
+
+        self.add_item(
+            BackToSetupButton()
+        )
+
+class SchedulingChannelSelect(discord.ui.ChannelSelect):
+    def __init__(self):
+        super().__init__(
+            placeholder="Select the Scheduling channel...",
+            min_values=1,
+            max_values=1,
+            channel_types=[discord.ChannelType.text],
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        guild = interaction.guild
+
+        if guild is None:
+            await interaction.response.send_message(
+                "⚠ This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        channel = self.values[0]
+
+        set_scheduling_channel_id(
+            guild.id,
+            channel.id,
+        )
+
+        from services.scheduling.scheduling_panel_service import (
+            ensure_scheduling_panel_for_guild,
+        )
+
+        ok, message = await ensure_scheduling_panel_for_guild(
+            interaction.client,
+            guild,
+        )
+
+        status_line = f"✅ Scheduling channel set to {channel.mention}."
+
+        if message:
+            status_line += f"\n{message}"
+
+        await _return_to_setup_overview(
+            interaction,
+            content=status_line,
+        )
+
+
+class SchedulingChannelManageView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=120)
+
+        self.add_item(
+            SchedulingChannelSelect()
         )
 
         self.add_item(

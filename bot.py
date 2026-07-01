@@ -11,6 +11,7 @@ from services.guild.weakauras_panel_service import ensure_weakauras_panel_for_gu
 from views.raidpack_views import RaidPackView
 from views.signup.comp.comp_message_view import CompMessageView
 from views.signup_views import SignupView
+from services.scheduling.scheduling_panel_service import ensure_scheduling_panel_for_guild
 
 
 intents = discord.Intents.default()
@@ -29,6 +30,7 @@ EXTENSIONS = [
     "cogs.raid_lifecycle",
     "cogs.attendance",
     "cogs.help",
+    "cogs.scheduling",
 ]
 
 def _register_persistent_views() -> None:
@@ -58,6 +60,13 @@ def _register_persistent_views() -> None:
 
     _views_registered = True
 
+async def _ensure_scheduling_panels() -> None:
+    for guild in bot.guilds:
+        try:
+            ok, message = await ensure_scheduling_panel_for_guild(bot, guild)
+            print(f"[Scheduling] {guild.name}: {message}")
+        except Exception as e:
+            print(f"[Scheduling] {guild.name}: failed - {e}")
 
 async def _sync_application_commands() -> None:
     global _commands_synced
@@ -160,6 +169,7 @@ async def on_ready():
     await _sync_application_commands()
     await _sync_guild_names()
     await _ensure_weakauras_panels()
+    await _ensure_scheduling_panels()
 
     try:
         if config.DEV_MODE:

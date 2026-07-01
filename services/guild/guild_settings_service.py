@@ -148,6 +148,7 @@ def get_guild_defaults(guild_id: int) -> dict:
         "signup_theme": signup_theme,
         "signup_theme_label": get_signup_theme_label(signup_theme),
         "weakauras_channel_id": settings.get("weakauras_channel_id"),
+        "scheduling_channel_id": settings.get("scheduling_channel_id"),
     }
 
 
@@ -166,3 +167,36 @@ def get_weakauras_message_id(guild_id: int) -> int | None:
 
 def set_weakauras_message_id(guild_id: int, message_id: int | None) -> None:
     update_guild_settings(guild_id, {"weakauras_message_id": message_id})
+
+def get_scheduling_channel_id(guild_id: int) -> int | None:
+    settings = ensure_guild_settings(guild_id)
+    value = settings.get("scheduling_channel_id")
+
+    if value in (None, "", 0):
+        return None
+
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def set_scheduling_channel_id(guild_id: int, channel_id: int | None) -> None:
+    update_guild_settings(guild_id, {"scheduling_channel_id": channel_id})
+
+
+def get_scheduling_message_id(guild_id: int) -> int | None:
+    settings = ensure_guild_settings(guild_id)
+    value = settings.get("scheduling_message_id")
+
+    if value in (None, "", 0):
+        return None
+
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def set_scheduling_message_id(guild_id: int, message_id: int | None) -> None:
+    update_guild_settings(guild_id, {"scheduling_message_id": message_id})

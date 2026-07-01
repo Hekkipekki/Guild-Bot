@@ -20,6 +20,8 @@ DEFAULT_GUILD_SETTINGS = {
     "signup_theme": "classic",
     "weakauras_channel_id": None,
     "weakauras_message_id": None,
+    "scheduling_channel_id": None,
+    "scheduling_message_id": None,
 }
 
 

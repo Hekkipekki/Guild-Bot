@@ -42,6 +42,22 @@ async def handle_post_comp(
             )
             return False
 
+        bench_steps = comp_data.get("bench_choice_steps", [])
+        if bench_steps:
+            from views.signup.comp.comp_bench_view import CompBenchView
+
+            step = bench_steps[0]
+            count = int(step.get("count_to_bench", 0) or 0)
+            role = step.get("role") or "player"
+            player_word = "player" if count == 1 else "players"
+
+            await interaction.response.send_message(
+                f"Select {count} {role} {player_word} to bench.",
+                view=CompBenchView(comp_data),
+                ephemeral=True,
+            )
+            return True
+
         if interaction.channel is None:
             await send_panel_error(
                 interaction,

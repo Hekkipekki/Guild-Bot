@@ -40,15 +40,15 @@ except ImportError:
 PACKS = {
     "SoO_01_08": {
         "label": "SoO Boss 1–8",
-        "file": "files/Fojji-T1601-08-Siege-of-Orgrimmar_v3.0.1.txt",
+        "file": "files/Fojji-T1601-08-Siege-of-Orgrimmar_v3.0.2.txt",
         "title": "Fojji - Siege of Orgrimmar[01–08]",
-        "version": "v3.0.1",
+        "version": "v3.0.2",
     },
     "SoO_09_14": {
         "label": "SoO Boss 9–14",
-        "file": "files/Fojji-T1609-14-Siege-of-Orgrimmar-v3.0.4.txt",
+        "file": "files/Fojji-T1609-14-Siege-of-Orgrimmar-v3.0.5.txt",
         "title": "Fojji - Siege of Orgrimmar [09–14]",
-        "version": "v3.0.4",
+        "version": "v3.0.5",
     },
     "SoO_frames": {
         "label": "Siege of Orgrimmar Raid Frames",
