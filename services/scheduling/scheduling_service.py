@@ -13,12 +13,13 @@ RAID_WEEKDAYS = {
 }
 
 
-def get_raid_dates_ahead(weeks: int = 4) -> list[date]:
+def get_raid_dates_ahead(weeks: int = 4, min_days_ahead: int = 7) -> list[date]:
     today = date.today()
+    start_date = today + timedelta(days=min_days_ahead)
     end_date = today + timedelta(weeks=weeks)
 
     days: list[date] = []
-    current = today
+    current = start_date
 
     while current <= end_date:
         if current.weekday() in RAID_WEEKDAYS:
