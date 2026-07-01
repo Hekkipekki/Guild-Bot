@@ -153,7 +153,17 @@ def clear_old_absences(guild_id: int | str, panel_id: str) -> int:
 def _format_absence_entry(user_id: str, entry: dict) -> str:
     name = entry.get("name") or user_id
     reason = (entry.get("reason") or "No reason").strip()
-    return f"{name} - {reason}"
+    return f"{name} — {reason}"
+
+
+def _get_week_raid_marker(raid_date: date) -> str:
+    if raid_date.weekday() == 2:
+        return ":one:"
+
+    if raid_date.weekday() == 6:
+        return ":two:"
+
+    return "•"
 
 
 def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
@@ -170,7 +180,7 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
         "",
         "Already know you will miss a raid? Use this panel so we can plan the roster in advance.",
         "",
-        "## How it works",
+        "### How it works",
         "> **1.** Click **Absent** and select the raid date(s).",
         "> **2.** Enter a reason, for example `Vacation`, `Work`, `Family`, or `Other`.",
         "> **3.** If different dates have different reasons, submit them separately.",
@@ -196,16 +206,18 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
             for user_id, entry in players.items()
         )
 
-        lines.append("")
-        lines.append(f"### {weekday} {raid_date.strftime('%d/%m')}")
+        marker = _get_week_raid_marker(raid_date)
+        lines.append(f"{marker} **{weekday} {raid_date.strftime('%d/%m')}**")
 
         if absence_entries:
-            lines.append(f"**Missing ({len(absence_entries)})**")
-            lines.append("- " + "\n- ".join(absence_entries))
+            lines.append(f"**❌ Missing ({len(absence_entries)})**")
+            lines.extend(f"> • {entry}" for entry in absence_entries)
         else:
-            lines.append("**Full roster**")
+            lines.append("**✅ Full roster**")
 
-    return "\n".join(lines)
+        lines.append("")
+
+    return "\n".join(lines).rstrip()
 
 
 async def refresh_scheduling_message(client, guild_id: int | str, panel_id: str) -> tuple[bool, str]:
