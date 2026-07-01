@@ -12,6 +12,54 @@ from utils.permissions import can_manage_raid_tools
 from utils.panel_helpers import send_panel_error
 
 
+class SchedulingReasonModal(discord.ui.Modal, title="Absence reason"):
+    reason = discord.ui.TextInput(
+        label="Reason",
+        placeholder="Vacation / Work / Family / Other",
+        required=True,
+        max_length=50,
+    )
+
+    def __init__(
+        self,
+        panel_id: str,
+        *,
+        selected_dates: list[str],
+    ):
+        super().__init__()
+        self.panel_id = str(panel_id)
+        self.selected_dates = selected_dates
+
+    async def on_submit(self, interaction: discord.Interaction):
+        if interaction.guild is None:
+            await send_panel_error(interaction, "Guild not found.")
+            return
+
+        ok = add_absence(
+            interaction.guild.id,
+            self.panel_id,
+            user_id=interaction.user.id,
+            display_name=interaction.user.display_name,
+            dates=self.selected_dates,
+            reason=str(self.reason.value),
+        )
+
+        if not ok:
+            await send_panel_error(interaction, "Could not save absence.")
+            return
+
+        await refresh_scheduling_message(
+            interaction.client,
+            interaction.guild.id,
+            self.panel_id,
+        )
+
+        await interaction.response.edit_message(
+            content="Absence saved.",
+            view=None,
+        )
+
+
 class AbsenceDateSelect(discord.ui.Select):
     def __init__(
         self,
@@ -41,27 +89,11 @@ class AbsenceDateSelect(discord.ui.Select):
             await send_panel_error(interaction, "Guild not found.")
             return
 
-        ok = add_absence(
-            interaction.guild.id,
-            self.panel_id,
-            user_id=interaction.user.id,
-            display_name=interaction.user.display_name,
-            dates=list(self.values),
-        )
-
-        if not ok:
-            await send_panel_error(interaction, "Could not save absence.")
-            return
-
-        await refresh_scheduling_message(
-            interaction.client,
-            interaction.guild.id,
-            self.panel_id,
-        )
-
-        await interaction.response.edit_message(
-            content="✅ Absence saved.",
-            view=None,
+        await interaction.response.send_modal(
+            SchedulingReasonModal(
+                self.panel_id,
+                selected_dates=list(self.values),
+            )
         )
 
 
@@ -154,7 +186,7 @@ class SchedulingRefreshButton(discord.ui.Button):
         )
 
         await interaction.response.edit_message(
-            content=f"✅ {message}" if ok else f"⚠ {message}",
+            content=f"{message}" if ok else f"Warning: {message}",
             view=None,
         )
 
