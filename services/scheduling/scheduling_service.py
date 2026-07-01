@@ -8,8 +8,8 @@ from data.scheduling_store import load_scheduling, save_scheduling, get_panel
 
 
 RAID_WEEKDAYS = {
-    2: "Wed",  # Wednesday
-    6: "Sun",  # Sunday
+    2: "Wed",
+    6: "Sun",
 }
 
 
@@ -65,14 +65,9 @@ def build_absence_options(
     return options
 
 
-def create_scheduling_panel(
-    guild_id: int | str,
-    channel_id: int | str,
-) -> str:
+def create_scheduling_panel(guild_id: int | str, channel_id: int | str) -> str:
     data = load_scheduling(guild_id)
-
     panel_id = str(guild_id)
-
     existing_panel = data.setdefault("panels", {}).get(panel_id, {})
 
     data["panels"][panel_id] = {
@@ -86,11 +81,7 @@ def create_scheduling_panel(
     return panel_id
 
 
-def set_panel_message_id(
-    guild_id: int | str,
-    panel_id: str,
-    message_id: int | str,
-) -> None:
+def set_panel_message_id(guild_id: int | str, panel_id: str, message_id: int | str) -> None:
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
 
@@ -119,7 +110,6 @@ def add_absence(
     absences = panel.setdefault("absences", {})
     user_id = str(user_id)
     reason = reason.strip()
-
     visible_dates = {d.isoformat() for d in get_raid_dates_ahead()}
 
     for date_iso in list(absences.keys()):
@@ -149,7 +139,6 @@ def clear_old_absences(guild_id: int | str, panel_id: str) -> int:
 
     absences = panel.setdefault("absences", {})
     today_iso = date.today().isoformat()
-
     removed = 0
 
     for date_iso in list(absences.keys()):
@@ -159,6 +148,12 @@ def clear_old_absences(guild_id: int | str, panel_id: str) -> int:
 
     save_scheduling(guild_id, data)
     return removed
+
+
+def _format_absence_entry(user_id: str, entry: dict) -> str:
+    name = entry.get("name") or user_id
+    reason = (entry.get("reason") or "No reason").strip()
+    return f"{name} - {reason}"
 
 
 def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
@@ -171,11 +166,11 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
     absences = panel.get("absences", {})
 
     lines = [
-        "## 🗓️ Raid Scheduling",
+        "## Raid Scheduling",
         "",
         "Use **Absent** if you already know you will miss a raid.",
         "",
-        "━━━━━━━━━━━━━━━━━━",
+        "------------------",
     ]
 
     current_week = None
@@ -191,29 +186,21 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
             lines.append(f"### W.{iso_week}")
 
         players = absences.get(date_iso, {})
-        names = sorted(
-            entry.get("name", user_id)
+        absence_entries = sorted(
+            _format_absence_entry(user_id, entry)
             for user_id, entry in players.items()
         )
 
-        if names:
-            lines.append(
-                f"**{weekday} {raid_date.strftime('%d/%m')}** — {len(names)} missing"
-            )
-            lines.append("• " + "\n• ".join(names))
+        if absence_entries:
+            lines.append(f"**{weekday} {raid_date.strftime('%d/%m')}** - {len(absence_entries)} missing")
+            lines.append("- " + "\n- ".join(absence_entries))
         else:
-            lines.append(
-                f"**{weekday} {raid_date.strftime('%d/%m')}** — ✅ Full roster"
-            )
+            lines.append(f"**{weekday} {raid_date.strftime('%d/%m')}** - Full roster")
 
     return "\n".join(lines)
 
 
-async def refresh_scheduling_message(
-    client,
-    guild_id: int | str,
-    panel_id: str,
-) -> tuple[bool, str]:
+async def refresh_scheduling_message(client, guild_id: int | str, panel_id: str) -> tuple[bool, str]:
     from views.scheduling.scheduling_message_view import SchedulingMessageView
 
     data = load_scheduling(guild_id)
@@ -223,7 +210,6 @@ async def refresh_scheduling_message(
         return False, "Scheduling panel not found."
 
     clear_old_absences(guild_id, panel_id)
-
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
 
