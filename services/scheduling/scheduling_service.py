@@ -166,11 +166,16 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
     absences = panel.get("absences", {})
 
     lines = [
-        "## Raid Scheduling",
+        "# Raid Scheduling",
         "",
-        "Use **Absent** if you already know you will miss a raid.",
+        "Already know you will miss a raid? Use this panel so we can plan the roster in advance.",
         "",
-        "------------------",
+        "## How it works",
+        "> **1.** Click **Absent** and select the raid date(s).",
+        "> **2.** Enter a reason, for example `Vacation`, `Work`, `Family`, or `Other`.",
+        "> **3.** If different dates have different reasons, submit them separately.",
+        "",
+        "---",
     ]
 
     current_week = None
@@ -183,7 +188,7 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
         if iso_week != current_week:
             current_week = iso_week
             lines.append("")
-            lines.append(f"### W.{iso_week}")
+            lines.append(f"## Week {iso_week}")
 
         players = absences.get(date_iso, {})
         absence_entries = sorted(
@@ -191,11 +196,14 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
             for user_id, entry in players.items()
         )
 
+        lines.append("")
+        lines.append(f"### {weekday} {raid_date.strftime('%d/%m')}")
+
         if absence_entries:
-            lines.append(f"**{weekday} {raid_date.strftime('%d/%m')}** - {len(absence_entries)} missing")
+            lines.append(f"**Missing ({len(absence_entries)})**")
             lines.append("- " + "\n- ".join(absence_entries))
         else:
-            lines.append(f"**{weekday} {raid_date.strftime('%d/%m')}** - Full roster")
+            lines.append("**Full roster**")
 
     return "\n".join(lines)
 
