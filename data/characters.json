@@ -1,0 +1,18 @@
+{
+    "1480200690654777466": {
+        "141881090913599488": [
+            {
+                "name": "test",
+                "class": "Death Knight",
+                "spec": "Blood",
+                "role": "Tank"
+            },
+            {
+                "name": "Test",
+                "class": "Druid",
+                "spec": "Balance",
+                "role": "Ranged"
+            }
+        ]
+    }
+}

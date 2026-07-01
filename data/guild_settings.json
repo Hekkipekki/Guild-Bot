@@ -1,0 +1,36 @@
+{
+  "1480200690654777466": {
+    "guild_name": "Hekkipekkis server",
+    "raid_control_user_ids": [
+      "141881090913599488"
+    ],
+    "expected_players": [
+      "141881090913599488"
+    ],
+    "default_leader": "",
+    "default_description": "",
+    "signup_theme": "classic",
+    "weakauras_channel_id": 1480200691938099263,
+    "weakauras_message_id": 1512111339588554773
+  },
+  "1175174589639303339": {
+    "guild_name": "ＥＮＳＩＤＩＧ A",
+    "raid_control_user_ids": [],
+    "expected_players": [],
+    "default_leader": "",
+    "default_description": "",
+    "signup_theme": "classic",
+    "weakauras_channel_id": null,
+    "weakauras_message_id": null
+  },
+  "1423706462773051542": {
+    "guild_name": "IDK Fake Guild Group",
+    "raid_control_user_ids": [],
+    "expected_players": [],
+    "default_leader": "",
+    "default_description": "",
+    "signup_theme": "classic",
+    "weakauras_channel_id": null,
+    "weakauras_message_id": null
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "1505246841246187701": {
+    "raid_id": "1505246841246187701",
+    "guild_id": 1480200690654777466,
+    "channel_id": 1480200691938099263,
+    "title": "New Raid Signup",
+    "description": "Raid signup",
+    "leader": "Raid Leader",
+    "start_ts": 1778949300,
+    "comp_message_id": 1505246898511151237,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 3,
+    "finalized": true,
+    "players": {
+      "141881090913599488": {
+        "display_name": "Hekkipekki",
+        "name": "test",
+        "class": "Death Knight",
+        "spec": "Blood",
+        "role": "Tank",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "sign",
+        "auto_status": "attending",
+        "attendance_status": "attending",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1778949228,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 3
+      },
+      {
+        "timestamp": 1778949228,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1778949387,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 3
+      },
+      {
+        "timestamp": 1778949387,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "expected_players": [
+      "141881090913599488"
+    ],
+    "finalized_at": 1778949387,
+    "finalized_by": "auto_comp_post"
+  },
+  "1505255698358075503": {
+    "raid_id": "1505255698358075503",
+    "guild_id": 1480200690654777466,
+    "channel_id": 1480200691938099263,
+    "title": "New Raid Signup",
+    "description": "Raid signup",
+    "leader": "Raid Leader",
+    "start_ts": 1778952600,
+    "comp_message_id": 1505255832940707860,
+    "snapshot_source": "comp_post",
+    "snapshot_version": 3,
+    "finalized": true,
+    "players": {
+      "141881090913599488": {
+        "display_name": "User 141881090913599488",
+        "name": "",
+        "class": "",
+        "spec": "",
+        "role": "",
+        "note": "",
+        "user_id": "141881090913599488",
+        "signup_status": "no_sign",
+        "auto_status": "no_sign",
+        "attendance_status": "no_sign",
+        "status_source": "auto",
+        "manual_override": false,
+        "edited_by": null,
+        "edited_at": null
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1778951358,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 3
+      },
+      {
+        "timestamp": 1778951358,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      },
+      {
+        "timestamp": 1778952662,
+        "action": "attendance_snapshot_created",
+        "by_user_id": null,
+        "snapshot_version": 3
+      },
+      {
+        "timestamp": 1778952662,
+        "action": "attendance_auto_finalized",
+        "by_user_id": null
+      }
+    ],
+    "expected_players": [
+      "141881090913599488"
+    ],
+    "finalized_at": 1778952662,
+    "finalized_by": "auto_comp_post"
+  }
+}

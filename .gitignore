@@ -8,23 +8,24 @@ bot_log.txt
 
 # Python cache
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 
 # Virtual environments
 .venv/
 venv/
 
-# Runtime JSON data
-data/signups.json
-data/characters.json
-data/attendance.json
-data/guild_settings.json
-data/raid_templates.json
+# Runtime guild data
+data/guilds/
+
+# Development data
 data/*_dev.json
 
 # Local helper scripts
 split.py
+
+# IDE
+.vscode/
+.idea/
 
 # OS files
 .DS_Store
