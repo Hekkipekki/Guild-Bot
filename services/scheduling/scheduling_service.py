@@ -210,10 +210,10 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
         lines.append(f"{marker} **{weekday} {raid_date.strftime('%d/%m')}**")
 
         if absence_entries:
-            lines.append(f"**❌ Missing ({len(absence_entries)})**")
+            lines.append(f"❌ Missing ({len(absence_entries)})")
             lines.extend(f"> • {entry}" for entry in absence_entries)
         else:
-            lines.append("**✅ Full roster**")
+            lines.append("✅ Full roster")
 
         lines.append("")
 
