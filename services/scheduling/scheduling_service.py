@@ -108,6 +108,7 @@ def add_absence(
     user_id: int | str,
     display_name: str,
     dates: list[str],
+    reason: str = "",
 ) -> bool:
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
@@ -117,6 +118,7 @@ def add_absence(
 
     absences = panel.setdefault("absences", {})
     user_id = str(user_id)
+    reason = reason.strip()
 
     visible_dates = {d.isoformat() for d in get_raid_dates_ahead()}
 
@@ -131,6 +133,7 @@ def add_absence(
         absences.setdefault(date_iso, {})[user_id] = {
             "user_id": user_id,
             "name": display_name,
+            "reason": reason,
         }
 
     save_scheduling(guild_id, data)
