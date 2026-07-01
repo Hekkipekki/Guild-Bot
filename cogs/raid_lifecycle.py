@@ -12,6 +12,7 @@ from services.raid.raid_lifecycle_service import (
     is_recurring_signup,
     is_signup_due_for_lifecycle,
 )
+from services.scheduling.scheduling_signup_sync_service import apply_scheduled_absences_to_signup
 from services.signup.signup_message_service import send_signup_message
 
 
@@ -148,6 +149,14 @@ class RaidLifecycleCog(commands.Cog):
                     continue
 
                 next_signup = build_next_recurring_signup(signup, now_ts)
+                scheduled_absences = apply_scheduled_absences_to_signup(next_signup)
+
+                if scheduled_absences:
+                    print(
+                        f"[Lifecycle] Applied {scheduled_absences} scheduled absence(s) "
+                        f"to next recurring raid from old raid {raid_id}"
+                    )
+
                 new_message_id = await send_signup_message(
                     _ChannelCtx(guild, channel),
                     next_signup,
