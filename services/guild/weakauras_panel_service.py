@@ -39,7 +39,7 @@ Use the buttons below to download the raid packs.
 
 **Click the buttons below to download the Raid Pack WAs.**
 
-> Last updated `2026-06-13`
+> Last updated `2026-06-24 Boss packs`
 """
 print(f"[WA] Panel text length: {len(WA_PANEL_TEXT)}")
 
