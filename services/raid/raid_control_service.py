@@ -1,3 +1,5 @@
+import time
+
 import config
 
 from data.signup_store import load_signups, save_signups, find_message_signup
@@ -146,7 +148,8 @@ def change_player_spec(raid_id: str, user_id: str, new_spec: str) -> bool:
 
     save_signups(data)
     return True
-    
+
+
 def toggle_recurring(raid_id: str) -> bool:
     data = load_signups()
     raid = find_message_signup(data, raid_id)
@@ -178,6 +181,36 @@ def set_recurring_interval(raid_id: str, days: int) -> bool:
     return True
 
 
+def set_recurring_pause(raid_id: str, weeks: int) -> bool:
+    if weeks < 1:
+        return False
+
+    data = load_signups()
+    raid = find_message_signup(data, raid_id)
+
+    if not raid:
+        return False
+
+    raid["is_recurring"] = True
+    raid["recurring_pause_until_ts"] = int(time.time()) + weeks * 7 * 24 * 60 * 60
+
+    save_signups(data)
+    return True
+
+
+def clear_recurring_pause(raid_id: str) -> bool:
+    data = load_signups()
+    raid = find_message_signup(data, raid_id)
+
+    if not raid:
+        return False
+
+    raid.pop("recurring_pause_until_ts", None)
+
+    save_signups(data)
+    return True
+
+
 def get_recurring_settings(raid_id: str) -> dict:
     raid = get_signup_data(raid_id)
     if not raid:
@@ -186,4 +219,5 @@ def get_recurring_settings(raid_id: str) -> dict:
     return {
         "enabled": raid.get("is_recurring", False),
         "interval": raid.get("recurring_interval_days", None),
+        "pause_until_ts": raid.get("recurring_pause_until_ts"),
     }
