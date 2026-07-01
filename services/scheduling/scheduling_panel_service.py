@@ -12,6 +12,7 @@ from services.scheduling.scheduling_service import (
     create_scheduling_panel,
     set_panel_message_id,
     build_scheduling_content,
+    clear_old_absences,
 )
 
 from views.scheduling.scheduling_message_view import SchedulingMessageView
@@ -34,13 +35,16 @@ async def ensure_scheduling_panel_for_guild(
         except Exception:
             return False, "Configured Scheduling channel not found."
 
-    # Stable panel id: one scheduling panel per guild
     panel_id = str(guild.id)
 
-    # Ensure scheduling.json has a panel block for this guild
     create_scheduling_panel(
         guild.id,
         channel.id,
+    )
+
+    clear_old_absences(
+        guild.id,
+        panel_id,
     )
 
     message_id = get_scheduling_message_id(guild.id)

@@ -5,7 +5,6 @@ import discord
 from services.scheduling.scheduling_service import (
     build_absence_options,
     add_absence,
-    clear_old_absences,
     refresh_scheduling_message,
 )
 
@@ -133,6 +132,7 @@ class SchedulingControlButton(discord.ui.Button):
             ephemeral=True,
         )
 
+
 class SchedulingRefreshButton(discord.ui.Button):
     def __init__(self, panel_id: str):
         super().__init__(
@@ -159,43 +159,11 @@ class SchedulingRefreshButton(discord.ui.Button):
         )
 
 
-class SchedulingClearOldButton(discord.ui.Button):
-    def __init__(self, panel_id: str):
-        super().__init__(
-            label="Clear Old Dates",
-            style=discord.ButtonStyle.danger,
-            row=0,
-        )
-        self.panel_id = str(panel_id)
-
-    async def callback(self, interaction: discord.Interaction):
-        if interaction.guild is None:
-            await send_panel_error(interaction, "Guild not found.")
-            return
-
-        removed = clear_old_absences(
-            interaction.guild.id,
-            self.panel_id,
-        )
-
-        await refresh_scheduling_message(
-            interaction.client,
-            interaction.guild.id,
-            self.panel_id,
-        )
-
-        await interaction.response.edit_message(
-            content=f"✅ Cleared {removed} old date(s).",
-            view=None,
-        )
-
-
 class SchedulingControlView(discord.ui.View):
     def __init__(self, panel_id: str):
         super().__init__(timeout=120)
 
         self.add_item(SchedulingRefreshButton(panel_id))
-        self.add_item(SchedulingClearOldButton(panel_id))
 
 
 class SchedulingMessageView(discord.ui.View):

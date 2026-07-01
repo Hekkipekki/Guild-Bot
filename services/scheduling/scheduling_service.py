@@ -120,7 +120,6 @@ def add_absence(
 
     visible_dates = {d.isoformat() for d in get_raid_dates_ahead()}
 
-    # Remove this user's old choices in the visible 4-week window
     for date_iso in list(absences.keys()):
         if date_iso in visible_dates:
             absences[date_iso].pop(user_id, None)
@@ -128,7 +127,6 @@ def add_absence(
             if not absences[date_iso]:
                 del absences[date_iso]
 
-    # Add new choices
     for date_iso in dates:
         absences.setdefault(date_iso, {})[user_id] = {
             "user_id": user_id,
@@ -137,6 +135,27 @@ def add_absence(
 
     save_scheduling(guild_id, data)
     return True
+
+
+def clear_old_absences(guild_id: int | str, panel_id: str) -> int:
+    data = load_scheduling(guild_id)
+    panel = get_panel(data, panel_id)
+
+    if not panel:
+        return 0
+
+    absences = panel.setdefault("absences", {})
+    today_iso = date.today().isoformat()
+
+    removed = 0
+
+    for date_iso in list(absences.keys()):
+        if date_iso < today_iso:
+            del absences[date_iso]
+            removed += 1
+
+    save_scheduling(guild_id, data)
+    return removed
 
 
 def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
@@ -186,26 +205,6 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
 
     return "\n".join(lines)
 
-def clear_old_absences(guild_id: int | str, panel_id: str) -> int:
-    data = load_scheduling(guild_id)
-    panel = get_panel(data, panel_id)
-
-    if not panel:
-        return 0
-
-    absences = panel.setdefault("absences", {})
-    today_iso = date.today().isoformat()
-
-    removed = 0
-
-    for date_iso in list(absences.keys()):
-        if date_iso < today_iso:
-            del absences[date_iso]
-            removed += 1
-
-    save_scheduling(guild_id, data)
-    return removed
-
 
 async def refresh_scheduling_message(
     client,
@@ -213,6 +212,14 @@ async def refresh_scheduling_message(
     panel_id: str,
 ) -> tuple[bool, str]:
     from views.scheduling.scheduling_message_view import SchedulingMessageView
+
+    data = load_scheduling(guild_id)
+    panel = get_panel(data, panel_id)
+
+    if not panel:
+        return False, "Scheduling panel not found."
+
+    clear_old_absences(guild_id, panel_id)
 
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
