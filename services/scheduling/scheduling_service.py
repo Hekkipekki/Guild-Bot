@@ -185,6 +185,7 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
         "> **1.** Click **Absent** and select the raid date(s).",
         "> **2.** Enter a reason, for example `Vacation`, `Work`, `Family`, or `Other`.",
         "> **3.** If different dates have different reasons, submit them separately.",
+        "> **4.** Absent signs here will automatically be used for the signups in recurring raids.",
         "",
         "---",
     ]
