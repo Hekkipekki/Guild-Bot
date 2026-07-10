@@ -62,11 +62,13 @@ class WarcraftLogsPlayerView(discord.ui.View):
         result: WarcraftLogsPlayerPerformanceResult,
         *,
         owner_id: int,
+        graphic_filename: str | None = None,
         timeout: float = 300,
     ) -> None:
         super().__init__(timeout=timeout)
         self.result = result
         self.owner_id = int(owner_id)
+        self.graphic_filename = graphic_filename
         self.add_item(WarcraftLogsPlayerSelect(result.player_summaries))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -85,13 +87,18 @@ class WarcraftLogsPlayerView(discord.ui.View):
         button: discord.ui.Button,
     ) -> None:
         await interaction.response.edit_message(
-            embed=build_player_leaderboard_embed(self.result),
+            embed=build_player_leaderboard_embed(
+                self.result,
+                graphic_filename=self.graphic_filename,
+            ),
             view=self,
         )
 
 
 def build_player_leaderboard_embed(
     result: WarcraftLogsPlayerPerformanceResult,
+    *,
+    graphic_filename: str | None = None,
 ) -> discord.Embed:
     embed = discord.Embed(
         title=f"{result.report_title} — Player Performance"[:256],
@@ -102,7 +109,9 @@ def build_player_leaderboard_embed(
         color=discord.Color.orange(),
     )
 
-    if not result.player_summaries:
+    if graphic_filename:
+        embed.set_image(url=f"attachment://{graphic_filename}")
+    elif not result.player_summaries:
         embed.add_field(
             name="Players",
             value="No player performance rows could be normalized for this report.",
