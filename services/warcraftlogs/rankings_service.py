@@ -11,6 +11,8 @@ from services.warcraftlogs.api_client import (
 
 
 CACHE_TTL_SECONDS = 600
+_BOSS_ARGUMENT_NAMES = ("encounterID", "bossID", "boss")
+_RECENT_ARGUMENT_NAMES = ("recent", "includeRecent", "recentRaiders")
 
 
 @dataclass(frozen=True)
@@ -31,6 +33,8 @@ class GuildRankingsResult:
     entries: tuple[GuildRankingEntry, ...]
     raw_rankings: Any
     fetched_at: float
+    boss_id: int | None = None
+    recent: bool = False
 
 
 @dataclass
@@ -74,7 +78,7 @@ class WarcraftLogsRankingsService:
 
     def __init__(self, client: WarcraftLogsClient) -> None:
         self.client = client
-        self._cache: dict[tuple[int, int], _CacheEntry] = {}
+        self._cache: dict[tuple[int, int, int | None, bool], _CacheEntry] = {}
         self._zone_ranking_args: set[str] | None = None
         self._zone_ranking_selection: str | None = None
 
@@ -83,16 +87,22 @@ class WarcraftLogsRankingsService:
         guild_id: int,
         *,
         raid_size: int = 10,
+        boss_id: int | None = None,
+        recent: bool = False,
         force_refresh: bool = False,
     ) -> GuildRankingsResult:
         clean_guild_id = int(guild_id)
         clean_raid_size = int(raid_size)
+        clean_boss_id = int(boss_id) if boss_id is not None else None
+
         if clean_guild_id <= 0:
             raise ValueError("Warcraft Logs guild ID must be positive.")
         if clean_raid_size not in (10, 25):
             raise ValueError("Raid size must be 10 or 25.")
+        if clean_boss_id is not None and clean_boss_id <= 0:
+            raise ValueError("Boss ID must be a positive integer.")
 
-        cache_key = (clean_guild_id, clean_raid_size)
+        cache_key = (clean_guild_id, clean_raid_size, clean_boss_id, bool(recent))
         now = time.monotonic()
         cached = self._cache.get(cache_key)
         if not force_refresh and cached and now < cached.expires_at:
@@ -101,10 +111,37 @@ class WarcraftLogsRankingsService:
         supported_args = await self._get_zone_ranking_args()
         selection = await self._get_zone_ranking_selection()
         argument_parts: list[str] = []
+
         if "size" in supported_args:
             argument_parts.append(f"size: {clean_raid_size}")
-        arguments = f"({', '.join(argument_parts)})" if argument_parts else ""
 
+        if clean_boss_id is not None:
+            boss_argument = _first_supported_argument(
+                supported_args,
+                _BOSS_ARGUMENT_NAMES,
+            )
+            if boss_argument is None:
+                raise WarcraftLogsRequestError(
+                    "The current Warcraft Logs zoneRanking schema does not expose "
+                    "a boss/encounter filter. Supported arguments: "
+                    f"{', '.join(sorted(supported_args)) or 'none'}."
+                )
+            argument_parts.append(f"{boss_argument}: {clean_boss_id}")
+
+        if recent:
+            recent_argument = _first_supported_argument(
+                supported_args,
+                _RECENT_ARGUMENT_NAMES,
+            )
+            if recent_argument is None:
+                raise WarcraftLogsRequestError(
+                    "The current Warcraft Logs zoneRanking schema does not expose "
+                    "a recent-raiders filter. Supported arguments: "
+                    f"{', '.join(sorted(supported_args)) or 'none'}."
+                )
+            argument_parts.append(f"{recent_argument}: true")
+
+        arguments = f"({', '.join(argument_parts)})" if argument_parts else ""
         query = f"""
         query GuildRankings {{
           guildData {{
@@ -141,6 +178,8 @@ class WarcraftLogsRankingsService:
             entries=entries,
             raw_rankings=raw_rankings,
             fetched_at=time.time(),
+            boss_id=clean_boss_id,
+            recent=bool(recent),
         )
         self._cache[cache_key] = _CacheEntry(
             result=result,
@@ -189,7 +228,7 @@ class WarcraftLogsRankingsService:
             if not name:
                 continue
             available_names.append(name)
-            kind, type_name = _unwrap_graphql_type(field.get("type"))
+            kind, _ = _unwrap_graphql_type(field.get("type"))
             if kind in {"SCALAR", "ENUM"}:
                 selections.append(name)
             elif name == "zone" and kind == "OBJECT":
@@ -204,6 +243,13 @@ class WarcraftLogsRankingsService:
 
         self._zone_ranking_selection = "\n".join(selections)
         return self._zone_ranking_selection
+
+
+def _first_supported_argument(
+    supported: set[str],
+    candidates: tuple[str, ...],
+) -> str | None:
+    return next((name for name in candidates if name in supported), None)
 
 
 def _unwrap_graphql_type(type_block: Any) -> tuple[str | None, str | None]:
