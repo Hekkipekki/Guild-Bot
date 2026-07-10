@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import statistics
 import time
+from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Iterable
 
@@ -24,10 +26,35 @@ class WarcraftLogsPlayerPerformance:
 
 
 @dataclass(frozen=True)
+class WarcraftLogsPlayerSummary:
+    """Aggregated report performance for one Warcraft Logs character."""
+
+    name: str
+    server: str | None
+    class_name: str | None
+    primary_spec: str | None
+    role: str | None
+    rows: tuple[WarcraftLogsPlayerPerformance, ...]
+    average_parse: float | None
+    median_parse: float | None
+    best_parse: float | None
+    worst_parse: float | None
+    average_amount: float | None
+    best_amount: float | None
+    average_item_level: float | None
+    encounter_count: int
+
+    @property
+    def parse_count(self) -> int:
+        return sum(1 for row in self.rows if row.rank_percent is not None)
+
+
+@dataclass(frozen=True)
 class WarcraftLogsPlayerPerformanceResult:
     report_code: str
     report_title: str
     players: tuple[WarcraftLogsPlayerPerformance, ...]
+    player_summaries: tuple[WarcraftLogsPlayerSummary, ...]
     raw_rankings: Any
     fetched_at: float
 
@@ -91,11 +118,13 @@ class WarcraftLogsPlayerPerformanceService:
 
         returned_code = str(report.get("code") or code).strip()
         raw_rankings = report.get("rankings")
+        players = parse_player_performance_rows(raw_rankings)
         result = WarcraftLogsPlayerPerformanceResult(
             report_code=returned_code,
             report_title=str(report.get("title") or "Untitled report").strip()
             or "Untitled report",
-            players=parse_player_performance_rows(raw_rankings),
+            players=players,
+            player_summaries=aggregate_player_performance(players),
             raw_rankings=raw_rankings,
             fetched_at=time.time(),
         )
@@ -108,13 +137,29 @@ class WarcraftLogsPlayerPerformanceService:
 
 def parse_player_performance_rows(payload: Any) -> tuple[WarcraftLogsPlayerPerformance, ...]:
     rows: list[WarcraftLogsPlayerPerformance] = []
-    seen: set[tuple[str, str | None, str | None, float | None]] = set()
+    seen: set[
+        tuple[
+            str,
+            str | None,
+            str | None,
+            float | None,
+            float | None,
+            float | None,
+        ]
+    ] = set()
 
     for candidate in _walk_dicts(payload):
         parsed = _parse_candidate(candidate)
         if parsed is None:
             continue
-        key = (parsed.name.lower(), parsed.spec_name, parsed.encounter_name, parsed.rank_percent)
+        key = (
+            parsed.name.lower(),
+            parsed.spec_name,
+            parsed.encounter_name,
+            parsed.rank_percent,
+            parsed.amount,
+            parsed.item_level,
+        )
         if key in seen:
             continue
         seen.add(key)
@@ -128,6 +173,61 @@ def parse_player_performance_rows(payload: Any) -> tuple[WarcraftLogsPlayerPerfo
         )
     )
     return tuple(rows)
+
+
+def aggregate_player_performance(
+    rows: Iterable[WarcraftLogsPlayerPerformance],
+) -> tuple[WarcraftLogsPlayerSummary, ...]:
+    """Group normalized rankings rows by Warcraft Logs character identity."""
+
+    grouped: dict[tuple[str, str], list[WarcraftLogsPlayerPerformance]] = {}
+    order: list[tuple[str, str]] = []
+    for row in rows:
+        key = (row.name.casefold(), (row.server or "").casefold())
+        if key not in grouped:
+            grouped[key] = []
+            order.append(key)
+        grouped[key].append(row)
+
+    summaries: list[WarcraftLogsPlayerSummary] = []
+    for key in order:
+        player_rows = tuple(grouped[key])
+        parses = [row.rank_percent for row in player_rows if row.rank_percent is not None]
+        amounts = [row.amount for row in player_rows if row.amount is not None]
+        item_levels = [row.item_level for row in player_rows if row.item_level is not None]
+        encounters = {
+            row.encounter_name.casefold()
+            for row in player_rows
+            if row.encounter_name
+        }
+
+        summaries.append(
+            WarcraftLogsPlayerSummary(
+                name=player_rows[0].name,
+                server=player_rows[0].server,
+                class_name=_most_common_text(row.class_name for row in player_rows),
+                primary_spec=_most_common_text(row.spec_name for row in player_rows),
+                role=_most_common_text(row.role for row in player_rows),
+                rows=player_rows,
+                average_parse=_average(parses),
+                median_parse=float(statistics.median(parses)) if parses else None,
+                best_parse=max(parses) if parses else None,
+                worst_parse=min(parses) if parses else None,
+                average_amount=_average(amounts),
+                best_amount=max(amounts) if amounts else None,
+                average_item_level=_average(item_levels),
+                encounter_count=len(encounters) if encounters else len(player_rows),
+            )
+        )
+
+    summaries.sort(
+        key=lambda player: (
+            player.average_parse is None,
+            -(player.average_parse or 0),
+            player.name.casefold(),
+        )
+    )
+    return tuple(summaries)
 
 
 def _walk_dicts(value: Any) -> Iterable[dict[str, Any]]:
@@ -171,6 +271,18 @@ def _parse_candidate(data: dict[str, Any]) -> WarcraftLogsPlayerPerformance | No
         item_level=item_level,
         encounter_name=_first_text(data, "encounter", "encounterName", "bossName"),
     )
+
+
+def _most_common_text(values: Iterable[str | None]) -> str | None:
+    cleaned = [value for value in values if value]
+    if not cleaned:
+        return None
+    counts = Counter(cleaned)
+    return counts.most_common(1)[0][0]
+
+
+def _average(values: list[float]) -> float | None:
+    return sum(values) / len(values) if values else None
 
 
 def _first_text(data: dict[str, Any], *keys: str) -> str | None:
