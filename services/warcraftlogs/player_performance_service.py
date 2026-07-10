@@ -11,6 +11,19 @@ from services.warcraftlogs.api_client import WarcraftLogsClient, WarcraftLogsReq
 
 PLAYER_PERFORMANCE_CACHE_TTL_SECONDS = 300
 
+_TANK_SPECS = {
+    "blood",
+    "brewmaster",
+    "guardian",
+    "protection",
+}
+_HEALER_SPECS = {
+    "discipline",
+    "holy",
+    "mistweaver",
+    "restoration",
+}
+
 
 @dataclass(frozen=True)
 class WarcraftLogsPlayerPerformance:
@@ -47,6 +60,36 @@ class WarcraftLogsPlayerSummary:
     @property
     def parse_count(self) -> int:
         return sum(1 for row in self.rows if row.rank_percent is not None)
+
+    @property
+    def parse_stddev(self) -> float | None:
+        """Population standard deviation for ranked parses; lower is steadier."""
+
+        parses = [row.rank_percent for row in self.rows if row.rank_percent is not None]
+        if not parses:
+            return None
+        if len(parses) == 1:
+            return 0.0
+        return float(statistics.pstdev(parses))
+
+    @property
+    def role_category(self) -> str:
+        """Return Tank, Healer, or DPS using API role first and spec fallback."""
+
+        explicit = str(self.role or "").strip().casefold()
+        if explicit in {"tank", "tanks"}:
+            return "Tank"
+        if explicit in {"healer", "healing", "heal"}:
+            return "Healer"
+        if explicit in {"dps", "damage"}:
+            return "DPS"
+
+        spec = str(self.primary_spec or "").strip().casefold()
+        if spec in _TANK_SPECS:
+            return "Tank"
+        if spec in _HEALER_SPECS:
+            return "Healer"
+        return "DPS"
 
 
 @dataclass(frozen=True)
