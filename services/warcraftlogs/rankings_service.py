@@ -53,10 +53,30 @@ class WarcraftLogsRankingsService:
     }
     """
 
+    _ZONE_RANKING_TYPE_QUERY = """
+    query GuildZoneRankingSchema {
+      __type(name: "GuildZoneRankings") {
+        fields {
+          name
+          type {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType { kind name }
+            }
+          }
+        }
+      }
+    }
+    """
+
     def __init__(self, client: WarcraftLogsClient) -> None:
         self.client = client
         self._cache: dict[tuple[int, int], _CacheEntry] = {}
         self._zone_ranking_args: set[str] | None = None
+        self._zone_ranking_selection: str | None = None
 
     async def get_guild_rankings(
         self,
@@ -79,21 +99,21 @@ class WarcraftLogsRankingsService:
             return cached.result
 
         supported_args = await self._get_zone_ranking_args()
+        selection = await self._get_zone_ranking_selection()
         argument_parts: list[str] = []
         if "size" in supported_args:
             argument_parts.append(f"size: {clean_raid_size}")
         arguments = f"({', '.join(argument_parts)})" if argument_parts else ""
 
-        # The Classic API field is singular (`zoneRanking`). Alias it to the
-        # plural response key so existing parser code and cached payloads remain
-        # backward-compatible.
         query = f"""
         query GuildRankings {{
           guildData {{
             guild(id: {clean_guild_id}) {{
               id
               name
-              zoneRankings: zoneRanking{arguments}
+              zoneRankings: zoneRanking{arguments} {{
+                {selection}
+              }}
             }}
           }}
         }}
@@ -147,12 +167,57 @@ class WarcraftLogsRankingsService:
                 }
                 return self._zone_ranking_args
         except WarcraftLogsRequestError:
-            # Some GraphQL deployments disable introspection. Size is the only
-            # optional argument needed by the current rankings command.
             pass
 
         self._zone_ranking_args = {"size"}
         return self._zone_ranking_args
+
+    async def _get_zone_ranking_selection(self) -> str:
+        if self._zone_ranking_selection is not None:
+            return self._zone_ranking_selection
+
+        data = await self.client.query(self._ZONE_RANKING_TYPE_QUERY)
+        type_block = data.get("__type")
+        fields = type_block.get("fields", []) if isinstance(type_block, dict) else []
+
+        selections: list[str] = []
+        available_names: list[str] = []
+        for field in fields:
+            if not isinstance(field, dict):
+                continue
+            name = str(field.get("name") or "").strip()
+            if not name:
+                continue
+            available_names.append(name)
+            kind, type_name = _unwrap_graphql_type(field.get("type"))
+            if kind in {"SCALAR", "ENUM"}:
+                selections.append(name)
+            elif name == "zone" and kind == "OBJECT":
+                selections.append("zone { name }")
+
+        if not selections:
+            names = ", ".join(sorted(available_names)) or "none"
+            raise WarcraftLogsRequestError(
+                "Warcraft Logs exposed no selectable scalar fields on "
+                f"GuildZoneRankings. Available fields: {names}."
+            )
+
+        self._zone_ranking_selection = "\n".join(selections)
+        return self._zone_ranking_selection
+
+
+def _unwrap_graphql_type(type_block: Any) -> tuple[str | None, str | None]:
+    current = type_block
+    while isinstance(current, dict):
+        kind = current.get("kind")
+        name = current.get("name")
+        if kind not in {"NON_NULL", "LIST"}:
+            return (
+                str(kind) if kind else None,
+                str(name) if name else None,
+            )
+        current = current.get("ofType")
+    return None, None
 
 
 def _extract_ranking_entries(value: Any) -> list[GuildRankingEntry]:
