@@ -13,10 +13,12 @@ from services.warcraftlogs.api_client import (
     WarcraftLogsConfigurationError,
     WarcraftLogsRequestError,
 )
+from services.warcraftlogs.character_performance_service import (
+    WarcraftLogsCharacterPerformanceService,
+)
 from services.warcraftlogs.credentials import get_warcraftlogs_credentials
 from services.warcraftlogs.debug_service import build_debug_json_bytes
 from services.warcraftlogs.player_performance_service import WarcraftLogsPlayerPerformanceService
-from services.warcraftlogs.player_ranking_graphic import render_player_ranking_graphic
 from services.warcraftlogs.reports_service import WarcraftLogsReportsService
 from services.warcraftlogs.settings_service import get_warcraftlogs_settings
 from views.warcraftlogs_player_view import (
@@ -34,6 +36,7 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
         self.client = WarcraftLogsClient(client_id, client_secret)
         self.reports_service = WarcraftLogsReportsService(self.client)
         self.performance_service = WarcraftLogsPlayerPerformanceService(self.client)
+        self.character_service = WarcraftLogsCharacterPerformanceService(self.client)
         self.players_command = app_commands.Command(
             name="players",
             description="Browse player performance from the latest or a selected report.",
@@ -116,26 +119,15 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
             )
             return
 
-        graphic_filename = f"warcraftlogs-rankings-{result.report_code}.png"
-        try:
-            graphic_bytes = render_player_ranking_graphic(result)
-            file = discord.File(io.BytesIO(graphic_bytes), filename=graphic_filename)
-        except Exception as exc:
-            print(f"[WarcraftLogs] Failed to render ranking graphic: {type(exc).__name__}: {exc}")
-            graphic_filename = None
-            file = None
-
         view = WarcraftLogsPlayerView(
             result,
             owner_id=interaction.user.id,
-            graphic_filename=graphic_filename,
+            character_service=self.character_service,
+            region=settings.region,
+            guild_emojis=tuple(guild.emojis),
         )
         await interaction.followup.send(
-            embed=build_player_leaderboard_embed(
-                result,
-                graphic_filename=graphic_filename,
-            ),
-            file=file,
+            embed=build_player_leaderboard_embed(result, guild_emojis=tuple(guild.emojis)),
             view=view,
         )
 
