@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import Any
 
 
-CURRENT_GUILD_SETTINGS_VERSION = 1
+CURRENT_GUILD_SETTINGS_VERSION = 2
 
 
 class UnsupportedGuildSettingsVersionError(ValueError):
@@ -22,8 +22,19 @@ def _migrate_v0_to_v1(settings: dict[str, Any]) -> dict[str, Any]:
     return migrated
 
 
+def _migrate_v1_to_v2(settings: dict[str, Any]) -> dict[str, Any]:
+    """Add per-guild Warcraft Logs configuration fields."""
+    migrated = deepcopy(settings)
+    migrated.setdefault("warcraftlogs_guild_id", None)
+    migrated.setdefault("warcraftlogs_raid_size", 10)
+    migrated.setdefault("warcraftlogs_region", "eu")
+    migrated["config_version"] = 2
+    return migrated
+
+
 MIGRATIONS: dict[int, Migration] = {
     0: _migrate_v0_to_v1,
+    1: _migrate_v1_to_v2,
 }
 
 
