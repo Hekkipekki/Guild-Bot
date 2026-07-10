@@ -5,11 +5,10 @@ from enum import Enum
 
 import discord
 
-from services.guild.guild_settings_service import (
-    get_scheduling_channel_id,
-    get_scheduling_message_id,
-    get_weakauras_channel_id,
-    get_weakauras_message_id,
+from services.panels.panel_registry import PERMANENT_PANELS, PERMANENT_PANELS_BY_KEY
+from services.panels.permanent_panel_service import (
+    PermanentPanelDefinition,
+    ensure_permanent_panel,
 )
 
 
@@ -72,11 +71,12 @@ def _channel_from_id(
 
 def _validate_channel(
     guild: discord.Guild,
-    *,
-    key: str,
-    label: str,
-    channel_id: int | None,
+    panel: PermanentPanelDefinition,
 ) -> tuple[ValidationItem, discord.TextChannel | None]:
+    key = f"{panel.key}_channel"
+    label = f"{panel.label} Channel"
+    channel_id = panel.get_channel_id(guild.id)
+
     if channel_id is None:
         return (
             ValidationItem(key, label, ValidationState.ERROR, "No channel configured."),
@@ -135,13 +135,25 @@ def _validate_channel(
     )
 
 
+def _first_message_id(panel: PermanentPanelDefinition, guild_id: int) -> int | None:
+    for value in panel.get_message_ids(guild_id):
+        if value in (None, "", 0):
+            continue
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
 async def _validate_panel_message(
-    *,
-    key: str,
-    label: str,
+    panel: PermanentPanelDefinition,
+    guild_id: int,
     channel: discord.TextChannel | None,
-    message_id: int | None,
 ) -> ValidationItem:
+    key = f"{panel.key}_panel"
+    label = f"{panel.label} Panel"
+
     if channel is None:
         return ValidationItem(
             key,
@@ -150,6 +162,7 @@ async def _validate_panel_message(
             "Cannot validate the panel until its channel is valid.",
         )
 
+    message_id = _first_message_id(panel, guild_id)
     if message_id is None:
         return ValidationItem(
             key,
@@ -191,59 +204,39 @@ async def _validate_panel_message(
 
 
 async def validate_guild_setup(guild: discord.Guild) -> SetupValidationReport:
-    weakauras_channel_item, weakauras_channel = _validate_channel(
-        guild,
-        key="weakauras_channel",
-        label="WeakAuras Channel",
-        channel_id=get_weakauras_channel_id(guild.id),
-    )
-    scheduling_channel_item, scheduling_channel = _validate_channel(
-        guild,
-        key="scheduling_channel",
-        label="Scheduling Channel",
-        channel_id=get_scheduling_channel_id(guild.id),
-    )
+    items: list[ValidationItem] = []
 
-    weakauras_panel_item = await _validate_panel_message(
-        key="weakauras_panel",
-        label="WeakAuras Panel",
-        channel=weakauras_channel,
-        message_id=get_weakauras_message_id(guild.id),
-    )
-    scheduling_panel_item = await _validate_panel_message(
-        key="scheduling_panel",
-        label="Scheduling Panel",
-        channel=scheduling_channel,
-        message_id=get_scheduling_message_id(guild.id),
-    )
+    for panel in PERMANENT_PANELS:
+        channel_item, channel = _validate_channel(guild, panel)
+        panel_item = await _validate_panel_message(panel, guild.id, channel)
+        items.extend((channel_item, panel_item))
 
-    return SetupValidationReport(
-        guild_id=guild.id,
-        items=(
-            weakauras_channel_item,
-            weakauras_panel_item,
-            scheduling_channel_item,
-            scheduling_panel_item,
-        ),
-    )
+    return SetupValidationReport(guild_id=guild.id, items=tuple(items))
+
+
+async def repair_panel(
+    bot: discord.Client,
+    guild: discord.Guild,
+    panel_key: str,
+) -> tuple[bool, str]:
+    panel = PERMANENT_PANELS_BY_KEY.get(panel_key)
+    if panel is None:
+        return False, f"Unknown permanent panel: {panel_key}."
+    return await ensure_permanent_panel(bot, guild, panel)
 
 
 async def repair_weakauras_panel(
     bot: discord.Client,
     guild: discord.Guild,
 ) -> tuple[bool, str]:
-    from services.guild.weakauras_panel_service import ensure_weakauras_panel_for_guild
-
-    return await ensure_weakauras_panel_for_guild(bot, guild)
+    return await repair_panel(bot, guild, "weakauras")
 
 
 async def repair_scheduling_panel(
     bot: discord.Client,
     guild: discord.Guild,
 ) -> tuple[bool, str]:
-    from services.scheduling.scheduling_panel_service import ensure_scheduling_panel_for_guild
-
-    return await ensure_scheduling_panel_for_guild(bot, guild)
+    return await repair_panel(bot, guild, "scheduling")
 
 
 async def repair_all_panels(
@@ -251,7 +244,7 @@ async def repair_all_panels(
     guild: discord.Guild,
 ) -> list[str]:
     results: list[str] = []
-    for repair in (repair_weakauras_panel, repair_scheduling_panel):
-        _, message = await repair(bot, guild)
+    for panel in PERMANENT_PANELS:
+        _, message = await ensure_permanent_panel(bot, guild, panel)
         results.append(message)
     return results
