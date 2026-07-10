@@ -20,13 +20,20 @@ DEFAULT_GUILD_SETTINGS = {
     "signup_theme": "classic",
     "weakauras_channel_id": None,
     "weakauras_message_id": None,
+    "hidden_weakaura_items": [],
     "scheduling_channel_id": None,
     "scheduling_message_id": None,
+    "raid_weekdays": [2, 6],
 }
 
 
 def _build_default_settings() -> dict[str, Any]:
-    return dict(DEFAULT_GUILD_SETTINGS)
+    defaults = dict(DEFAULT_GUILD_SETTINGS)
+    defaults["raid_control_user_ids"] = []
+    defaults["expected_players"] = []
+    defaults["hidden_weakaura_items"] = []
+    defaults["raid_weekdays"] = [2, 6]
+    return defaults
 
 
 def _normalize_guild_block(block: dict[str, Any] | Any) -> dict[str, Any]:
@@ -37,6 +44,26 @@ def _normalize_guild_block(block: dict[str, Any] | Any) -> dict[str, Any]:
 
     if normalized.get("signup_theme") not in ("classic", "compact", "split_by_class"):
         normalized["signup_theme"] = "classic"
+
+    raid_weekdays = normalized.get("raid_weekdays", [2, 6])
+    if not isinstance(raid_weekdays, list):
+        raid_weekdays = [2, 6]
+
+    valid_weekdays: list[int] = []
+    for value in raid_weekdays:
+        try:
+            weekday = int(value)
+        except (TypeError, ValueError):
+            continue
+        if 0 <= weekday <= 6 and weekday not in valid_weekdays:
+            valid_weekdays.append(weekday)
+
+    normalized["raid_weekdays"] = sorted(valid_weekdays) or [2, 6]
+
+    hidden_items = normalized.get("hidden_weakaura_items", [])
+    if not isinstance(hidden_items, list):
+        hidden_items = []
+    normalized["hidden_weakaura_items"] = sorted({str(item) for item in hidden_items if item})
 
     return normalized
 
@@ -68,16 +95,13 @@ def load_guild_settings() -> dict[str, dict[str, Any]]:
         return {}
 
     result: dict[str, dict[str, Any]] = {}
-
     for guild_dir in GUILDS_ROOT.iterdir():
         if not guild_dir.is_dir():
             continue
-
         guild_id = guild_dir.name
         path = guild_dir / LEGACY_DATA_FILE_NAME
         block = read_json(path, {})
         result[guild_id] = _normalize_guild_block(block)
-
     return result
 
 
@@ -107,7 +131,6 @@ def ensure_guild_settings(
 
     path = _get_guild_settings_file(guild_id)
     current = _normalize_guild_block(read_json(path, {}))
-
     changed = False
 
     if guild_name is not None and str(guild_name).strip():
@@ -116,11 +139,9 @@ def ensure_guild_settings(
             current["guild_name"] = clean_name
             changed = True
 
-    # Always save once so missing/default keys are written.
     if changed or not path.exists():
         write_json(path, current, indent=2)
     else:
-        # Also write back normalized data if keys were missing.
         write_json(path, current, indent=2)
 
     return current
