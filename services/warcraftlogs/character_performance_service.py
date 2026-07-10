@@ -10,6 +10,26 @@ from services.warcraftlogs.api_client import WarcraftLogsClient, WarcraftLogsReq
 CHARACTER_CACHE_TTL_SECONDS = 600
 _DIFFICULTIES = {"normal": 3, "heroic": 4}
 _METRICS = {"damage": "dps", "healing": "hps"}
+_ENCOUNTER_CONTAINER_KEYS = {
+    "rankings",
+    "roles",
+    "players",
+    "entries",
+    "specs",
+    "classes",
+}
+_PERFORMANCE_KEYS = {
+    "rankPercent",
+    "rankPercentage",
+    "percentile",
+    "bestPercent",
+    "historicalPercent",
+    "amount",
+    "total",
+    "dps",
+    "hps",
+    "bestAmount",
+}
 
 
 @dataclass(frozen=True)
@@ -217,7 +237,24 @@ def _encounter_name(data: dict[str, Any]) -> str | None:
         value = encounter.get("name")
         if isinstance(value, str) and value.strip():
             return value.strip()
-    return _first_text(data, "encounterName", "bossName")
+
+    explicit = _first_text(data, "encounterName", "bossName")
+    if explicit:
+        return explicit
+
+    # Character ranking payloads may put the boss name on a parent object such
+    # as {"name": "Norushen", "rankings": [...]}. Only accept generic name
+    # when the object structurally looks like an encounter container and is not
+    # itself a performance row, avoiding character/report names as bosses.
+    generic_name = data.get("name")
+    if (
+        isinstance(generic_name, str)
+        and generic_name.strip()
+        and any(key in data for key in _ENCOUNTER_CONTAINER_KEYS)
+        and not any(key in data for key in _PERFORMANCE_KEYS)
+    ):
+        return generic_name.strip()
+    return None
 
 
 def _first_text(data: dict[str, Any], *keys: str) -> str | None:
