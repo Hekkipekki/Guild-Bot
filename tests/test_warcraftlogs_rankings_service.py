@@ -17,7 +17,7 @@ class FakeClient:
                 "__type": {
                     "fields": [
                         {
-                            "name": "zoneRankings",
+                            "name": "zoneRanking",
                             "args": [{"name": "size", "type": {"kind": "SCALAR"}}],
                         }
                     ]
@@ -58,6 +58,7 @@ class WarcraftLogsRankingsServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(first.entries[0].encounter_name, "Immerseus")
         self.assertEqual(first.entries[0].world_rank, 100)
         self.assertEqual(len(client.queries), 2)
+        self.assertIn("zoneRankings: zoneRanking", client.queries[-1])
         self.assertIn("size: 10", client.queries[-1])
 
     async def test_force_refresh_bypasses_cache(self):
