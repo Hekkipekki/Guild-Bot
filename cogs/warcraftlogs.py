@@ -16,6 +16,7 @@ from services.warcraftlogs.api_client import (
 )
 from services.warcraftlogs.credentials import get_warcraftlogs_credentials
 from services.warcraftlogs.debug_service import build_debug_json_bytes
+from services.warcraftlogs.ranking_parser import parse_guild_ranking_categories
 from services.warcraftlogs.rankings_service import (
     GuildRankingEntry,
     GuildRankingsResult,
@@ -248,6 +249,7 @@ class WarcraftLogsCommands(commands.Cog):
             )
             return
 
+        parsed_entries = _get_display_entries(result)
         debug_bytes = build_debug_json_bytes(
             operation="guild_rankings",
             request={
@@ -262,7 +264,7 @@ class WarcraftLogsCommands(commands.Cog):
                 "guild_name": result.guild_name,
                 "zone_name": result.zone_name,
                 "fetched_at": result.fetched_at,
-                "normalized_entries": result.entries,
+                "normalized_entries": parsed_entries,
                 "raw_rankings": result.raw_rankings,
             },
         )
@@ -275,6 +277,11 @@ class WarcraftLogsCommands(commands.Cog):
             file=file,
             ephemeral=True,
         )
+
+
+def _get_display_entries(result: GuildRankingsResult) -> tuple[GuildRankingEntry, ...]:
+    category_entries = parse_guild_ranking_categories(result.raw_rankings)
+    return category_entries or result.entries
 
 
 def _build_rankings_embed(
@@ -294,26 +301,24 @@ def _build_rankings_embed(
         color=discord.Color.orange(),
     )
 
-    if result.entries:
-        lines = [_format_ranking_entry(entry) for entry in result.entries[:20]]
+    entries = _get_display_entries(result)
+    if entries:
+        lines = [_format_ranking_entry(entry) for entry in entries[:20]]
         embed.add_field(
-            name="Boss rankings",
+            name="Guild rankings",
             value="\n".join(lines)[:1024],
             inline=False,
         )
-        if len(result.entries) > 20:
+        if len(entries) > 20:
             embed.add_field(
                 name="More",
-                value=f"{len(result.entries) - 20} additional ranking entries were omitted.",
+                value=f"{len(entries) - 20} additional ranking entries were omitted.",
                 inline=False,
             )
     else:
         embed.add_field(
             name="Ranking data",
-            value=(
-                "Warcraft Logs returned ranking data, but no encounter rows could be "
-                "normalized. This usually means the API response shape changed."
-            ),
+            value="Warcraft Logs returned no usable ranking values for these filters.",
             inline=False,
         )
 
@@ -337,7 +342,7 @@ def _format_ranking_entry(entry: GuildRankingEntry) -> str:
         ranks.append(f"Realm #{entry.server_rank:,}")
     if entry.rank_percent is not None:
         ranks.append(f"{entry.rank_percent:.1f}%")
-    detail = " • ".join(ranks) if ranks else "No rank available"
+    detail = " • ".join(ranks) if ranks else "Unranked"
     return f"**{entry.encounter_name}** — {detail}"
 
 
