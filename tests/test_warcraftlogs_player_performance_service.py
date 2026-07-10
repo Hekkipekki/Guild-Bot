@@ -105,6 +105,67 @@ class PlayerPerformanceParserTests(unittest.TestCase):
 
         self.assertEqual(len(rows), 2)
 
+    def test_inherits_encounter_name_from_parent_ranking_container(self):
+        rows = parse_player_performance_rows(
+            {
+                "rankings": [
+                    {
+                        "name": "Garrosh Hellscream Heroic (10 Player)",
+                        "roles": {
+                            "dps": {
+                                "characters": [
+                                    {
+                                        "name": "Alpha",
+                                        "spec": "Fire",
+                                        "rankPercent": 96.2,
+                                        "amount": 321000,
+                                    }
+                                ]
+                            }
+                        },
+                    }
+                ]
+            }
+        )
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(
+            rows[0].encounter_name,
+            "Garrosh Hellscream Heroic (10 Player)",
+        )
+
+    def test_explicit_row_encounter_overrides_parent_context(self):
+        rows = parse_player_performance_rows(
+            {
+                "name": "Parent Encounter",
+                "players": [
+                    {
+                        "name": "Alpha",
+                        "rankPercent": 90,
+                        "amount": 1000,
+                        "encounterName": "Explicit Encounter",
+                    }
+                ],
+            }
+        )
+
+        self.assertEqual(rows[0].encounter_name, "Explicit Encounter")
+
+    def test_does_not_treat_player_name_as_encounter_context(self):
+        rows = parse_player_performance_rows(
+            {
+                "players": [
+                    {
+                        "name": "Alpha",
+                        "rankPercent": 90,
+                        "amount": 1000,
+                    }
+                ]
+            }
+        )
+
+        self.assertIsNone(rows[0].encounter_name)
+
 
 class PlayerPerformanceAggregationTests(unittest.TestCase):
     def test_groups_rows_and_calculates_summary_metrics(self):
