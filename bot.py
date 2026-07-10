@@ -6,12 +6,13 @@ from discord.ext import commands
 
 import config
 from data.signup_store import load_signups
+from services.bot.command_sync_service import build_command_sync_plan
 from services.guild.guild_settings_service import sync_guild_identity
 from services.guild.weakauras_panel_service import ensure_weakauras_panel_for_guild
+from services.scheduling.scheduling_panel_service import ensure_scheduling_panel_for_guild
 from views.raidpack_views import RaidPackView
 from views.signup.comp.comp_message_view import CompMessageView
 from views.signup_views import SignupView
-from services.scheduling.scheduling_panel_service import ensure_scheduling_panel_for_guild
 
 
 intents = discord.Intents.default()
@@ -32,6 +33,7 @@ EXTENSIONS = [
     "cogs.help",
     "cogs.scheduling",
 ]
+
 
 def _register_persistent_views() -> None:
     global _views_registered
@@ -60,6 +62,7 @@ def _register_persistent_views() -> None:
 
     _views_registered = True
 
+
 async def _ensure_scheduling_panels() -> None:
     for guild in bot.guilds:
         try:
@@ -68,30 +71,34 @@ async def _ensure_scheduling_panels() -> None:
         except Exception as e:
             print(f"[Scheduling] {guild.name}: failed - {e}")
 
+
 async def _sync_application_commands() -> None:
     global _commands_synced
 
     if _commands_synced:
         return
 
+    plan = build_command_sync_plan(
+        dev_mode=bool(config.DEV_MODE),
+        test_guild_id=getattr(config, "TEST_GUILD_ID", None),
+    )
+
     try:
-        test_guild_id = getattr(config, "TEST_GUILD_ID", None)
-
-        if test_guild_id:
-            guild_obj = discord.Object(id=test_guild_id)
-
+        if plan.is_guild_sync:
+            guild_obj = discord.Object(id=plan.guild_id)
             bot.tree.clear_commands(guild=guild_obj)
-            cleared = await bot.tree.sync(guild=guild_obj)
+            bot.tree.copy_global_to(guild=guild_obj)
+            synced = await bot.tree.sync(guild=guild_obj)
             print(
-                f"Cleared guild slash commands for {test_guild_id}. "
-                f"Remaining guild commands: {len(cleared)}"
+                f"[Commands] DEV_MODE: synced {len(synced)} slash command(s) "
+                f"to test guild {plan.guild_id}. Global commands were not synced."
             )
-
-        synced = await bot.tree.sync()
-        print(f"Globally synced {len(synced)} slash command(s).")
-
+        else:
+            synced = await bot.tree.sync()
+            print(f"[Commands] Production: globally synced {len(synced)} slash command(s).")
     except Exception as e:
         print(f"Failed to sync slash commands: {e}")
+        raise
 
     _commands_synced = True
 
@@ -172,25 +179,17 @@ async def on_ready():
     await _ensure_scheduling_panels()
 
     try:
-        if config.DEV_MODE:
-            await bot.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.listening,
-                    name="/raid , /setup , /attendance",
-                )
+        await bot.change_presence(
+            activity=discord.Activity(
+                type=discord.ActivityType.listening,
+                name="/raid , /setup , /attendance",
             )
-        else:
-            await bot.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.listening,
-                    name="/raid , /setup , /attendance",
-                )
-            )
-
+        )
     except Exception as e:
         print(f"Failed to set presence: {e}")
 
-    print(f"Logged in as {bot.user}")
+    runtime_mode = "development" if config.DEV_MODE else "production"
+    print(f"Logged in as {bot.user} ({runtime_mode})")
 
 
 @bot.event
@@ -202,6 +201,11 @@ async def on_command_error(ctx, error):
 async def main():
     if not config.TOKEN:
         raise RuntimeError("Bot token not found. Define TOKEN in secrets_local.py")
+
+    build_command_sync_plan(
+        dev_mode=bool(config.DEV_MODE),
+        test_guild_id=getattr(config, "TEST_GUILD_ID", None),
+    )
 
     async with bot:
         await _load_extensions()
