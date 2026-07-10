@@ -8,8 +8,8 @@ import config
 from data.signup_store import load_signups
 from services.bot.command_sync_service import build_command_sync_plan
 from services.guild.guild_settings_service import sync_guild_identity
-from services.guild.weakauras_panel_service import ensure_weakauras_panel_for_guild
-from services.scheduling.scheduling_panel_service import ensure_scheduling_panel_for_guild
+from services.panels.panel_registry import PERMANENT_PANELS
+from services.panels.permanent_panel_service import ensure_permanent_panel
 from views.raidpack_views import RaidPackView
 from views.signup.comp.comp_message_view import CompMessageView
 from views.signup_views import SignupView
@@ -63,13 +63,14 @@ def _register_persistent_views() -> None:
     _views_registered = True
 
 
-async def _ensure_scheduling_panels() -> None:
+async def _ensure_permanent_panels() -> None:
     for guild in bot.guilds:
-        try:
-            ok, message = await ensure_scheduling_panel_for_guild(bot, guild)
-            print(f"[Scheduling] {guild.name}: {message}")
-        except Exception as e:
-            print(f"[Scheduling] {guild.name}: failed - {e}")
+        for panel in PERMANENT_PANELS:
+            try:
+                _, message = await ensure_permanent_panel(bot, guild, panel)
+                print(f"[{panel.label}] {guild.name}: {message}")
+            except Exception as e:
+                print(f"[{panel.label}] {guild.name}: failed - {e}")
 
 
 async def _sync_application_commands() -> None:
@@ -114,15 +115,6 @@ async def _sync_guild_names() -> None:
             sync_guild_identity(guild.id, guild.name)
         except Exception as e:
             print(f"[Guild Sync] {guild.id}: failed to sync guild name - {e}")
-
-
-async def _ensure_weakauras_panels() -> None:
-    for guild in bot.guilds:
-        try:
-            ok, message = await ensure_weakauras_panel_for_guild(bot, guild)
-            print(f"[WA] {guild.name}: {message}")
-        except Exception as e:
-            print(f"[WA] {guild.name}: failed - {e}")
 
 
 @bot.event
@@ -175,8 +167,7 @@ async def on_ready():
     _register_persistent_views()
     await _sync_application_commands()
     await _sync_guild_names()
-    await _ensure_weakauras_panels()
-    await _ensure_scheduling_panels()
+    await _ensure_permanent_panels()
 
     try:
         await bot.change_presence(
