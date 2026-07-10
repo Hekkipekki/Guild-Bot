@@ -34,6 +34,7 @@ EXTENSIONS = [
     "cogs.scheduling",
     "cogs.warcraftlogs",
     "cogs.warcraftlogs_report_summary",
+    "cogs.warcraftlogs_player_performance",
 ]
 
 
