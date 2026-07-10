@@ -16,12 +16,30 @@ class GuildSettingsMigrationTests(unittest.TestCase):
         )
         self.assertEqual(migrated["hidden_weakaura_items"], [])
         self.assertEqual(migrated["raid_weekdays"], [2, 6])
+        self.assertIsNone(migrated["warcraftlogs_guild_id"])
+        self.assertEqual(migrated["warcraftlogs_region"], "eu")
+        self.assertEqual(migrated["warcraftlogs_raid_size"], 10)
+
+    def test_version_one_settings_are_upgraded_to_version_two(self):
+        migrated = migrate_guild_settings(
+            {
+                "config_version": 1,
+                "guild_name": "Existing Guild",
+            }
+        )
+
+        self.assertEqual(migrated["config_version"], 2)
+        self.assertEqual(migrated["guild_name"], "Existing Guild")
+        self.assertIsNone(migrated["warcraftlogs_guild_id"])
 
     def test_existing_values_and_unknown_keys_are_preserved(self):
         migrated = migrate_guild_settings(
             {
                 "raid_weekdays": [1, 4],
                 "hidden_weakaura_items": ["optional.example"],
+                "warcraftlogs_guild_id": 800007,
+                "warcraftlogs_region": "eu",
+                "warcraftlogs_raid_size": 10,
                 "future_custom_key": {"enabled": True},
             }
         )
@@ -30,6 +48,7 @@ class GuildSettingsMigrationTests(unittest.TestCase):
         self.assertEqual(
             migrated["hidden_weakaura_items"], ["optional.example"]
         )
+        self.assertEqual(migrated["warcraftlogs_guild_id"], 800007)
         self.assertEqual(migrated["future_custom_key"], {"enabled": True})
 
     def test_input_is_not_mutated(self):
