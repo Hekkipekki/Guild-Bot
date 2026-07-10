@@ -56,7 +56,7 @@ class WarcraftLogsRankingsService:
     def __init__(self, client: WarcraftLogsClient) -> None:
         self.client = client
         self._cache: dict[tuple[int, int], _CacheEntry] = {}
-        self._zone_rankings_args: set[str] | None = None
+        self._zone_ranking_args: set[str] | None = None
 
     async def get_guild_rankings(
         self,
@@ -78,19 +78,22 @@ class WarcraftLogsRankingsService:
         if not force_refresh and cached and now < cached.expires_at:
             return cached.result
 
-        supported_args = await self._get_zone_rankings_args()
+        supported_args = await self._get_zone_ranking_args()
         argument_parts: list[str] = []
         if "size" in supported_args:
             argument_parts.append(f"size: {clean_raid_size}")
         arguments = f"({', '.join(argument_parts)})" if argument_parts else ""
 
+        # The Classic API field is singular (`zoneRanking`). Alias it to the
+        # plural response key so existing parser code and cached payloads remain
+        # backward-compatible.
         query = f"""
         query GuildRankings {{
           guildData {{
             guild(id: {clean_guild_id}) {{
               id
               name
-              zoneRankings{arguments}
+              zoneRankings: zoneRanking{arguments}
             }}
           }}
         }}
@@ -125,31 +128,31 @@ class WarcraftLogsRankingsService:
         )
         return result
 
-    async def _get_zone_rankings_args(self) -> set[str]:
-        if self._zone_rankings_args is not None:
-            return self._zone_rankings_args
+    async def _get_zone_ranking_args(self) -> set[str]:
+        if self._zone_ranking_args is not None:
+            return self._zone_ranking_args
 
         try:
             data = await self.client.query(self._GUILD_TYPE_QUERY)
             type_block = data.get("__type")
             fields = type_block.get("fields", []) if isinstance(type_block, dict) else []
             for field in fields:
-                if not isinstance(field, dict) or field.get("name") != "zoneRankings":
+                if not isinstance(field, dict) or field.get("name") != "zoneRanking":
                     continue
                 args = field.get("args", [])
-                self._zone_rankings_args = {
+                self._zone_ranking_args = {
                     str(arg.get("name"))
                     for arg in args
                     if isinstance(arg, dict) and arg.get("name")
                 }
-                return self._zone_rankings_args
+                return self._zone_ranking_args
         except WarcraftLogsRequestError:
-            # Some GraphQL deployments disable introspection. The Classic schema
-            # currently supports size; use that as a conservative fallback.
+            # Some GraphQL deployments disable introspection. Size is the only
+            # optional argument needed by the current rankings command.
             pass
 
-        self._zone_rankings_args = {"size"}
-        return self._zone_rankings_args
+        self._zone_ranking_args = {"size"}
+        return self._zone_ranking_args
 
 
 def _extract_ranking_entries(value: Any) -> list[GuildRankingEntry]:
