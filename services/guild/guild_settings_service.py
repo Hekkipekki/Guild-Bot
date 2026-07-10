@@ -11,6 +11,8 @@ VALID_SIGNUP_THEMES = {
     "split_by_class": "Split by Class",
 }
 
+DEFAULT_RAID_WEEKDAYS = [2, 6]
+
 
 def _get_list_setting(guild_id: int, key: str) -> list[str]:
     settings = ensure_guild_settings(guild_id)
@@ -135,6 +137,47 @@ def set_weakauras_channel_id(guild_id: int, channel_id: int | None) -> None:
     update_guild_settings(guild_id, {"weakauras_channel_id": channel_id})
 
 
+def get_hidden_weakaura_items(guild_id: int) -> list[str]:
+    settings = ensure_guild_settings(guild_id)
+    values = settings.get("hidden_weakaura_items", [])
+    if not isinstance(values, list):
+        return []
+    return [str(value) for value in values]
+
+
+def set_hidden_weakaura_items(guild_id: int, item_keys: list[str]) -> None:
+    update_guild_settings(
+        guild_id,
+        {"hidden_weakaura_items": sorted({str(key) for key in item_keys if key})},
+    )
+
+
+def get_raid_weekdays(guild_id: int) -> list[int]:
+    settings = ensure_guild_settings(guild_id)
+    values = settings.get("raid_weekdays", DEFAULT_RAID_WEEKDAYS)
+    if not isinstance(values, list):
+        return list(DEFAULT_RAID_WEEKDAYS)
+
+    result: list[int] = []
+    for value in values:
+        try:
+            weekday = int(value)
+        except (TypeError, ValueError):
+            continue
+        if 0 <= weekday <= 6 and weekday not in result:
+            result.append(weekday)
+
+    return sorted(result) or list(DEFAULT_RAID_WEEKDAYS)
+
+
+def set_raid_weekdays(guild_id: int, weekdays: list[int]) -> bool:
+    cleaned = sorted({int(day) for day in weekdays if 0 <= int(day) <= 6})
+    if not cleaned:
+        return False
+    update_guild_settings(guild_id, {"raid_weekdays": cleaned})
+    return True
+
+
 def get_guild_defaults(guild_id: int) -> dict:
     settings = ensure_guild_settings(guild_id)
     signup_theme = get_signup_theme(guild_id)
@@ -148,7 +191,9 @@ def get_guild_defaults(guild_id: int) -> dict:
         "signup_theme": signup_theme,
         "signup_theme_label": get_signup_theme_label(signup_theme),
         "weakauras_channel_id": settings.get("weakauras_channel_id"),
+        "hidden_weakaura_items": get_hidden_weakaura_items(guild_id),
         "scheduling_channel_id": settings.get("scheduling_channel_id"),
+        "raid_weekdays": get_raid_weekdays(guild_id),
     }
 
 
@@ -167,6 +212,7 @@ def get_weakauras_message_id(guild_id: int) -> int | None:
 
 def set_weakauras_message_id(guild_id: int, message_id: int | None) -> None:
     update_guild_settings(guild_id, {"weakauras_message_id": message_id})
+
 
 def get_scheduling_channel_id(guild_id: int) -> int | None:
     settings = ensure_guild_settings(guild_id)
