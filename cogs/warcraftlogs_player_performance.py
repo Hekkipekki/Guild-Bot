@@ -17,9 +17,9 @@ from services.warcraftlogs.api_client import (
 from services.warcraftlogs.credentials import get_warcraftlogs_credentials
 from services.warcraftlogs.debug_service import build_debug_json_bytes
 from services.warcraftlogs.player_performance_service import (
-    WarcraftLogsPlayerPerformance,
     WarcraftLogsPlayerPerformanceResult,
     WarcraftLogsPlayerPerformanceService,
+    WarcraftLogsPlayerSummary,
 )
 from services.warcraftlogs.reports_service import WarcraftLogsReportsService
 from services.warcraftlogs.settings_service import get_warcraftlogs_settings
@@ -194,7 +194,8 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
             },
             response={
                 "fetched_at": result.fetched_at,
-                "normalized_players": result.players,
+                "normalized_rows": result.players,
+                "player_summaries": result.player_summaries,
                 "raw_rankings": result.raw_rankings,
             },
         )
@@ -233,7 +234,7 @@ def _build_players_embed(result: WarcraftLogsPlayerPerformanceResult) -> discord
         color=discord.Color.orange(),
     )
 
-    if not result.players:
+    if not result.player_summaries:
         embed.add_field(
             name="Players",
             value=(
@@ -243,12 +244,17 @@ def _build_players_embed(result: WarcraftLogsPlayerPerformanceResult) -> discord
             inline=False,
         )
     else:
-        lines = [_format_player(player) for player in result.players[:20]]
+        lines = [
+            _format_player_summary(player)
+            for player in result.player_summaries[:20]
+        ]
         embed.add_field(name="Players", value="\n".join(lines)[:1024], inline=False)
-        if len(result.players) > 20:
+        if len(result.player_summaries) > 20:
             embed.add_field(
                 name="More",
-                value=f"{len(result.players) - 20} additional player rows were omitted.",
+                value=(
+                    f"{len(result.player_summaries) - 20} additional players were omitted."
+                ),
                 inline=False,
             )
 
@@ -259,22 +265,24 @@ def _build_players_embed(result: WarcraftLogsPlayerPerformanceResult) -> discord
     return embed
 
 
-def _format_player(player: WarcraftLogsPlayerPerformance) -> str:
+def _format_player_summary(player: WarcraftLogsPlayerSummary) -> str:
     identity = player.name
-    if player.spec_name:
-        identity += f" ({player.spec_name})"
+    if player.primary_spec:
+        identity += f" ({player.primary_spec})"
 
     details: list[str] = []
-    if player.rank_percent is not None:
-        details.append(f"{player.rank_percent:.1f}")
-    if player.amount is not None:
-        details.append(f"{player.amount:,.0f}")
-    if player.item_level is not None:
-        details.append(f"ilvl {player.item_level:.0f}")
-    if player.encounter_name:
-        details.append(player.encounter_name)
+    if player.average_parse is not None:
+        details.append(f"avg {player.average_parse:.1f}")
+    if player.median_parse is not None:
+        details.append(f"median {player.median_parse:.1f}")
+    if player.best_parse is not None:
+        details.append(f"best {player.best_parse:.1f}")
+    details.append(
+        f"{player.encounter_count} ranked fight"
+        + ("s" if player.encounter_count != 1 else "")
+    )
 
-    return f"**{identity}** — {' • '.join(details) if details else 'No metrics'}"
+    return f"**{identity}** — {' • '.join(details)}"
 
 
 async def setup(bot: commands.Bot) -> None:
