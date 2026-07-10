@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import re
 from datetime import datetime, timezone
 
 import discord
@@ -14,59 +15,124 @@ from services.warcraftlogs.api_client import (
     WarcraftLogsConfigurationError,
     WarcraftLogsRequestError,
 )
+from services.warcraftlogs.character_performance_service import (
+    WarcraftLogsCharacterPerformanceService,
+)
 from services.warcraftlogs.credentials import get_warcraftlogs_credentials
 from services.warcraftlogs.debug_service import build_debug_json_bytes
+from services.warcraftlogs.player_performance_service import WarcraftLogsPlayerPerformanceService
+from services.warcraftlogs.recent_guild_rankings_service import (
+    RecentGuildRankingsResult,
+    WarcraftLogsRecentGuildRankingsService,
+)
 from services.warcraftlogs.report_leaderboard_service import (
     ReportLeaderboardResult,
     WarcraftLogsReportLeaderboardService,
 )
 from services.warcraftlogs.reports_service import WarcraftLogsReportsService
 from services.warcraftlogs.settings_service import get_warcraftlogs_settings
-
-
-LEADERBOARD_METRICS = [
-    app_commands.Choice(name="DPS", value="dps"),
-    app_commands.Choice(name="Avoidable DTPS", value="dtps"),
-]
+from views.warcraftlogs_player_view import WarcraftLogsPlayerView
 
 
 class WarcraftLogsReportLeaderboardCommands(commands.Cog):
-    """Report-level DPS and avoidable-DTPS leaderboards."""
+    """Recent guild rankings and avoidable-DTPS report analytics."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         client_id, client_secret = get_warcraftlogs_credentials()
         self.client = WarcraftLogsClient(client_id, client_secret)
         self.reports_service = WarcraftLogsReportsService(self.client)
-        self.leaderboard_service = WarcraftLogsReportLeaderboardService(self.client)
-        self.leaderboard_command = app_commands.Command(
-            name="leaderboard",
-            description="Show report DPS or avoidable damage-taken rankings.",
-            callback=self.leaderboard,
+        self.performance_service = WarcraftLogsPlayerPerformanceService(self.client)
+        self.character_service = WarcraftLogsCharacterPerformanceService(self.client)
+        self.recent_rankings_service = WarcraftLogsRecentGuildRankingsService(
+            self.reports_service,
+            self.performance_service,
         )
+        self.report_leaderboard_service = WarcraftLogsReportLeaderboardService(self.client)
+        self.rankings_group: app_commands.Group | None = None
         self.debug_leaderboard_command = app_commands.Command(
             name="debug-leaderboard",
-            description="DEV only: export report leaderboard event data.",
+            description="DEV only: export avoidable-DTPS event data.",
             callback=self.debug_leaderboard,
         )
 
     async def cog_unload(self) -> None:
         logs_group = self.bot.tree.get_command("logs")
         if isinstance(logs_group, app_commands.Group):
-            logs_group.remove_command("leaderboard")
+            logs_group.remove_command("rankings")
             logs_group.remove_command("debug-leaderboard")
         await self.client.close()
 
-    @app_commands.describe(
-        metric="DPS is higher-is-better; avoidable DTPS is lower-is-better.",
-        code="Optional Warcraft Logs report code; defaults to the latest guild report.",
-        refresh="Bypass report and leaderboard caches.",
-    )
-    @app_commands.choices(metric=LEADERBOARD_METRICS)
-    async def leaderboard(
+    async def dps_rankings(
         self,
         interaction: discord.Interaction,
-        metric: app_commands.Choice[str],
+        reports: int = 10,
+        refresh: bool = False,
+    ) -> None:
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "⚠ This command can only be used in a server.", ephemeral=True
+            )
+            return
+        settings = get_warcraftlogs_settings(guild.id)
+        if not settings.is_configured:
+            await interaction.response.send_message(
+                "⚠ Warcraft Logs is not configured. An administrator can run `/logs setup`.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.defer(thinking=True)
+        try:
+            result = await self.recent_rankings_service.get_recent_rankings(
+                settings.guild_id,
+                report_limit=max(1, min(reports, 20)),
+                force_refresh=refresh,
+            )
+            if not result.latest_report_code:
+                await interaction.followup.send(
+                    "⚠ Warcraft Logs returned no recent guild reports.", ephemeral=True
+                )
+                return
+            latest = await self.performance_service.get_report_player_performance(
+                result.latest_report_code,
+                force_refresh=refresh,
+            )
+        except (
+            WarcraftLogsConfigurationError,
+            WarcraftLogsAuthenticationError,
+            WarcraftLogsRequestError,
+            ValueError,
+        ) as exc:
+            await interaction.followup.send(
+                f"⚠ Warcraft Logs could not build recent rankings: `{exc}`",
+                ephemeral=True,
+            )
+            return
+        except Exception as exc:
+            await interaction.followup.send(
+                f"⚠ Unexpected rankings error: `{type(exc).__name__}: {exc}`",
+                ephemeral=True,
+            )
+            return
+
+        emojis = tuple(guild.emojis)
+        view = WarcraftLogsPlayerView(
+            latest,
+            owner_id=interaction.user.id,
+            character_service=self.character_service,
+            region=settings.region,
+            guild_emojis=emojis,
+        )
+        await interaction.followup.send(
+            embed=build_recent_rankings_embed(result, emojis),
+            view=view,
+        )
+
+    async def dtps_rankings(
+        self,
+        interaction: discord.Interaction,
         code: str | None = None,
         refresh: bool = False,
     ) -> None:
@@ -76,12 +142,10 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
                 "⚠ This command can only be used in a server.", ephemeral=True
             )
             return
-
         settings = get_warcraftlogs_settings(guild.id)
         if not settings.is_configured:
             await interaction.response.send_message(
-                "⚠ Warcraft Logs is not configured for this server. "
-                "An administrator can run `/logs setup`.",
+                "⚠ Warcraft Logs is not configured. An administrator can run `/logs setup`.",
                 ephemeral=True,
             )
             return
@@ -95,45 +159,34 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
             )
             if selected_code is None:
                 await interaction.followup.send(
-                    "⚠ Warcraft Logs returned no recent reports for this guild.",
-                    ephemeral=True,
+                    "⚠ Warcraft Logs returned no recent guild reports.", ephemeral=True
                 )
                 return
-            result = await self.leaderboard_service.get_leaderboard(
+            result = await self.report_leaderboard_service.get_leaderboard(
                 selected_code,
-                metric.value,
+                "dtps",
                 force_refresh=refresh,
             )
-        except WarcraftLogsConfigurationError:
+        except (
+            WarcraftLogsConfigurationError,
+            WarcraftLogsAuthenticationError,
+            WarcraftLogsRequestError,
+            ValueError,
+        ) as exc:
             await interaction.followup.send(
-                "⚠ Warcraft Logs API credentials are missing from the bot configuration.",
-                ephemeral=True,
-            )
-            return
-        except WarcraftLogsAuthenticationError:
-            await interaction.followup.send(
-                "⚠ Warcraft Logs authentication failed. Check the Client ID and Secret.",
-                ephemeral=True,
-            )
-            return
-        except (WarcraftLogsRequestError, ValueError) as exc:
-            await interaction.followup.send(
-                f"⚠ Warcraft Logs could not build that leaderboard: `{exc}`",
+                f"⚠ Warcraft Logs could not build avoidable DTPS: `{exc}`",
                 ephemeral=True,
             )
             return
         except Exception as exc:
             await interaction.followup.send(
-                f"⚠ Unexpected leaderboard error: `{type(exc).__name__}: {exc}`",
+                f"⚠ Unexpected DTPS error: `{type(exc).__name__}: {exc}`",
                 ephemeral=True,
             )
             return
 
-        await interaction.followup.send(embed=build_report_leaderboard_embed(result))
+        await interaction.followup.send(embed=build_dtps_embed(result))
 
-    @app_commands.describe(
-        code="Optional Warcraft Logs report code; defaults to the latest guild report.",
-    )
     async def debug_leaderboard(
         self,
         interaction: discord.Interaction,
@@ -146,22 +199,17 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
             )
             return
         guild = interaction.guild
-        if guild is None:
+        if guild is None or not getattr(
+            interaction.user.guild_permissions, "administrator", False
+        ):
             await interaction.response.send_message(
-                "⚠ This command can only be used in a server.", ephemeral=True
+                "⛔ This DEV export requires a server administrator.", ephemeral=True
             )
             return
-        if not getattr(interaction.user.guild_permissions, "administrator", False):
-            await interaction.response.send_message(
-                "⛔ You must be a server administrator to export debug data.",
-                ephemeral=True,
-            )
-            return
-
         settings = get_warcraftlogs_settings(guild.id)
         if not settings.is_configured:
             await interaction.response.send_message(
-                "⚠ Warcraft Logs is not configured for this server.", ephemeral=True
+                "⚠ Warcraft Logs is not configured.", ephemeral=True
             )
             return
 
@@ -173,12 +221,8 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
                 refresh=True,
             )
             if selected_code is None:
-                await interaction.followup.send(
-                    "⚠ Warcraft Logs returned no recent reports for this guild.",
-                    ephemeral=True,
-                )
-                return
-            result = await self.leaderboard_service.get_leaderboard(
+                raise ValueError("No recent report was found.")
+            result = await self.report_leaderboard_service.get_leaderboard(
                 selected_code,
                 "dtps",
                 force_refresh=True,
@@ -206,13 +250,12 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
                 "raw_event_pages": result.raw_event_pages,
             },
         )
-        file = discord.File(
-            io.BytesIO(debug_bytes),
-            filename=f"warcraftlogs-dtps-{selected_code}.json",
-        )
         await interaction.followup.send(
             "🧪 DEV_MODE avoidable-DTPS export. Credential-like fields were redacted.",
-            file=file,
+            file=discord.File(
+                io.BytesIO(debug_bytes),
+                filename=f"warcraftlogs-dtps-{selected_code}.json",
+            ),
             ephemeral=True,
         )
 
@@ -234,71 +277,143 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
         return reports.reports[0].code if reports.reports else None
 
 
-def build_report_leaderboard_embed(result: ReportLeaderboardResult) -> discord.Embed:
-    if result.metric == "dps":
-        title = f"{result.report_title} — DPS Leaderboard"
-        description = f"[Open report]({result.url})\nHigher is better."
-    else:
-        title = f"{result.report_title} — Avoidable DTPS"
-        description = (
-            f"[Open report]({result.url})\n"
-            "Only explicitly configured avoidable mechanics count. Lower is better."
-        )
-
+def build_recent_rankings_embed(
+    result: RecentGuildRankingsResult,
+    guild_emojis: tuple[discord.Emoji, ...],
+) -> discord.Embed:
     embed = discord.Embed(
-        title=title[:256],
-        description=description,
+        title="Recent Guild Rankings",
+        description=(
+            f"Best parse across the latest **{len(result.report_codes)}** guild reports.\n"
+            "Tanks and DPS use damage parses; healers use healing parses."
+        ),
         color=discord.Color.orange(),
     )
-
-    if result.metric == "dps":
-        lines = []
-        for position, entry in enumerate(result.dps_entries[:20], start=1):
+    for role, label in (
+        ("Tank", "🛡 Tanks — DPS"),
+        ("Healer", "💚 Healers — HPS"),
+        ("DPS", "⚔ DPS — DPS"),
+    ):
+        role_entries = [entry for entry in result.entries if entry.role_category == role]
+        lines: list[str] = []
+        for position, entry in enumerate(role_entries[:20], start=1):
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(position, f"**{position}.**")
+            emoji = _find_emoji(entry.spec_name, entry.class_name, guild_emojis)
+            icon = f"{emoji} " if emoji else ""
             spec = f" ({entry.spec_name})" if entry.spec_name else ""
+            parse = "—" if entry.best_parse is None else f"{entry.best_parse:.1f}"
             lines.append(
-                f"**{position}. {entry.name}**{spec} — "
-                f"{entry.dps:,.0f} DPS • {entry.ranked_fights} ranked fights"
+                f"{medal} {icon}**{entry.name}**{spec} — Best **{parse}**"
             )
         embed.add_field(
-            name="Damage Dealers",
-            value="\n".join(lines)[:1024] if lines else "No DPS rows were available.",
+            name=label,
+            value="\n".join(lines)[:1024] if lines else "No ranked players.",
             inline=False,
         )
-    else:
-        lines = []
-        for position, entry in enumerate(result.dtps_entries[:20], start=1):
-            lines.append(
-                f"**{position}. {entry.name}** — {entry.dtps:,.1f} DTPS • "
-                f"{entry.total_avoidable_damage:,.0f} damage • {entry.hit_count} hits"
-            )
-        embed.add_field(
-            name="Avoidable damage ranking",
-            value="\n".join(lines)[:1024] if lines else "No configured avoidable damage was found.",
-            inline=False,
-        )
-        included = ", ".join(result.covered_bosses) or "None"
-        embed.add_field(name="Included bosses", value=included[:1024], inline=False)
-        if result.excluded_bosses:
-            embed.add_field(
-                name="Not yet covered",
-                value=", ".join(result.excluded_bosses)[:1024],
-                inline=False,
-            )
-
     fetched = datetime.fromtimestamp(result.fetched_at, tz=timezone.utc)
     embed.set_footer(
-        text=f"Report {result.report_code} • Fetched {fetched.strftime('%Y-%m-%d %H:%M UTC')}"
+        text=(
+            f"Latest report: {result.latest_report_title or 'Unknown'} • "
+            f"Fetched {fetched.strftime('%Y-%m-%d %H:%M UTC')}"
+        )
     )
     return embed
+
+
+def build_dtps_embed(result: ReportLeaderboardResult) -> discord.Embed:
+    embed = discord.Embed(
+        title=f"{result.report_title} — Avoidable DTPS"[:256],
+        description=(
+            f"[Open report]({result.url})\n"
+            "Only configured avoidable mechanics count. Lower is better."
+        ),
+        color=discord.Color.orange(),
+    )
+    lines = [
+        f"**{position}. {entry.name}** — {entry.dtps:,.1f} DTPS • "
+        f"{entry.total_avoidable_damage:,.0f} damage • {entry.hit_count} hits"
+        for position, entry in enumerate(result.dtps_entries[:20], start=1)
+    ]
+    embed.add_field(
+        name="Avoidable damage ranking",
+        value="\n".join(lines)[:1024] if lines else "No configured avoidable damage was found.",
+        inline=False,
+    )
+    embed.add_field(
+        name="Included bosses",
+        value=(", ".join(result.covered_bosses) or "None")[:1024],
+        inline=False,
+    )
+    if result.excluded_bosses:
+        embed.add_field(
+            name="Not yet covered",
+            value=", ".join(result.excluded_bosses)[:1024],
+            inline=False,
+        )
+    return embed
+
+
+def _find_emoji(
+    spec_name: str | None,
+    class_name: str | None,
+    emojis: tuple[discord.Emoji, ...],
+) -> discord.Emoji | None:
+    wanted = {
+        _normalize_name(value)
+        for value in (spec_name, class_name)
+        if value
+    }
+    for emoji in emojis:
+        name = _normalize_name(emoji.name)
+        if name in wanted or any(value and value in name for value in wanted):
+            return emoji
+    return None
+
+
+def _normalize_name(value: str | None) -> str:
+    return re.sub(r"[^a-z0-9]+", "", str(value or "").casefold())
 
 
 async def setup(bot: commands.Bot) -> None:
     logs_group = bot.tree.get_command("logs")
     if not isinstance(logs_group, app_commands.Group):
-        raise RuntimeError("The Warcraft Logs command group must load before leaderboards.")
+        raise RuntimeError("The Warcraft Logs command group must load before rankings.")
+
+    existing = logs_group.get_command("rankings")
+    if existing is None:
+        raise RuntimeError("The existing guild rankings command was not found.")
+    guild_callback = existing.callback
+    logs_group.remove_command("rankings")
 
     cog = WarcraftLogsReportLeaderboardCommands(bot)
     await bot.add_cog(cog)
-    logs_group.add_command(cog.leaderboard_command)
+
+    rankings_group = app_commands.Group(
+        name="rankings",
+        description="Guild, DPS/HPS, and avoidable-DTPS rankings.",
+    )
+    rankings_group.add_command(
+        app_commands.Command(
+            name="guild",
+            description="Show guild world, region, and realm rankings.",
+            callback=guild_callback,
+        )
+    )
+    rankings_group.add_command(
+        app_commands.Command(
+            name="dps",
+            description="Show recent role-based player rankings.",
+            callback=cog.dps_rankings,
+        )
+    )
+    rankings_group.add_command(
+        app_commands.Command(
+            name="dtps",
+            description="Show avoidable damage taken per second for a report.",
+            callback=cog.dtps_rankings,
+        )
+    )
+    cog.rankings_group = rankings_group
+    logs_group.add_command(rankings_group)
     if bool(config.DEV_MODE):
         logs_group.add_command(cog.debug_leaderboard_command)
