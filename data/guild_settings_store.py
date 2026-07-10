@@ -29,6 +29,9 @@ DEFAULT_GUILD_SETTINGS = {
     "scheduling_channel_id": None,
     "scheduling_message_id": None,
     "raid_weekdays": [2, 6],
+    "warcraftlogs_guild_id": None,
+    "warcraftlogs_region": "eu",
+    "warcraftlogs_raid_size": 10,
 }
 
 
@@ -70,6 +73,21 @@ def _normalize_guild_block(block: dict[str, Any]) -> dict[str, Any]:
     normalized["hidden_weakaura_items"] = sorted(
         {str(item) for item in hidden_items if item}
     )
+
+    guild_id = normalized.get("warcraftlogs_guild_id")
+    try:
+        normalized["warcraftlogs_guild_id"] = int(guild_id) if guild_id else None
+    except (TypeError, ValueError):
+        normalized["warcraftlogs_guild_id"] = None
+
+    region = str(normalized.get("warcraftlogs_region", "eu") or "eu").lower()
+    normalized["warcraftlogs_region"] = region if region in {"us", "eu", "kr", "tw", "cn"} else "eu"
+
+    try:
+        raid_size = int(normalized.get("warcraftlogs_raid_size", 10))
+    except (TypeError, ValueError):
+        raid_size = 10
+    normalized["warcraftlogs_raid_size"] = raid_size if raid_size in {10, 25} else 10
 
     return normalized
 
