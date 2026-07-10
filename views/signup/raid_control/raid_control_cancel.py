@@ -4,7 +4,7 @@ import traceback
 
 import discord
 
-from services.raid.raid_cancel_service import cancel_signup_raid
+from services.raid.raid_cancel_guard_service import cancel_signup_raid_with_guard
 
 from utils.panel_helpers import send_panel_error, close_panel
 from utils.ui_timing import RAID_CONTROL_AUTO_DELETE_SECONDS
@@ -16,7 +16,7 @@ async def handle_cancel_raid(
     raid_id: str,
 ):
     try:
-        ok, message = await cancel_signup_raid(
+        ok, message = await cancel_signup_raid_with_guard(
             bot=interaction.client,
             raid_id=str(raid_id),
             cancel_message="Raid has been cancelled.",

@@ -16,6 +16,68 @@ from services.reminder.reminder_service import (
 )
 
 
+INACTIVE_SIGNUP_STATUSES = {
+    "cancelled",
+    "canceled",
+    "cancelled",
+    "closed",
+    "inactive",
+    "paused",
+    "pause",
+    "archived",
+    "deleted",
+}
+
+
+def _is_falsey_flag(value) -> bool:
+    return value is False or str(value).lower() in {"false", "0", "no", "off"}
+
+
+def _is_truthy_flag(value) -> bool:
+    return value is True or str(value).lower() in {"true", "1", "yes", "on"}
+
+
+def _is_signup_marked_inactive(signup: dict) -> bool:
+    """
+    Defensive guard for the different ways a raid can be made inactive.
+    Existing data may use either explicit booleans or a status/state string.
+    """
+    if _is_falsey_flag(signup.get("is_active")):
+        return True
+
+    if _is_falsey_flag(signup.get("active")):
+        return True
+
+    if _is_falsey_flag(signup.get("reminders_enabled")):
+        return True
+
+    for key in ("is_cancelled", "is_canceled", "cancelled", "canceled"):
+        if _is_truthy_flag(signup.get(key)):
+            return True
+
+    status = str(signup.get("status") or signup.get("state") or "").lower()
+    return status in INACTIVE_SIGNUP_STATUSES
+
+
+def _is_signup_paused(signup: dict, now_ts: int) -> bool:
+    pause_until_ts = signup.get("recurring_pause_until_ts")
+
+    if not isinstance(pause_until_ts, int):
+        return False
+
+    return now_ts < pause_until_ts
+
+
+def _is_signup_eligible_for_reminders(signup: dict, now_ts: int) -> bool:
+    if _is_signup_marked_inactive(signup):
+        return False
+
+    if _is_signup_paused(signup, now_ts):
+        return False
+
+    return True
+
+
 async def _fetch_channel(bot, channel_id: int):
     channel = bot.get_channel(channel_id)
     if channel is not None:
@@ -27,7 +89,7 @@ async def _fetch_channel(bot, channel_id: int):
         return None
 
 
-async def _fetch_message(channel, message_id: int | None):
+async def _fetch_message(channel, message_id: int | str | None):
     if not message_id:
         return None
 
@@ -37,7 +99,7 @@ async def _fetch_message(channel, message_id: int | None):
         return None
 
 
-async def _delete_message_if_exists(channel, message_id: int | None) -> bool:
+async def _delete_message_if_exists(channel, message_id: int | str | None) -> bool:
     msg = await _fetch_message(channel, message_id)
     if msg is None:
         return False
@@ -49,9 +111,25 @@ async def _delete_message_if_exists(channel, message_id: int | None) -> bool:
         return False
 
 
+async def _delete_stored_reminders(channel, signup: dict) -> bool:
+    changed = False
+
+    for key in ("missing_reminder_message_id", "signed_reminder_message_id"):
+        message_id = signup.get(key)
+
+        if not message_id:
+            continue
+
+        await _delete_message_if_exists(channel, message_id)
+        signup[key] = None
+        changed = True
+
+    return changed
+
+
 async def _replace_message(
     channel,
-    old_message_id: int | None,
+    old_message_id: int | str | None,
     content: str,
 ) -> int | None:
     """
@@ -108,6 +186,19 @@ class ReminderCog(commands.Cog):
                 except Exception:
                     continue
 
+            # Do not keep reminder messages alive for paused/cancelled/disabled raids.
+            if not _is_signup_eligible_for_reminders(signup, now):
+                if await _delete_stored_reminders(channel, signup):
+                    changed = True
+                continue
+
+            # If the original signup message is gone, the raid is no longer "up".
+            # Clear any lingering reminder messages and do not send new ones.
+            if await _fetch_message(channel, raid_id) is None:
+                if await _delete_stored_reminders(channel, signup):
+                    changed = True
+                continue
+
             missing_reminders_sent = ensure_missing_signup_reminder_state(signup)
             signed_reminders_sent = ensure_signed_player_reminder_state(signup)
             title = get_signup_title(signup)
@@ -120,6 +211,8 @@ class ReminderCog(commands.Cog):
             # Once a comp has been posted / attendance has been created,
             # stop all signup reminder handling for this raid.
             if comp_message_id or signup.get("attendance_snapshot_created"):
+                if await _delete_stored_reminders(channel, signup):
+                    changed = True
                 continue
 
             # -------------------------
