@@ -158,6 +158,28 @@ class PlayerPerformanceAggregationTests(unittest.TestCase):
         self.assertEqual(alpha.average_item_level, 561.0)
         self.assertEqual(alpha.encounter_count, 2)
         self.assertEqual(alpha.parse_count, 2)
+        self.assertEqual(alpha.parse_stddev, 4.0)
+        self.assertEqual(alpha.role_category, "DPS")
+        self.assertEqual(summaries[1].role_category, "Healer")
+
+    def test_infers_role_from_spec_when_api_role_is_missing(self):
+        rows = (
+            WarcraftLogsPlayerPerformance(
+                "Tank", None, "Druid", "Guardian", None, 1000, 80, None, "Boss"
+            ),
+            WarcraftLogsPlayerPerformance(
+                "Healer", None, "Paladin", "Holy", None, 900, 75, None, "Boss"
+            ),
+            WarcraftLogsPlayerPerformance(
+                "Damage", None, "Mage", "Arcane", None, 1200, 90, None, "Boss"
+            ),
+        )
+
+        summaries = {summary.name: summary for summary in aggregate_player_performance(rows)}
+
+        self.assertEqual(summaries["Tank"].role_category, "Tank")
+        self.assertEqual(summaries["Healer"].role_category, "Healer")
+        self.assertEqual(summaries["Damage"].role_category, "DPS")
 
     def test_groups_character_names_case_insensitively(self):
         rows = (
@@ -193,6 +215,7 @@ class PlayerPerformanceServiceTests(unittest.IsolatedAsyncioTestCase):
         playerone = result.player_summaries[1]
         self.assertEqual(playerone.average_parse, 90.0)
         self.assertEqual(playerone.encounter_count, 2)
+        self.assertAlmostEqual(playerone.parse_stddev, 7.4)
         self.assertEqual(
             result.url,
             "https://classic.warcraftlogs.com/reports/ABC123",
