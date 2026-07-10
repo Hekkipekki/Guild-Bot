@@ -28,7 +28,11 @@ class FakeClient:
                     "fields": [
                         {
                             "name": "zoneRanking",
-                            "args": [{"name": "size", "type": {"kind": "SCALAR"}}],
+                            "args": [
+                                {"name": "size", "type": {"kind": "SCALAR"}},
+                                {"name": "encounterID", "type": {"kind": "SCALAR"}},
+                                {"name": "recent", "type": {"kind": "SCALAR"}},
+                            ],
                         }
                     ]
                 }
@@ -72,6 +76,32 @@ class WarcraftLogsRankingsServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("size: 10", client.queries[-1])
         self.assertIn("zoneName", client.queries[-1])
         self.assertIn("rankings", client.queries[-1])
+
+    async def test_applies_boss_and_recent_filters(self):
+        client = FakeClient()
+        service = WarcraftLogsRankingsService(client)
+
+        result = await service.get_guild_rankings(
+            800007,
+            raid_size=10,
+            boss_id=51602,
+            recent=True,
+        )
+
+        query = client.queries[-1]
+        self.assertIn("encounterID: 51602", query)
+        self.assertIn("recent: true", query)
+        self.assertEqual(result.boss_id, 51602)
+        self.assertTrue(result.recent)
+
+    async def test_filters_have_separate_cache_entries(self):
+        client = FakeClient()
+        service = WarcraftLogsRankingsService(client)
+
+        await service.get_guild_rankings(800007, boss_id=51602)
+        await service.get_guild_rankings(800007, boss_id=51603)
+
+        self.assertEqual(len(client.queries), 4)
 
     async def test_force_refresh_bypasses_cache_but_reuses_schema(self):
         client = FakeClient()
