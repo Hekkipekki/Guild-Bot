@@ -33,6 +33,7 @@ EXTENSIONS = [
     "cogs.help",
     "cogs.scheduling",
     "cogs.warcraftlogs",
+    "cogs.warcraftlogs_report_summary",
 ]
 
 
@@ -137,7 +138,7 @@ async def on_guild_join(guild: discord.Guild):
             "• **Raid team** *(optional)*\n\n"
             "⚔️ __**Create raids**__\n"
             "After setup, use `/raid` to create raid signups.\n\n"
-            "📖 __**Need help?**__\n"
+            "📖 __**Need help?**\n"
             "Use `/help` to open the help panel."
         ),
         color=discord.Color.purple(),
@@ -145,7 +146,6 @@ async def on_guild_join(guild: discord.Guild):
     embed.set_footer(text="Guild Raid Bot setup")
 
     me = guild.me
-
     channel = guild.system_channel
     if channel and me and channel.permissions_for(me).send_messages:
         try:
