@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-from datetime import datetime, timezone
 
 import discord
 from discord import app_commands
@@ -17,12 +16,14 @@ from services.warcraftlogs.api_client import (
 from services.warcraftlogs.credentials import get_warcraftlogs_credentials
 from services.warcraftlogs.debug_service import build_debug_json_bytes
 from services.warcraftlogs.player_performance_service import (
-    WarcraftLogsPlayerPerformanceResult,
     WarcraftLogsPlayerPerformanceService,
-    WarcraftLogsPlayerSummary,
 )
 from services.warcraftlogs.reports_service import WarcraftLogsReportsService
 from services.warcraftlogs.settings_service import get_warcraftlogs_settings
+from views.warcraftlogs_player_view import (
+    WarcraftLogsPlayerView,
+    build_player_leaderboard_embed,
+)
 
 
 class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
@@ -36,7 +37,7 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
         self.performance_service = WarcraftLogsPlayerPerformanceService(self.client)
         self.players_command = app_commands.Command(
             name="players",
-            description="Show player performance from the latest or a selected report.",
+            description="Browse player performance from the latest or a selected report.",
             callback=self.players,
         )
         self.debug_performance_command = app_commands.Command(
@@ -116,7 +117,11 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
             )
             return
 
-        await interaction.followup.send(embed=_build_players_embed(result))
+        view = WarcraftLogsPlayerView(result, owner_id=interaction.user.id)
+        await interaction.followup.send(
+            embed=build_player_leaderboard_embed(result),
+            view=view,
+        )
 
     async def debug_performance(
         self,
@@ -225,64 +230,6 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
             force_refresh=refresh,
         )
         return reports.reports[0].code if reports.reports else None
-
-
-def _build_players_embed(result: WarcraftLogsPlayerPerformanceResult) -> discord.Embed:
-    embed = discord.Embed(
-        title=f"{result.report_title} — Player Performance"[:256],
-        description=f"[Open report]({result.url})",
-        color=discord.Color.orange(),
-    )
-
-    if not result.player_summaries:
-        embed.add_field(
-            name="Players",
-            value=(
-                "Warcraft Logs returned a rankings payload, but no player rows could "
-                "be normalized yet. Use `/logs debug-performance` in DEV_MODE."
-            ),
-            inline=False,
-        )
-    else:
-        lines = [
-            _format_player_summary(player)
-            for player in result.player_summaries[:20]
-        ]
-        embed.add_field(name="Players", value="\n".join(lines)[:1024], inline=False)
-        if len(result.player_summaries) > 20:
-            embed.add_field(
-                name="More",
-                value=(
-                    f"{len(result.player_summaries) - 20} additional players were omitted."
-                ),
-                inline=False,
-            )
-
-    fetched = datetime.fromtimestamp(result.fetched_at, tz=timezone.utc)
-    embed.set_footer(
-        text=f"Report {result.report_code} • Fetched {fetched.strftime('%Y-%m-%d %H:%M UTC')}"
-    )
-    return embed
-
-
-def _format_player_summary(player: WarcraftLogsPlayerSummary) -> str:
-    identity = player.name
-    if player.primary_spec:
-        identity += f" ({player.primary_spec})"
-
-    details: list[str] = []
-    if player.average_parse is not None:
-        details.append(f"avg {player.average_parse:.1f}")
-    if player.median_parse is not None:
-        details.append(f"median {player.median_parse:.1f}")
-    if player.best_parse is not None:
-        details.append(f"best {player.best_parse:.1f}")
-    details.append(
-        f"{player.encounter_count} ranked fight"
-        + ("s" if player.encounter_count != 1 else "")
-    )
-
-    return f"**{identity}** — {' • '.join(details)}"
 
 
 async def setup(bot: commands.Bot) -> None:
