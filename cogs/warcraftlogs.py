@@ -103,10 +103,19 @@ class WarcraftLogsCommands(commands.Cog):
         )
 
     @logs.command(name="rankings", description="Show the latest configured guild rankings.")
-    @app_commands.describe(refresh="Bypass the ten-minute rankings cache.")
+    @app_commands.describe(
+        raid_size="Override the configured raid size for this request.",
+        boss_id="Optional boss ID from the Warcraft Logs rankings URL.",
+        recent="Only include recent raiders when supported by Warcraft Logs.",
+        refresh="Bypass the ten-minute rankings cache.",
+    )
+    @app_commands.choices(raid_size=RAID_SIZE_CHOICES)
     async def rankings(
         self,
         interaction: discord.Interaction,
+        raid_size: app_commands.Choice[int] | None = None,
+        boss_id: int | None = None,
+        recent: bool = False,
         refresh: bool = False,
     ) -> None:
         guild = interaction.guild
@@ -126,12 +135,15 @@ class WarcraftLogsCommands(commands.Cog):
             )
             return
 
+        selected_size = raid_size.value if raid_size is not None else settings.raid_size
         await interaction.response.defer(thinking=True)
 
         try:
             result = await self.rankings_service.get_guild_rankings(
                 settings.guild_id,
-                raid_size=settings.raid_size,
+                raid_size=selected_size,
+                boss_id=boss_id,
+                recent=recent,
                 force_refresh=refresh,
             )
         except WarcraftLogsConfigurationError:
@@ -167,9 +179,15 @@ def _build_rankings_embed(
     region: str,
 ) -> discord.Embed:
     zone_label = result.zone_name or "Latest raid zone"
+    filters = [f"{result.raid_size}-player", region.upper()]
+    if result.boss_id is not None:
+        filters.append(f"Boss {result.boss_id}")
+    if result.recent:
+        filters.append("Recent raiders")
+
     embed = discord.Embed(
         title=f"{result.guild_name} — Guild Rankings",
-        description=f"{zone_label} • {result.raid_size}-player • {region.upper()}",
+        description=f"{zone_label} • {' • '.join(filters)}",
         color=discord.Color.orange(),
     )
 
