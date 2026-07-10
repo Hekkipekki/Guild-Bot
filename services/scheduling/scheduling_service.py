@@ -5,24 +5,35 @@ from datetime import date, timedelta
 import discord
 
 from data.scheduling_store import load_scheduling, save_scheduling, get_panel
+from services.guild.guild_settings_service import get_raid_weekdays
 
 
-RAID_WEEKDAYS = {
+WEEKDAY_LABELS = {
+    0: "Mon",
+    1: "Tue",
     2: "Wed",
+    3: "Thu",
+    4: "Fri",
+    5: "Sat",
     6: "Sun",
 }
 
 
-def get_raid_dates_ahead(weeks: int = 4, min_days_ahead: int = 7) -> list[date]:
+def get_raid_dates_ahead(
+    guild_id: int | str,
+    weeks: int = 4,
+    min_days_ahead: int = 7,
+) -> list[date]:
     today = date.today()
     start_date = today + timedelta(days=min_days_ahead)
     end_date = today + timedelta(weeks=weeks)
+    raid_weekdays = set(get_raid_weekdays(int(guild_id)))
 
     days: list[date] = []
     current = start_date
 
     while current <= end_date:
-        if current.weekday() in RAID_WEEKDAYS:
+        if current.weekday() in raid_weekdays:
             days.append(current)
         current += timedelta(days=1)
 
@@ -36,22 +47,24 @@ def build_absence_options(
 ) -> list[discord.SelectOption]:
     selected_dates = set()
 
-    if guild_id is not None and panel_id is not None and user_id is not None:
+    if guild_id is None:
+        return []
+
+    if panel_id is not None and user_id is not None:
         data = load_scheduling(guild_id)
         panel = get_panel(data, panel_id)
 
         if panel:
             absences = panel.get("absences", {})
             user_id = str(user_id)
-
             for date_iso, players in absences.items():
                 if user_id in players:
                     selected_dates.add(date_iso)
 
     options: list[discord.SelectOption] = []
 
-    for raid_date in get_raid_dates_ahead():
-        weekday = RAID_WEEKDAYS[raid_date.weekday()]
+    for raid_date in get_raid_dates_ahead(guild_id):
+        weekday = WEEKDAY_LABELS[raid_date.weekday()]
         iso_week = raid_date.isocalendar().week
         value = raid_date.isoformat()
 
@@ -85,10 +98,8 @@ def create_scheduling_panel(guild_id: int | str, channel_id: int | str) -> str:
 def set_panel_message_id(guild_id: int | str, panel_id: str, message_id: int | str) -> None:
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
-
     if not panel:
         return
-
     panel["message_id"] = str(message_id)
     save_scheduling(guild_id, data)
 
@@ -104,19 +115,17 @@ def add_absence(
 ) -> bool:
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
-
     if not panel:
         return False
 
     absences = panel.setdefault("absences", {})
     user_id = str(user_id)
     reason = reason.strip()
-    visible_dates = {d.isoformat() for d in get_raid_dates_ahead()}
+    visible_dates = {d.isoformat() for d in get_raid_dates_ahead(guild_id)}
 
     for date_iso in list(absences.keys()):
         if date_iso in visible_dates:
             absences[date_iso].pop(user_id, None)
-
             if not absences[date_iso]:
                 del absences[date_iso]
 
@@ -134,7 +143,6 @@ def add_absence(
 def clear_old_absences(guild_id: int | str, panel_id: str) -> int:
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
-
     if not panel:
         return 0
 
@@ -157,25 +165,24 @@ def _format_absence_entry(user_id: str, entry: dict) -> str:
     return f"{name} — {reason}"
 
 
-def _get_week_raid_marker(raid_date: date) -> str:
-    if raid_date.weekday() == 2:
-        return ":one:"
+def _get_week_raid_marker(raid_date: date, guild_id: int | str) -> str:
+    raid_weekdays = get_raid_weekdays(int(guild_id))
+    try:
+        position = raid_weekdays.index(raid_date.weekday())
+    except ValueError:
+        return "•"
 
-    if raid_date.weekday() == 6:
-        return ":two:"
-
-    return "•"
+    number_emojis = [":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:"]
+    return number_emojis[position]
 
 
 def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
-
     if not panel:
         return "Scheduling panel not found."
 
     absences = panel.get("absences", {})
-
     lines = [
         "# Raid Scheduling",
         "",
@@ -192,15 +199,14 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
 
     current_week = None
 
-    for raid_date in get_raid_dates_ahead():
+    for raid_date in get_raid_dates_ahead(guild_id):
         date_iso = raid_date.isoformat()
-        weekday = RAID_WEEKDAYS[raid_date.weekday()]
+        weekday = WEEKDAY_LABELS[raid_date.weekday()]
         iso_week = raid_date.isocalendar().week
 
         if iso_week != current_week:
             if current_week is None:
                 lines.append("")
-
             current_week = iso_week
             lines.append(f"## Week {iso_week}")
         else:
@@ -212,7 +218,7 @@ def build_scheduling_content(guild_id: int | str, panel_id: str) -> str:
             for user_id, entry in players.items()
         )
 
-        marker = _get_week_raid_marker(raid_date)
+        marker = _get_week_raid_marker(raid_date, guild_id)
         lines.append(f"{marker} **{weekday} {raid_date.strftime('%d/%m')}**")
 
         if absence_entries:
@@ -229,29 +235,24 @@ async def refresh_scheduling_message(client, guild_id: int | str, panel_id: str)
 
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
-
     if not panel:
         return False, "Scheduling panel not found."
 
     clear_old_absences(guild_id, panel_id)
     data = load_scheduling(guild_id)
     panel = get_panel(data, panel_id)
-
     if not panel:
         return False, "Scheduling panel not found."
 
     channel_id = panel.get("channel_id")
     message_id = panel.get("message_id")
-
     if not channel_id or not message_id:
         return False, "Scheduling message missing channel or message id."
 
     channel = client.get_channel(int(channel_id)) or await client.fetch_channel(int(channel_id))
     message = await channel.fetch_message(int(message_id))
-
     await message.edit(
         content=build_scheduling_content(guild_id, panel_id),
         view=SchedulingMessageView(panel_id),
     )
-
     return True, "Scheduling updated."
