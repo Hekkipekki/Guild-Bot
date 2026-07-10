@@ -4,7 +4,7 @@ import statistics
 import time
 from collections import Counter
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
 
 from services.warcraftlogs.api_client import WarcraftLogsClient, WarcraftLogsRequestError
 
@@ -22,6 +22,29 @@ _HEALER_SPECS = {
     "holy",
     "mistweaver",
     "restoration",
+}
+_ENCOUNTER_CONTAINER_KEYS = {
+    "roles",
+    "rankings",
+    "players",
+    "entries",
+    "specs",
+    "classes",
+}
+_PERFORMANCE_VALUE_KEYS = {
+    "rankPercent",
+    "rankPercentage",
+    "percentile",
+    "historicalPercent",
+    "todayPercent",
+    "amount",
+    "total",
+    "dps",
+    "hps",
+    "score",
+    "itemLevel",
+    "ilvl",
+    "averageItemLevel",
 }
 
 
@@ -191,8 +214,8 @@ def parse_player_performance_rows(payload: Any) -> tuple[WarcraftLogsPlayerPerfo
         ]
     ] = set()
 
-    for candidate in _walk_dicts(payload):
-        parsed = _parse_candidate(candidate)
+    for candidate, encounter_context in _walk_dicts(payload):
+        parsed = _parse_candidate(candidate, encounter_context)
         if parsed is None:
             continue
         key = (
@@ -273,17 +296,59 @@ def aggregate_player_performance(
     return tuple(summaries)
 
 
-def _walk_dicts(value: Any) -> Iterable[dict[str, Any]]:
+def _walk_dicts(
+    value: Any,
+    inherited_encounter: str | None = None,
+) -> Iterator[tuple[dict[str, Any], str | None]]:
+    """Walk nested rankings while carrying a parent encounter label downward."""
+
     if isinstance(value, dict):
-        yield value
+        encounter_context = _extract_encounter_context(value, inherited_encounter)
+        yield value, encounter_context
         for child in value.values():
-            yield from _walk_dicts(child)
+            yield from _walk_dicts(child, encounter_context)
     elif isinstance(value, list):
         for child in value:
-            yield from _walk_dicts(child)
+            yield from _walk_dicts(child, inherited_encounter)
 
 
-def _parse_candidate(data: dict[str, Any]) -> WarcraftLogsPlayerPerformance | None:
+def _extract_encounter_context(
+    data: dict[str, Any],
+    inherited_encounter: str | None,
+) -> str | None:
+    explicit = _first_text(data, "encounterName", "bossName")
+    if explicit:
+        return explicit
+
+    encounter = data.get("encounter")
+    if isinstance(encounter, str) and encounter.strip():
+        return encounter.strip()
+    if isinstance(encounter, dict):
+        nested_name = encounter.get("name")
+        if isinstance(nested_name, str) and nested_name.strip():
+            return nested_name.strip()
+
+    # Classic rankings commonly keep the boss name on a parent object whose
+    # children contain role/spec/player rows. Only accept this generic `name`
+    # when the object looks like an encounter container and not a player row.
+    container_name = data.get("name")
+    looks_like_container = bool(_ENCOUNTER_CONTAINER_KEYS.intersection(data))
+    looks_like_player = bool(_PERFORMANCE_VALUE_KEYS.intersection(data))
+    if (
+        looks_like_container
+        and not looks_like_player
+        and isinstance(container_name, str)
+        and container_name.strip()
+    ):
+        return container_name.strip()
+
+    return inherited_encounter
+
+
+def _parse_candidate(
+    data: dict[str, Any],
+    encounter_context: str | None = None,
+) -> WarcraftLogsPlayerPerformance | None:
     name = _first_text(data, "name", "characterName", "playerName")
     if not name:
         return None
@@ -303,6 +368,7 @@ def _parse_candidate(data: dict[str, Any]) -> WarcraftLogsPlayerPerformance | No
     if rank_percent is None and amount is None and item_level is None:
         return None
 
+    direct_encounter = _first_text(data, "encounter", "encounterName", "bossName")
     return WarcraftLogsPlayerPerformance(
         name=name,
         server=_first_text(data, "server", "serverName"),
@@ -312,7 +378,7 @@ def _parse_candidate(data: dict[str, Any]) -> WarcraftLogsPlayerPerformance | No
         amount=amount,
         rank_percent=rank_percent,
         item_level=item_level,
-        encounter_name=_first_text(data, "encounter", "encounterName", "bossName"),
+        encounter_name=direct_encounter or encounter_context,
     )
 
 
