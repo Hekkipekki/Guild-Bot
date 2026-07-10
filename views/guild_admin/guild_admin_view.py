@@ -11,6 +11,7 @@ from views.guild_admin.guild_admin_manage_views import (
     SchedulingChannelManageView,
     SignupThemeManageView,
 )
+from views.guild_admin.setup_validation_view import open_setup_validation
 from utils.panel_helpers import safe_panel_edit
 
 
@@ -90,6 +91,7 @@ class WeakAurasSetupButton(discord.ui.Button):
             view=WeakAurasChannelManageView(),
         )
 
+
 class SchedulingSetupButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -105,6 +107,19 @@ class SchedulingSetupButton(discord.ui.Button):
             embed=None,
             view=SchedulingChannelManageView(),
         )
+
+
+class ValidateSetupButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label="Validate Setup",
+            style=discord.ButtonStyle.primary,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        await open_setup_validation(interaction)
+
 
 class CloseSetupButton(discord.ui.Button):
     def __init__(self):
@@ -136,5 +151,5 @@ class GuildSetupView(discord.ui.View):
         self.add_item(SignupThemeSetupButton())
         self.add_item(WeakAurasSetupButton())
         self.add_item(SchedulingSetupButton())
+        self.add_item(ValidateSetupButton())
         self.add_item(CloseSetupButton())
-        
