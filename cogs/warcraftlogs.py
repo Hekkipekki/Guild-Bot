@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import io
 from datetime import datetime, timezone
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+import config
 from services.warcraftlogs.api_client import (
     WarcraftLogsAuthenticationError,
     WarcraftLogsClient,
@@ -13,6 +15,7 @@ from services.warcraftlogs.api_client import (
     WarcraftLogsRequestError,
 )
 from services.warcraftlogs.credentials import get_warcraftlogs_credentials
+from services.warcraftlogs.debug_service import build_debug_json_bytes
 from services.warcraftlogs.rankings_service import (
     GuildRankingEntry,
     GuildRankingsResult,
@@ -173,6 +176,106 @@ class WarcraftLogsCommands(commands.Cog):
 
         await interaction.followup.send(embed=_build_rankings_embed(result, settings.region))
 
+    @logs.command(
+        name="debug",
+        description="DEV only: export the raw Warcraft Logs rankings response.",
+    )
+    @app_commands.describe(
+        raid_size="Override the configured raid size for this request.",
+        boss_id="Optional boss ID from the Warcraft Logs rankings URL.",
+        recent="Only include recent raiders when supported by Warcraft Logs.",
+    )
+    @app_commands.choices(raid_size=RAID_SIZE_CHOICES)
+    async def debug_rankings(
+        self,
+        interaction: discord.Interaction,
+        raid_size: app_commands.Choice[int] | None = None,
+        boss_id: int | None = None,
+        recent: bool = False,
+    ) -> None:
+        if not bool(config.DEV_MODE):
+            await interaction.response.send_message(
+                "⛔ Warcraft Logs debug exports are disabled outside DEV_MODE.",
+                ephemeral=True,
+            )
+            return
+
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "⚠ This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        member = interaction.user
+        if not getattr(member.guild_permissions, "administrator", False):
+            await interaction.response.send_message(
+                "⛔ You must be a server administrator to export debug data.",
+                ephemeral=True,
+            )
+            return
+
+        settings = get_warcraftlogs_settings(guild.id)
+        if not settings.is_configured:
+            await interaction.response.send_message(
+                "⚠ Warcraft Logs is not configured for this server.",
+                ephemeral=True,
+            )
+            return
+
+        selected_size = raid_size.value if raid_size is not None else settings.raid_size
+        await interaction.response.defer(thinking=True, ephemeral=True)
+
+        try:
+            result = await self.rankings_service.get_guild_rankings(
+                settings.guild_id,
+                raid_size=selected_size,
+                boss_id=boss_id,
+                recent=recent,
+                force_refresh=True,
+            )
+        except (WarcraftLogsConfigurationError, WarcraftLogsAuthenticationError, WarcraftLogsRequestError) as exc:
+            await interaction.followup.send(
+                f"⚠ Warcraft Logs debug request failed: `{type(exc).__name__}: {exc}`",
+                ephemeral=True,
+            )
+            return
+        except Exception as exc:
+            await interaction.followup.send(
+                f"⚠ Unexpected Warcraft Logs debug error: `{type(exc).__name__}: {exc}`",
+                ephemeral=True,
+            )
+            return
+
+        debug_bytes = build_debug_json_bytes(
+            operation="guild_rankings",
+            request={
+                "discord_guild_id": guild.id,
+                "warcraftlogs_guild_id": settings.guild_id,
+                "region": settings.region,
+                "raid_size": selected_size,
+                "boss_id": boss_id,
+                "recent": recent,
+            },
+            response={
+                "guild_name": result.guild_name,
+                "zone_name": result.zone_name,
+                "fetched_at": result.fetched_at,
+                "normalized_entries": result.entries,
+                "raw_rankings": result.raw_rankings,
+            },
+        )
+        file = discord.File(
+            io.BytesIO(debug_bytes),
+            filename=f"warcraftlogs-rankings-{settings.guild_id}.json",
+        )
+        await interaction.followup.send(
+            "🧪 DEV_MODE Warcraft Logs response export. Credential-like fields were redacted.",
+            file=file,
+            ephemeral=True,
+        )
+
 
 def _build_rankings_embed(
     result: GuildRankingsResult,
@@ -239,4 +342,7 @@ def _format_ranking_entry(entry: GuildRankingEntry) -> str:
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(WarcraftLogsCommands(bot))
+    cog = WarcraftLogsCommands(bot)
+    if not bool(config.DEV_MODE):
+        cog.logs.remove_command("debug")
+    await bot.add_cog(cog)
