@@ -36,8 +36,8 @@ _AVOIDABLE_MECHANICS: tuple[AvoidableMechanic, ...] = (
     AvoidableMechanic("Iron Juggernaut", "Demolisher Cannon"),
     AvoidableMechanic("Iron Juggernaut", "Mortar Blast"),
     AvoidableMechanic("Iron Juggernaut", "Ricochet", aliases=("Richochet",)),
-    AvoidableMechanic("Kor'kron Dark Shaman", "Toxic Storm", aliases=("Dark Shamans",)),
-    AvoidableMechanic("Kor'kron Dark Shaman", "Iron Tomb", aliases=("Dark Shamans",)),
+    AvoidableMechanic("Kor'kron Dark Shaman", "Toxic Storm"),
+    AvoidableMechanic("Kor'kron Dark Shaman", "Iron Tomb"),
     AvoidableMechanic("General Nazgrim", "Aftershock"),
 )
 
