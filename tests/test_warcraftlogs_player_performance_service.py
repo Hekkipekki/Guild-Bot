@@ -186,9 +186,13 @@ class PlayerPerformanceServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.report_title, "Sunday Raid")
         self.assertEqual(len(result.players), 3)
         self.assertEqual(len(result.player_summaries), 2)
-        self.assertEqual(result.player_summaries[0].name, "Playerone")
-        self.assertEqual(result.player_summaries[0].average_parse, 90.0)
-        self.assertEqual(result.player_summaries[0].encounter_count, 2)
+        self.assertEqual(
+            [summary.name for summary in result.player_summaries],
+            ["Playertwo", "Playerone"],
+        )
+        playerone = result.player_summaries[1]
+        self.assertEqual(playerone.average_parse, 90.0)
+        self.assertEqual(playerone.encounter_count, 2)
         self.assertEqual(
             result.url,
             "https://classic.warcraftlogs.com/reports/ABC123",
