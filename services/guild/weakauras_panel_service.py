@@ -6,6 +6,10 @@ from services.guild.guild_settings_service import (
     get_weakauras_message_id,
     set_weakauras_message_id,
 )
+from services.panels.permanent_panel_service import (
+    PermanentPanelDefinition,
+    ensure_permanent_panel,
+)
 from views.raidpack_views import RaidPackView
 
 
@@ -94,34 +98,30 @@ def build_weakauras_panel_text(guild_id: int) -> str:
     return "\n".join(lines).strip()
 
 
-async def ensure_weakauras_panel_for_guild(bot, guild: discord.Guild) -> tuple[bool, str]:
-    channel_id = get_weakauras_channel_id(guild.id)
-    if not channel_id:
-        return False, "No WeakAuras channel configured."
+def _get_weakauras_message_ids(guild_id: int):
+    return (get_weakauras_message_id(guild_id),)
 
-    channel = guild.get_channel(channel_id)
-    if channel is None:
-        try:
-            channel = await guild.fetch_channel(channel_id)
-        except Exception:
-            return False, "Configured WeakAuras channel not found."
 
-    content = build_weakauras_panel_text(guild.id)
-    message_id = get_weakauras_message_id(guild.id)
+def _build_weakauras_payload(guild: discord.Guild) -> dict:
+    return {
+        "content": build_weakauras_panel_text(guild.id),
+        "view": RaidPackView(),
+    }
 
-    if message_id:
-        try:
-            msg = await channel.fetch_message(message_id)
-            await msg.edit(content=content, view=RaidPackView(), suppress=True)
-            return True, "WeakAuras panel updated."
-        except discord.NotFound:
-            set_weakauras_message_id(guild.id, None)
-        except Exception as e:
-            return False, f"Failed to update existing panel: {e}"
 
-    try:
-        msg = await channel.send(content=content, view=RaidPackView(), suppress_embeds=True)
-        set_weakauras_message_id(guild.id, msg.id)
-        return True, "WeakAuras panel posted."
-    except Exception as e:
-        return False, f"Failed to post WeakAuras panel: {e}"
+WEAKAURAS_PANEL = PermanentPanelDefinition(
+    key="weakauras",
+    label="WeakAuras",
+    get_channel_id=get_weakauras_channel_id,
+    get_message_ids=_get_weakauras_message_ids,
+    set_message_id=set_weakauras_message_id,
+    build_payload=_build_weakauras_payload,
+    suppress_embeds=True,
+)
+
+
+async def ensure_weakauras_panel_for_guild(
+    bot: discord.Client,
+    guild: discord.Guild,
+) -> tuple[bool, str]:
+    return await ensure_permanent_panel(bot, guild, WEAKAURAS_PANEL)
