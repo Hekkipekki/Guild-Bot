@@ -11,6 +11,7 @@ from services.warcraftlogs.api_client import (
 
 
 CACHE_TTL_SECONDS = 600
+MAX_SELECTION_DEPTH = 4
 _BOSS_ARGUMENT_NAMES = ("encounterID", "bossID", "boss")
 _RECENT_ARGUMENT_NAMES = ("recent", "includeRecent", "recentRaiders")
 
@@ -51,26 +52,12 @@ class WarcraftLogsRankingsService:
       __type(name: "Guild") {
         fields {
           name
-          args { name type { kind name ofType { kind name } } }
-        }
-      }
-    }
-    """
-
-    _ZONE_RANKING_TYPE_QUERY = """
-    query GuildZoneRankingSchema {
-      __type(name: "GuildZoneRankings") {
-        fields {
-          name
-          type {
-            kind
+          args {
             name
-            ofType {
-              kind
-              name
-              ofType { kind name }
-            }
+            defaultValue
+            type { kind name ofType { kind name ofType { kind name } } }
           }
+          type { kind name ofType { kind name ofType { kind name } } }
         }
       }
     }
@@ -80,7 +67,8 @@ class WarcraftLogsRankingsService:
         self.client = client
         self._cache: dict[tuple[int, int, int | None, bool], _CacheEntry] = {}
         self._zone_ranking_args: set[str] | None = None
-        self._zone_ranking_selection: str | None = None
+        self._zone_ranking_type_name: str | None = None
+        self._selection_cache: dict[str, str] = {}
 
     async def get_guild_rankings(
         self,
@@ -108,8 +96,12 @@ class WarcraftLogsRankingsService:
         if not force_refresh and cached and now < cached.expires_at:
             return cached.result
 
-        supported_args = await self._get_zone_ranking_args()
-        selection = await self._get_zone_ranking_selection()
+        supported_args, ranking_type_name = await self._get_zone_ranking_schema()
+        selection = await self._build_type_selection(
+            ranking_type_name,
+            visited=frozenset(),
+            depth=0,
+        )
         argument_parts: list[str] = []
 
         if "size" in supported_args:
@@ -187,62 +179,131 @@ class WarcraftLogsRankingsService:
         )
         return result
 
-    async def _get_zone_ranking_args(self) -> set[str]:
-        if self._zone_ranking_args is not None:
-            return self._zone_ranking_args
+    async def _get_zone_ranking_schema(self) -> tuple[set[str], str]:
+        if self._zone_ranking_args is not None and self._zone_ranking_type_name:
+            return self._zone_ranking_args, self._zone_ranking_type_name
 
-        try:
-            data = await self.client.query(self._GUILD_TYPE_QUERY)
-            type_block = data.get("__type")
-            fields = type_block.get("fields", []) if isinstance(type_block, dict) else []
-            for field in fields:
-                if not isinstance(field, dict) or field.get("name") != "zoneRanking":
-                    continue
-                args = field.get("args", [])
-                self._zone_ranking_args = {
-                    str(arg.get("name"))
-                    for arg in args
-                    if isinstance(arg, dict) and arg.get("name")
-                }
-                return self._zone_ranking_args
-        except WarcraftLogsRequestError:
-            pass
+        data = await self.client.query(self._GUILD_TYPE_QUERY)
+        type_block = data.get("__type")
+        fields = type_block.get("fields", []) if isinstance(type_block, dict) else []
+        for field in fields:
+            if not isinstance(field, dict) or field.get("name") != "zoneRanking":
+                continue
+            args = field.get("args", [])
+            self._zone_ranking_args = {
+                str(arg.get("name"))
+                for arg in args
+                if isinstance(arg, dict) and arg.get("name")
+            }
+            _, type_name = _unwrap_graphql_type(field.get("type"))
+            if not type_name:
+                raise WarcraftLogsRequestError(
+                    "Warcraft Logs did not expose the zoneRanking return type."
+                )
+            self._zone_ranking_type_name = type_name
+            return self._zone_ranking_args, type_name
 
-        self._zone_ranking_args = {"size"}
-        return self._zone_ranking_args
+        raise WarcraftLogsRequestError(
+            "Warcraft Logs did not expose the Guild.zoneRanking field."
+        )
 
-    async def _get_zone_ranking_selection(self) -> str:
-        if self._zone_ranking_selection is not None:
-            return self._zone_ranking_selection
+    async def _build_type_selection(
+        self,
+        type_name: str,
+        *,
+        visited: frozenset[str],
+        depth: int,
+    ) -> str:
+        cached = self._selection_cache.get(type_name)
+        if cached is not None:
+            return cached
+        if depth >= MAX_SELECTION_DEPTH or type_name in visited:
+            return ""
 
-        data = await self.client.query(self._ZONE_RANKING_TYPE_QUERY)
+        query = _build_type_query(type_name)
+        data = await self.client.query(query)
         type_block = data.get("__type")
         fields = type_block.get("fields", []) if isinstance(type_block, dict) else []
 
+        next_visited = visited | {type_name}
         selections: list[str] = []
         available_names: list[str] = []
+
         for field in fields:
             if not isinstance(field, dict):
                 continue
             name = str(field.get("name") or "").strip()
-            if not name:
+            if not name or name.startswith("__"):
                 continue
             available_names.append(name)
-            kind, _ = _unwrap_graphql_type(field.get("type"))
+
+            if _has_required_arguments(field.get("args")):
+                continue
+
+            kind, nested_type_name = _unwrap_graphql_type(field.get("type"))
             if kind in {"SCALAR", "ENUM"}:
                 selections.append(name)
-            elif name == "zone" and kind == "OBJECT":
-                selections.append("zone { name }")
+                continue
+
+            if kind not in {"OBJECT", "INTERFACE", "UNION"} or not nested_type_name:
+                continue
+
+            nested_selection = await self._build_type_selection(
+                nested_type_name,
+                visited=next_visited,
+                depth=depth + 1,
+            )
+            if nested_selection:
+                selections.append(f"{name} {{\n{_indent(nested_selection)}\n}}")
 
         if not selections:
             names = ", ".join(sorted(available_names)) or "none"
             raise WarcraftLogsRequestError(
-                "Warcraft Logs exposed no selectable scalar fields on "
-                f"GuildZoneRankings. Available fields: {names}."
+                f"Warcraft Logs exposed no selectable fields on {type_name}. "
+                f"Available fields: {names}."
             )
 
-        self._zone_ranking_selection = "\n".join(selections)
-        return self._zone_ranking_selection
+        selection = "\n".join(selections)
+        self._selection_cache[type_name] = selection
+        return selection
+
+
+def _build_type_query(type_name: str) -> str:
+    safe_name = type_name.replace('"', "")
+    return f"""
+    query WarcraftLogsTypeSchema {{
+      __type(name: "{safe_name}") {{
+        fields {{
+          name
+          args {{
+            name
+            defaultValue
+            type {{ kind name ofType {{ kind name ofType {{ kind name }} }} }}
+          }}
+          type {{ kind name ofType {{ kind name ofType {{ kind name }} }} }}
+        }}
+      }}
+    }}
+    """
+
+
+def _has_required_arguments(args: Any) -> bool:
+    if not isinstance(args, list):
+        return False
+    for arg in args:
+        if not isinstance(arg, dict):
+            continue
+        if arg.get("defaultValue") is not None:
+            continue
+        type_block = arg.get("type")
+        if isinstance(type_block, dict) and type_block.get("kind") == "NON_NULL":
+            return True
+    return False
+
+
+def _indent(value: str, spaces: int = 2) -> str:
+    prefix = " " * spaces
+    return "\n".join(prefix + line if line else line for line in value.splitlines())
 
 
 def _first_supported_argument(
