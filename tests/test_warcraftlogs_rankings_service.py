@@ -13,15 +13,7 @@ class FakeClient:
 
     async def query(self, query, variables=None):
         self.queries.append(query)
-        if 'name: "GuildZoneRankings"' in query:
-            return {
-                "__type": {
-                    "fields": [
-                        {"name": "zoneName", "type": {"kind": "SCALAR", "name": "String"}},
-                        {"name": "rankings", "type": {"kind": "SCALAR", "name": "JSON"}},
-                    ]
-                }
-            }
+
         if 'name: "Guild"' in query:
             return {
                 "__type": {
@@ -33,25 +25,84 @@ class FakeClient:
                                 {"name": "encounterID", "type": {"kind": "SCALAR"}},
                                 {"name": "recent", "type": {"kind": "SCALAR"}},
                             ],
+                            "type": {
+                                "kind": "NON_NULL",
+                                "ofType": {
+                                    "kind": "OBJECT",
+                                    "name": "GuildZoneRankings",
+                                },
+                            },
                         }
                     ]
                 }
             }
+
+        if 'name: "GuildZoneRankings"' in query:
+            return {
+                "__type": {
+                    "fields": [
+                        {
+                            "name": "progress",
+                            "args": [],
+                            "type": {"kind": "OBJECT", "name": "GuildZoneRanking"},
+                        },
+                        {
+                            "name": "speed",
+                            "args": [],
+                            "type": {"kind": "OBJECT", "name": "GuildZoneRanking"},
+                        },
+                        {
+                            "name": "completeRaidSpeed",
+                            "args": [],
+                            "type": {"kind": "OBJECT", "name": "GuildZoneRanking"},
+                        },
+                    ]
+                }
+            }
+
+        if 'name: "GuildZoneRanking"' in query:
+            return {
+                "__type": {
+                    "fields": [
+                        {
+                            "name": "zoneName",
+                            "args": [],
+                            "type": {"kind": "SCALAR", "name": "String"},
+                        },
+                        {
+                            "name": "rankings",
+                            "args": [],
+                            "type": {"kind": "SCALAR", "name": "JSON"},
+                        },
+                    ]
+                }
+            }
+
         return {
             "guildData": {
                 "guild": {
                     "id": 800007,
                     "name": "Example Guild",
                     "zoneRankings": {
-                        "zoneName": "Siege of Orgrimmar",
-                        "rankings": [
-                            {
-                                "encounter": {"name": "Immerseus"},
-                                "worldRank": 100,
-                                "regionRank": 50,
-                                "serverRank": 3,
-                            }
-                        ],
+                        "progress": {
+                            "zoneName": "Siege of Orgrimmar",
+                            "rankings": [
+                                {
+                                    "encounter": {"name": "Immerseus"},
+                                    "worldRank": 100,
+                                    "regionRank": 50,
+                                    "serverRank": 3,
+                                }
+                            ],
+                        },
+                        "speed": {
+                            "zoneName": "Siege of Orgrimmar",
+                            "rankings": [],
+                        },
+                        "completeRaidSpeed": {
+                            "zoneName": "Siege of Orgrimmar",
+                            "rankings": [],
+                        },
                     },
                 }
             }
@@ -59,7 +110,7 @@ class FakeClient:
 
 
 class WarcraftLogsRankingsServiceTests(unittest.IsolatedAsyncioTestCase):
-    async def test_fetches_and_caches_rankings(self):
+    async def test_fetches_nested_schema_and_caches_rankings(self):
         client = FakeClient()
         service = WarcraftLogsRankingsService(client)
 
@@ -71,11 +122,16 @@ class WarcraftLogsRankingsServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(first.zone_name, "Siege of Orgrimmar")
         self.assertEqual(first.entries[0].encounter_name, "Immerseus")
         self.assertEqual(first.entries[0].world_rank, 100)
-        self.assertEqual(len(client.queries), 3)
-        self.assertIn("zoneRankings: zoneRanking", client.queries[-1])
-        self.assertIn("size: 10", client.queries[-1])
-        self.assertIn("zoneName", client.queries[-1])
-        self.assertIn("rankings", client.queries[-1])
+        self.assertEqual(len(client.queries), 4)
+
+        ranking_query = client.queries[-1]
+        self.assertIn("zoneRankings: zoneRanking", ranking_query)
+        self.assertIn("size: 10", ranking_query)
+        self.assertIn("progress {", ranking_query)
+        self.assertIn("speed {", ranking_query)
+        self.assertIn("completeRaidSpeed {", ranking_query)
+        self.assertIn("zoneName", ranking_query)
+        self.assertIn("rankings", ranking_query)
 
     async def test_applies_boss_and_recent_filters(self):
         client = FakeClient()
@@ -101,7 +157,7 @@ class WarcraftLogsRankingsServiceTests(unittest.IsolatedAsyncioTestCase):
         await service.get_guild_rankings(800007, boss_id=51602)
         await service.get_guild_rankings(800007, boss_id=51603)
 
-        self.assertEqual(len(client.queries), 4)
+        self.assertEqual(len(client.queries), 5)
 
     async def test_force_refresh_bypasses_cache_but_reuses_schema(self):
         client = FakeClient()
@@ -110,7 +166,7 @@ class WarcraftLogsRankingsServiceTests(unittest.IsolatedAsyncioTestCase):
         await service.get_guild_rankings(800007)
         await service.get_guild_rankings(800007, force_refresh=True)
 
-        self.assertEqual(len(client.queries), 4)
+        self.assertEqual(len(client.queries), 5)
 
     def test_parser_supports_flat_ranking_shape(self):
         entries = _extract_ranking_entries(
