@@ -32,6 +32,7 @@ EXTENSIONS = [
     "cogs.attendance",
     "cogs.help",
     "cogs.scheduling",
+    "cogs.warcraftlogs",
 ]
 
 
