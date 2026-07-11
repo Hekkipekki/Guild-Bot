@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import time
 from dataclasses import dataclass
+from typing import Awaitable, Callable
 
 from services.warcraftlogs.player_performance_service import (
     WarcraftLogsPlayerPerformance,
@@ -16,7 +18,10 @@ from services.warcraftlogs.reports_service import WarcraftLogsReport, WarcraftLo
 CACHE_TTL_SECONDS = 600
 REPORT_WINDOW_DAYS = 21
 REPORT_LIMIT = 20
-REPORT_CONCURRENCY = 3
+REPORT_CONCURRENCY = 5
+REPORT_REQUEST_TIMEOUT_SECONDS = 35
+
+ProgressCallback = Callable[[str, int, int], Awaitable[None] | None]
 
 
 @dataclass(frozen=True)
@@ -52,13 +57,7 @@ class _CacheEntry:
 
 
 class WarcraftLogsGuildRecentLeaderboardService:
-    """Build a three-week leaderboard from public report data.
-
-    Only boss kills for the selected difficulty are included. Each character's
-    best parse per boss is retained before the final average is calculated.
-    When registered raid-team character names are supplied, all other log
-    characters are excluded.
-    """
+    """Build a three-week leaderboard from public report data."""
 
     def __init__(
         self,
@@ -78,6 +77,7 @@ class WarcraftLogsGuildRecentLeaderboardService:
         difficulty: int = 4,
         allowed_character_names: set[str] | frozenset[str] | None = None,
         force_refresh: bool = False,
+        progress_callback: ProgressCallback | None = None,
     ) -> GuildRecentLeaderboardResult:
         clean_guild_id = int(guild_id)
         clean_difficulty = int(difficulty)
@@ -101,8 +101,10 @@ class WarcraftLogsGuildRecentLeaderboardService:
         now = time.monotonic()
         cached = self._cache.get(cache_key)
         if not force_refresh and cached and now < cached.expires_at:
+            await _report_progress(progress_callback, "cache", 1, 1)
             return cached.result
 
+        await _report_progress(progress_callback, "reports", 0, 1)
         report_result = await self.reports_service.get_recent_reports(
             clean_guild_id,
             limit=REPORT_LIMIT,
@@ -113,17 +115,24 @@ class WarcraftLogsGuildRecentLeaderboardService:
         reports = tuple(
             report for report in reports if not latest_zone or report.zone_name == latest_zone
         )
+        await _report_progress(progress_callback, "reports", 1, 1)
 
         semaphore = asyncio.Semaphore(REPORT_CONCURRENCY)
 
-        async def process_report(
+        async def load_summary(
             report: WarcraftLogsReport,
-        ) -> tuple[WarcraftLogsReport, tuple[WarcraftLogsPlayerPerformance, ...]] | None:
+        ) -> tuple[WarcraftLogsReport, set[str]] | None:
             async with semaphore:
-                summary = await self.summary_service.get_report_summary(
-                    report.code,
-                    force_refresh=force_refresh,
-                )
+                try:
+                    summary = await asyncio.wait_for(
+                        self.summary_service.get_report_summary(
+                            report.code,
+                            force_refresh=force_refresh,
+                        ),
+                        timeout=REPORT_REQUEST_TIMEOUT_SECONDS,
+                    )
+                except asyncio.TimeoutError:
+                    return None
                 killed_encounters = {
                     fight.label.encounter_name.casefold()
                     for fight in summary.boss_fights
@@ -131,13 +140,35 @@ class WarcraftLogsGuildRecentLeaderboardService:
                     and _difficulty_value(fight.raw_difficulty) == clean_difficulty
                     and fight.label.encounter_name
                 }
-                if not killed_encounters:
-                    return None
+                return (report, killed_encounters) if killed_encounters else None
 
-                performance = await self.performance_service.get_report_player_performance(
-                    report.code,
-                    force_refresh=force_refresh,
-                )
+        summary_matches: list[tuple[WarcraftLogsReport, set[str]]] = []
+        summary_tasks = [asyncio.create_task(load_summary(report)) for report in reports]
+        completed = 0
+        total = len(summary_tasks)
+        await _report_progress(progress_callback, "summaries", completed, total)
+        for task in asyncio.as_completed(summary_tasks):
+            item = await task
+            completed += 1
+            if item is not None:
+                summary_matches.append(item)
+            await _report_progress(progress_callback, "summaries", completed, total)
+
+        async def load_performance(
+            report: WarcraftLogsReport,
+            killed_encounters: set[str],
+        ) -> tuple[WarcraftLogsReport, tuple[WarcraftLogsPlayerPerformance, ...]] | None:
+            async with semaphore:
+                try:
+                    performance = await asyncio.wait_for(
+                        self.performance_service.get_report_player_performance(
+                            report.code,
+                            force_refresh=force_refresh,
+                        ),
+                        timeout=REPORT_REQUEST_TIMEOUT_SECONDS,
+                    )
+                except asyncio.TimeoutError:
+                    return None
                 matched_rows = tuple(
                     row
                     for row in performance.players
@@ -147,14 +178,27 @@ class WarcraftLogsGuildRecentLeaderboardService:
                 )
                 return report, matched_rows
 
-        processed = await asyncio.gather(*(process_report(report) for report in reports))
+        performance_tasks = [
+            asyncio.create_task(load_performance(report, encounters))
+            for report, encounters in summary_matches
+        ]
+        processed: list[
+            tuple[WarcraftLogsReport, tuple[WarcraftLogsPlayerPerformance, ...]]
+        ] = []
+        completed = 0
+        total = len(performance_tasks)
+        await _report_progress(progress_callback, "rankings", completed, total)
+        for task in asyncio.as_completed(performance_tasks):
+            item = await task
+            completed += 1
+            if item is not None:
+                processed.append(item)
+            await _report_progress(progress_callback, "rankings", completed, total)
 
+        processed.sort(key=lambda item: item[0].start_time, reverse=True)
         best_rows: dict[tuple[str, str, str, str], WarcraftLogsPlayerPerformance] = {}
         included_reports: list[WarcraftLogsReport] = []
-        for item in processed:
-            if item is None:
-                continue
-            report, rows = item
+        for report, rows in processed:
             included_reports.append(report)
             for row in rows:
                 encounter = str(row.encounter_name or "").strip()
@@ -199,7 +243,21 @@ class WarcraftLogsGuildRecentLeaderboardService:
             result=result,
             expires_at=now + CACHE_TTL_SECONDS,
         )
+        await _report_progress(progress_callback, "done", 1, 1)
         return result
+
+
+async def _report_progress(
+    callback: ProgressCallback | None,
+    stage: str,
+    completed: int,
+    total: int,
+) -> None:
+    if callback is None:
+        return
+    result = callback(stage, completed, total)
+    if inspect.isawaitable(result):
+        await result
 
 
 def _filter_report_window(
