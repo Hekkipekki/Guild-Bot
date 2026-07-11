@@ -7,6 +7,8 @@ from discord import app_commands
 from discord.ext import commands
 
 import config
+from data.character_store import load_characters
+from services.guild.guild_settings_service import get_expected_players
 from services.warcraftlogs.api_client import (
     WarcraftLogsAuthenticationError,
     WarcraftLogsClient,
@@ -19,6 +21,7 @@ from services.warcraftlogs.character_performance_service import (
 from services.warcraftlogs.credentials import get_warcraftlogs_credentials
 from services.warcraftlogs.debug_service import build_debug_json_bytes
 from services.warcraftlogs.guild_recent_leaderboard_service import (
+    REPORT_WINDOW_DAYS,
     WarcraftLogsGuildRecentLeaderboardService,
 )
 from services.warcraftlogs.player_performance_service import (
@@ -55,7 +58,7 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
         self.dtps_service = WarcraftLogsReportLeaderboardService(self.client)
         self.command = app_commands.Command(
             name="leaderboard",
-            description="Show four-reset performance, reports, top parses and avoidable DTPS.",
+            description="Show three-week performance, reports, top parses and avoidable DTPS.",
             callback=self.leaderboard,
         )
         self.debug_command = app_commands.Command(
@@ -91,16 +94,18 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             )
             return
 
+        raid_team_characters = _registered_raid_team_characters(guild.id)
         await interaction.response.defer(thinking=True, ephemeral=True)
         try:
             leaderboard_result = await self.recent_service.get_leaderboard(
                 settings.guild_id,
                 difficulty=4,
+                allowed_character_names=raid_team_characters,
                 force_refresh=refresh,
             )
             if not leaderboard_result.latest_report_code:
                 raise WarcraftLogsRequestError(
-                    "No Heroic 10-player kill reports were found in the latest four-reset window."
+                    "No Heroic 10-player kill reports were found in the latest three-week window."
                 )
             latest_report = await self.performance_service.get_report_player_performance(
                 leaderboard_result.latest_report_code,
@@ -135,6 +140,7 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             character_service=self.character_service,
             dtps_service=self.dtps_service,
             guild_emojis=tuple(guild.emojis),
+            allowed_character_names=raid_team_characters,
         )
         await interaction.followup.send(
             embed=build_guild_recent_embed(leaderboard_result),
@@ -172,11 +178,13 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             )
             return
 
+        raid_team_characters = _registered_raid_team_characters(guild.id)
         await interaction.response.defer(thinking=True, ephemeral=True)
         try:
             result = await self.recent_service.get_leaderboard(
                 settings.guild_id,
                 difficulty=difficulty,
+                allowed_character_names=raid_team_characters,
                 force_refresh=True,
             )
         except Exception as exc:
@@ -192,7 +200,9 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
                 "discord_guild_id": guild.id,
                 "warcraftlogs_guild_id": settings.guild_id,
                 "difficulty": difficulty,
-                "window_days": 28,
+                "window_days": REPORT_WINDOW_DAYS,
+                "raid_team_filter_enabled": raid_team_characters is not None,
+                "registered_character_names": sorted(raid_team_characters or ()),
             },
             response={
                 "damage_players": result.damage_players,
@@ -209,6 +219,28 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             ),
             ephemeral=True,
         )
+
+
+def _registered_raid_team_characters(discord_guild_id: int) -> set[str] | None:
+    """Return character names owned by configured raid-team Discord users.
+
+    `None` means no raid team has been configured, so the leaderboard remains
+    backwards-compatible and includes every logged player. An empty set means a
+    raid team exists but none of its members has registered a character yet.
+    """
+
+    raid_team_user_ids = get_expected_players(discord_guild_id)
+    if not raid_team_user_ids:
+        return None
+
+    characters_by_user = load_characters(discord_guild_id)
+    names: set[str] = set()
+    for user_id in raid_team_user_ids:
+        for character in characters_by_user.get(str(user_id), []):
+            name = str(character.get("name") or "").strip()
+            if name:
+                names.add(name)
+    return names
 
 
 async def setup(bot: commands.Bot) -> None:
