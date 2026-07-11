@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import time
 
 import discord
 from discord import app_commands
@@ -39,7 +40,8 @@ from views.warcraftlogs_guild_leaderboard_view import (
     build_guild_recent_embed,
 )
 
-LEADERBOARD_LOAD_TIMEOUT_SECONDS = 120
+LEADERBOARD_LOAD_TIMEOUT_SECONDS = 150
+PROGRESS_EDIT_INTERVAL_SECONDS = 1.0
 
 
 class _RaidTeamLeaderboardService:
@@ -59,12 +61,14 @@ class _RaidTeamLeaderboardService:
         *,
         difficulty: int = 4,
         force_refresh: bool = False,
+        progress_callback=None,
     ):
         return await self.service.get_leaderboard(
             guild_id,
             difficulty=difficulty,
             allowed_character_names=self.allowed_character_names,
             force_refresh=force_refresh,
+            progress_callback=progress_callback,
         )
 
 
@@ -128,19 +132,32 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             self.recent_service,
             raid_team_characters,
         )
-        loading_embed = discord.Embed(
-            title="Building Warcraft Logs leaderboard…",
-            description=(
-                "Fetching recent reports and calculating each raid-team character's best "
-                "boss parses from the latest 21 days.\n\n"
-                + ("A forced refresh may take longer." if refresh else "Cached data will be used when available.")
-            ),
-            color=discord.Color.orange(),
+        loading_embed = _build_loading_embed(
+            "Starting",
+            "Reading the configured raid team and Warcraft Logs settings…",
+            refresh=refresh,
         )
-        await interaction.response.send_message(
-            embed=loading_embed,
-            ephemeral=True,
-        )
+        await interaction.response.send_message(embed=loading_embed, ephemeral=True)
+
+        progress_lock = asyncio.Lock()
+        last_edit = 0.0
+
+        async def update_progress(stage: str, completed: int, total: int) -> None:
+            nonlocal last_edit
+            now = time.monotonic()
+            finished = total > 0 and completed >= total
+            if not finished and now - last_edit < PROGRESS_EDIT_INTERVAL_SECONDS:
+                return
+            async with progress_lock:
+                now = time.monotonic()
+                if not finished and now - last_edit < PROGRESS_EDIT_INTERVAL_SECONDS:
+                    return
+                last_edit = now
+                title, detail = _progress_text(stage, completed, total)
+                await interaction.edit_original_response(
+                    embed=_build_loading_embed(title, detail, refresh=refresh),
+                    view=None,
+                )
 
         try:
             leaderboard_result = await asyncio.wait_for(
@@ -148,6 +165,7 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
                     settings.guild_id,
                     difficulty=4,
                     force_refresh=refresh,
+                    progress_callback=update_progress,
                 ),
                 timeout=LEADERBOARD_LOAD_TIMEOUT_SECONDS,
             )
@@ -155,19 +173,22 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
                 raise WarcraftLogsRequestError(
                     "No Heroic 10-player kill reports were found in the latest three-week window."
                 )
+            await update_progress("latest", 0, 1)
             latest_report = await asyncio.wait_for(
                 self.performance_service.get_report_player_performance(
                     leaderboard_result.latest_report_code,
                     force_refresh=refresh,
                 ),
-                timeout=LEADERBOARD_LOAD_TIMEOUT_SECONDS,
+                timeout=45,
             )
+            await update_progress("latest", 1, 1)
         except asyncio.TimeoutError:
             await interaction.edit_original_response(
                 embed=discord.Embed(
                     title="Warcraft Logs timed out",
                     description=(
-                        "The leaderboard did not finish within two minutes. Try again without "
+                        "The current Warcraft Logs request did not finish in time. The progress "
+                        "step above identifies which phase stalled. Try again without "
                         "`refresh:true`; cached report data is much faster."
                     ),
                     color=discord.Color.red(),
@@ -292,13 +313,45 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
         )
 
 
-def _registered_raid_team_characters(discord_guild_id: int) -> set[str] | None:
-    """Return character names owned by configured raid-team Discord users.
+def _build_loading_embed(title: str, detail: str, *, refresh: bool) -> discord.Embed:
+    embed = discord.Embed(
+        title=f"Building leaderboard — {title}",
+        description=detail,
+        color=discord.Color.orange(),
+    )
+    embed.set_footer(
+        text="Forced refresh: all report caches are bypassed." if refresh else "Cached data is used when available."
+    )
+    return embed
 
-    `None` means no raid team is configured, so every logged player remains
-    visible. An empty set means a raid team exists but its members have not yet
-    registered any characters.
-    """
+
+def _progress_text(stage: str, completed: int, total: int) -> tuple[str, str]:
+    if stage == "cache":
+        return "Cache hit", "Using the completed three-week leaderboard from cache."
+    if stage == "reports":
+        return "Recent reports", "Loading the guild's recent report list…" if not completed else "Recent report list loaded."
+    if stage == "summaries":
+        return (
+            "Checking raid reports",
+            f"Checked **{completed}/{total}** report summaries for matching Heroic kills.",
+        )
+    if stage == "rankings":
+        return (
+            "Loading player rankings",
+            f"Loaded rankings from **{completed}/{total}** matching reports.",
+        )
+    if stage == "latest":
+        return (
+            "Preparing latest raid",
+            "Loading the latest matching report for player-card navigation…" if not completed else "Latest raid loaded.",
+        )
+    if stage == "done":
+        return "Finalizing", "Sorting raid-team players and calculating their best-boss averages…"
+    return "Working", "Processing Warcraft Logs data…"
+
+
+def _registered_raid_team_characters(discord_guild_id: int) -> set[str] | None:
+    """Return character names owned by configured raid-team Discord users."""
 
     raid_team_user_ids = get_expected_players(discord_guild_id)
     if not raid_team_user_ids:
