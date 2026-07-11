@@ -2,6 +2,7 @@ import unittest
 
 from services.warcraftlogs.report_leaderboard_service import (
     WarcraftLogsReportLeaderboardService,
+    _event_ability_name,
     _event_damage_amount,
 )
 
@@ -84,7 +85,7 @@ class FakeClient:
                     }
                 }
             }
-        if "ReportActors" in query:
+        if "ReportMasterData" in query:
             return {
                 "reportData": {
                     "report": {
@@ -93,7 +94,12 @@ class FakeClient:
                                 {"id": 10, "name": "Alpha", "type": "Player", "subType": "Shaman"},
                                 {"id": 11, "name": "Bravo", "type": "Player", "subType": "Mage"},
                                 {"id": 99, "name": "Enemy", "type": "NPC", "subType": "Boss"},
-                            ]
+                            ],
+                            "abilities": [
+                                {"gameID": 123, "name": "Swirl"},
+                                {"gameID": 456, "name": "Melee"},
+                                {"gameID": 789, "name": "Sha Corruption"},
+                            ],
                         }
                     }
                 }
@@ -104,10 +110,10 @@ class FakeClient:
                     "report": {
                         "events": {
                             "data": [
-                                {"targetID": 10, "ability": {"name": "Swirl"}, "amount": 1000, "overkill": 100},
-                                {"targetID": 10, "ability": {"name": "Melee"}, "amount": 5000},
-                                {"targetID": 11, "abilityName": "Sha Corruption", "amount": 200},
-                                {"targetID": 99, "ability": {"name": "Swirl"}, "amount": 9999},
+                                {"targetID": 10, "abilityGameID": 123, "amount": 1000, "overkill": 100},
+                                {"targetID": 10, "abilityGameID": 456, "amount": 5000},
+                                {"targetID": 11, "abilityGameID": 789, "amount": 200},
+                                {"targetID": 99, "abilityGameID": 123, "amount": 9999},
                             ],
                             "nextPageTimestamp": None,
                         }
@@ -146,6 +152,7 @@ class ReportLeaderboardServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(alpha.dtps, 90)
         self.assertEqual(alpha.hit_count, 1)
         self.assertIn("Melee", result.unmatched_abilities)
+        self.assertIn((123, "Swirl"), result.resolved_abilities)
 
     async def test_rejects_unknown_metric(self):
         service = WarcraftLogsReportLeaderboardService(FakeClient())
@@ -157,6 +164,12 @@ class EventDamageTests(unittest.TestCase):
     def test_subtracts_overkill(self):
         self.assertEqual(_event_damage_amount({"amount": 1000, "overkill": 250}), 750)
         self.assertEqual(_event_damage_amount({"amount": 100, "overkill": 200}), 0)
+
+    def test_resolves_ability_name_from_game_id(self):
+        self.assertEqual(
+            _event_ability_name({"abilityGameID": 143297}, {143297: "Swirl"}),
+            "Swirl",
+        )
 
 
 if __name__ == "__main__":
