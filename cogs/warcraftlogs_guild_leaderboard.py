@@ -169,6 +169,7 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             character_service=self.character_service,
             dtps_service=self.dtps_service,
             guild_emojis=tuple(guild.emojis),
+            allowed_character_names=raid_team_characters,
         )
         await interaction.followup.send(
             embed=build_guild_recent_embed(leaderboard_result),
