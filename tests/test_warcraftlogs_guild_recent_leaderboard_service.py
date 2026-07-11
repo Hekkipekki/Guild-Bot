@@ -3,6 +3,7 @@ import unittest
 from services.warcraftlogs.encounter_label_parser import parse_encounter_label
 from services.warcraftlogs.guild_recent_leaderboard_service import (
     WarcraftLogsGuildRecentLeaderboardService,
+    _filter_report_window,
 )
 from services.warcraftlogs.player_performance_service import (
     WarcraftLogsPlayerPerformance,
@@ -114,6 +115,7 @@ class GuildRecentLeaderboardServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(alpha.average_parse, 82.5)
         self.assertEqual(alpha.encounter_count, 2)
         self.assertEqual([player.name for player in result.healing_players], ["Healz"])
+        self.assertFalse(result.raid_team_filtered)
 
     async def test_filters_reports_by_normal_difficulty(self):
         service = WarcraftLogsGuildRecentLeaderboardService(
@@ -126,6 +128,51 @@ class GuildRecentLeaderboardServiceTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual([report.code for report in result.reports], ["NORMAL"])
         self.assertEqual([player.name for player in result.damage_players], ["Normalguy"])
+
+    async def test_filters_players_to_registered_raid_team_characters(self):
+        service = WarcraftLogsGuildRecentLeaderboardService(
+            FakeReportsService(),
+            FakeSummaryService(),
+            FakePerformanceService(),
+        )
+
+        result = await service.get_leaderboard(
+            800007,
+            difficulty=4,
+            allowed_character_names={"Alpha"},
+        )
+
+        self.assertEqual([player.name for player in result.damage_players], ["Alpha"])
+        self.assertEqual(result.healing_players, ())
+        self.assertTrue(result.raid_team_filtered)
+
+    async def test_configured_empty_raid_team_returns_no_players_but_keeps_reports(self):
+        service = WarcraftLogsGuildRecentLeaderboardService(
+            FakeReportsService(),
+            FakeSummaryService(),
+            FakePerformanceService(),
+        )
+
+        result = await service.get_leaderboard(
+            800007,
+            difficulty=4,
+            allowed_character_names=set(),
+        )
+
+        self.assertEqual(result.damage_players, ())
+        self.assertEqual(result.healing_players, ())
+        self.assertEqual([report.code for report in result.reports], ["NEW", "OLD"])
+        self.assertTrue(result.raid_team_filtered)
+
+    def test_report_window_is_21_days(self):
+        day_ms = 24 * 60 * 60 * 1000
+        newest = WarcraftLogsReport("NEW", "New", 30 * day_ms, None, None, "SoO")
+        inside = WarcraftLogsReport("IN", "Inside", 9 * day_ms, None, None, "SoO")
+        outside = WarcraftLogsReport("OUT", "Outside", 8 * day_ms, None, None, "SoO")
+
+        result = _filter_report_window((newest, inside, outside))
+
+        self.assertEqual([report.code for report in result], ["NEW", "IN"])
 
 
 if __name__ == "__main__":
