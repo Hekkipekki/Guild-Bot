@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import io
 
 import discord
@@ -37,6 +38,8 @@ from views.warcraftlogs_guild_leaderboard_view import (
     WarcraftLogsGuildLeaderboardView,
     build_guild_recent_embed,
 )
+
+LEADERBOARD_LOAD_TIMEOUT_SECONDS = 120
 
 
 class _RaidTeamLeaderboardService:
@@ -125,36 +128,76 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             self.recent_service,
             raid_team_characters,
         )
-        await interaction.response.defer(thinking=True, ephemeral=True)
+        loading_embed = discord.Embed(
+            title="Building Warcraft Logs leaderboard…",
+            description=(
+                "Fetching recent reports and calculating each raid-team character's best "
+                "boss parses from the latest 21 days.\n\n"
+                + ("A forced refresh may take longer." if refresh else "Cached data will be used when available.")
+            ),
+            color=discord.Color.orange(),
+        )
+        await interaction.response.send_message(
+            embed=loading_embed,
+            ephemeral=True,
+        )
+
         try:
-            leaderboard_result = await filtered_service.get_leaderboard(
-                settings.guild_id,
-                difficulty=4,
-                force_refresh=refresh,
+            leaderboard_result = await asyncio.wait_for(
+                filtered_service.get_leaderboard(
+                    settings.guild_id,
+                    difficulty=4,
+                    force_refresh=refresh,
+                ),
+                timeout=LEADERBOARD_LOAD_TIMEOUT_SECONDS,
             )
             if not leaderboard_result.latest_report_code:
                 raise WarcraftLogsRequestError(
                     "No Heroic 10-player kill reports were found in the latest three-week window."
                 )
-            latest_report = await self.performance_service.get_report_player_performance(
-                leaderboard_result.latest_report_code,
-                force_refresh=refresh,
+            latest_report = await asyncio.wait_for(
+                self.performance_service.get_report_player_performance(
+                    leaderboard_result.latest_report_code,
+                    force_refresh=refresh,
+                ),
+                timeout=LEADERBOARD_LOAD_TIMEOUT_SECONDS,
             )
+        except asyncio.TimeoutError:
+            await interaction.edit_original_response(
+                embed=discord.Embed(
+                    title="Warcraft Logs timed out",
+                    description=(
+                        "The leaderboard did not finish within two minutes. Try again without "
+                        "`refresh:true`; cached report data is much faster."
+                    ),
+                    color=discord.Color.red(),
+                ),
+                view=None,
+            )
+            return
         except (
             WarcraftLogsConfigurationError,
             WarcraftLogsAuthenticationError,
             WarcraftLogsRequestError,
             ValueError,
         ) as exc:
-            await interaction.followup.send(
-                f"⚠ Warcraft Logs could not build the leaderboard: `{exc}`",
-                ephemeral=True,
+            await interaction.edit_original_response(
+                embed=discord.Embed(
+                    title="Could not build leaderboard",
+                    description=f"`{exc}`",
+                    color=discord.Color.red(),
+                ),
+                view=None,
             )
             return
         except Exception as exc:
-            await interaction.followup.send(
-                f"⚠ Unexpected leaderboard error: `{type(exc).__name__}: {exc}`",
-                ephemeral=True,
+            await interaction.edit_original_response(
+                embed=discord.Embed(
+                    title="Unexpected leaderboard error",
+                    description=f"`{type(exc).__name__}: {exc}`",
+                    color=discord.Color.red(),
+                ),
+                view=None,
             )
             return
 
@@ -171,10 +214,9 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             guild_emojis=tuple(guild.emojis),
             allowed_character_names=raid_team_characters,
         )
-        await interaction.followup.send(
+        await interaction.edit_original_response(
             embed=build_guild_recent_embed(leaderboard_result),
             view=view,
-            ephemeral=True,
         )
 
     async def debug_guild_leaderboard(
