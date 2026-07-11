@@ -2,21 +2,20 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from typing import Any
+from datetime import datetime, timezone
 
-from services.warcraftlogs.api_client import WarcraftLogsClient, WarcraftLogsRequestError
 from services.warcraftlogs.player_performance_service import (
+    WarcraftLogsPlayerPerformance,
+    WarcraftLogsPlayerPerformanceService,
     WarcraftLogsPlayerSummary,
     aggregate_player_performance,
-    parse_player_performance_rows,
 )
-from services.warcraftlogs.rankings_service import WarcraftLogsRankingsService
+from services.warcraftlogs.report_summary_service import WarcraftLogsReportSummaryService
+from services.warcraftlogs.reports_service import WarcraftLogsReport, WarcraftLogsReportsService
 
 CACHE_TTL_SECONDS = 600
-_DIFFICULTY_ARGUMENT_NAMES = ("difficulty",)
-_METRIC_ARGUMENT_NAMES = ("metric", "playerMetric", "playermetric")
-_RECENT_ARGUMENT_NAMES = ("recent", "includeRecent", "recentRaiders")
-_DIFFICULTY_KEYS = ("difficulty", "difficultyID", "difficultyId")
+REPORT_WINDOW_DAYS = 28
+REPORT_LIMIT = 20
 
 
 @dataclass(frozen=True)
@@ -24,12 +23,12 @@ class GuildRecentLeaderboardResult:
     guild_id: int
     guild_name: str
     difficulty: int
-    difficulty_available: bool
     damage_players: tuple[WarcraftLogsPlayerSummary, ...]
     healing_players: tuple[WarcraftLogsPlayerSummary, ...]
+    reports: tuple[WarcraftLogsReport, ...]
+    latest_report_code: str | None
+    latest_report_title: str | None
     fetched_at: float
-    raw_damage: Any
-    raw_healing: Any
 
     @property
     def difficulty_label(self) -> str:
@@ -51,17 +50,24 @@ class _CacheEntry:
 
 
 class WarcraftLogsGuildRecentLeaderboardService:
-    """Fetch guild recent-raider DPS/HPS rankings from Guild.zoneRanking.
+    """Build a recent-raider leaderboard from public report data.
 
-    Classic's web route accepts a difficulty query parameter, but the public
-    Guild.zoneRanking GraphQL field may not expose a matching argument. In that
-    case Heroic remains available from the default payload. Normal is only
-    exposed when the payload itself contains identifiable difficulty blocks.
+    The Classic Guild.zoneRanking field does not expose the website's difficulty
+    or player-metric filters. This service therefore uses the latest four-reset
+    report window, keeps only boss kills for the selected difficulty and stores
+    each character's best parse per boss before calculating the leaderboard
+    average.
     """
 
-    def __init__(self, client: WarcraftLogsClient) -> None:
-        self.client = client
-        self.schema_service = WarcraftLogsRankingsService(client)
+    def __init__(
+        self,
+        reports_service: WarcraftLogsReportsService,
+        summary_service: WarcraftLogsReportSummaryService,
+        performance_service: WarcraftLogsPlayerPerformanceService,
+    ) -> None:
+        self.reports_service = reports_service
+        self.summary_service = summary_service
+        self.performance_service = performance_service
         self._cache: dict[tuple[int, int], _CacheEntry] = {}
 
     async def get_leaderboard(
@@ -84,47 +90,84 @@ class WarcraftLogsGuildRecentLeaderboardService:
         if not force_refresh and cached and now < cached.expires_at:
             return cached.result
 
-        damage_guild, raw_damage, damage_filtered = await self._fetch_metric(
-            clean_guild_id, clean_difficulty, "dps"
+        report_result = await self.reports_service.get_recent_reports(
+            clean_guild_id,
+            limit=REPORT_LIMIT,
+            force_refresh=force_refresh,
         )
-        healing_guild, raw_healing, healing_filtered = await self._fetch_metric(
-            clean_guild_id, clean_difficulty, "hps"
+        reports = _filter_report_window(report_result.reports)
+        latest_zone = reports[0].zone_name if reports else None
+        reports = tuple(
+            report for report in reports if not latest_zone or report.zone_name == latest_zone
         )
-        difficulty_available = damage_filtered or healing_filtered or clean_difficulty == 4
 
-        if clean_difficulty == 3 and not difficulty_available:
-            damage_players: tuple[WarcraftLogsPlayerSummary, ...] = ()
-            healing_players: tuple[WarcraftLogsPlayerSummary, ...] = ()
-        else:
-            damage_summaries = aggregate_player_performance(
-                parse_player_performance_rows(raw_damage)
-            )
-            healing_summaries = aggregate_player_performance(
-                parse_player_performance_rows(raw_healing)
-            )
-            damage_players = tuple(
-                sorted(
-                    (p for p in damage_summaries if p.role_category != "Healer"),
-                    key=_average_sort_key,
-                )
-            )
-            healing_players = tuple(
-                sorted(
-                    (p for p in healing_summaries if p.role_category == "Healer"),
-                    key=_average_sort_key,
-                )
-            )
+        best_rows: dict[tuple[str, str, str, str], WarcraftLogsPlayerPerformance] = {}
+        included_reports: list[WarcraftLogsReport] = []
 
+        for report in reports:
+            summary = await self.summary_service.get_report_summary(
+                report.code,
+                force_refresh=force_refresh,
+            )
+            killed_encounters = {
+                fight.label.encounter_name.casefold()
+                for fight in summary.boss_fights
+                if fight.kill
+                and _difficulty_value(fight.raw_difficulty) == clean_difficulty
+                and fight.label.encounter_name
+            }
+            if not killed_encounters:
+                continue
+
+            performance = await self.performance_service.get_report_player_performance(
+                report.code,
+                force_refresh=force_refresh,
+            )
+            matched_any = False
+            for row in performance.players:
+                encounter = str(row.encounter_name or "").strip()
+                if not encounter or encounter.casefold() not in killed_encounters:
+                    continue
+                if row.rank_percent is None:
+                    continue
+                matched_any = True
+                key = (
+                    row.name.casefold(),
+                    (row.server or "").casefold(),
+                    (row.spec_name or "").casefold(),
+                    encounter.casefold(),
+                )
+                current = best_rows.get(key)
+                if current is None or (row.rank_percent or 0) > (current.rank_percent or 0):
+                    best_rows[key] = row
+            if matched_any:
+                included_reports.append(report)
+
+        summaries = aggregate_player_performance(best_rows.values())
+        damage_players = tuple(
+            sorted(
+                (player for player in summaries if player.role_category != "Healer"),
+                key=_average_sort_key,
+            )
+        )
+        healing_players = tuple(
+            sorted(
+                (player for player in summaries if player.role_category == "Healer"),
+                key=_average_sort_key,
+            )
+        )
+
+        latest = included_reports[0] if included_reports else None
         result = GuildRecentLeaderboardResult(
             guild_id=clean_guild_id,
-            guild_name=damage_guild or healing_guild or f"Guild {clean_guild_id}",
+            guild_name=f"Guild {clean_guild_id}",
             difficulty=clean_difficulty,
-            difficulty_available=difficulty_available,
             damage_players=damage_players,
             healing_players=healing_players,
+            reports=tuple(included_reports),
+            latest_report_code=latest.code if latest else None,
+            latest_report_title=latest.title if latest else None,
             fetched_at=time.time(),
-            raw_damage=raw_damage,
-            raw_healing=raw_healing,
         )
         self._cache[cache_key] = _CacheEntry(
             result=result,
@@ -132,113 +175,22 @@ class WarcraftLogsGuildRecentLeaderboardService:
         )
         return result
 
-    async def _fetch_metric(
-        self,
-        guild_id: int,
-        difficulty: int,
-        metric: str,
-    ) -> tuple[str, Any, bool]:
-        supported_args, ranking_type_name = await self.schema_service._get_zone_ranking_schema()
-        selection = await self.schema_service._build_type_selection(
-            ranking_type_name,
-            visited=frozenset(),
-            depth=0,
-        )
 
-        argument_parts: list[str] = []
-        if "size" in supported_args:
-            argument_parts.append("size: 10")
-
-        difficulty_arg = _first_supported(supported_args, _DIFFICULTY_ARGUMENT_NAMES)
-        if difficulty_arg is not None:
-            argument_parts.append(f"{difficulty_arg}: {difficulty}")
-
-        metric_arg = _first_supported(supported_args, _METRIC_ARGUMENT_NAMES)
-        if metric_arg is None:
-            raise WarcraftLogsRequestError(
-                "The Warcraft Logs Guild.zoneRanking schema does not expose a player metric filter."
-            )
-        argument_parts.append(f"{metric_arg}: {metric}")
-
-        recent_arg = _first_supported(supported_args, _RECENT_ARGUMENT_NAMES)
-        if recent_arg is None:
-            raise WarcraftLogsRequestError(
-                "The Warcraft Logs Guild.zoneRanking schema does not expose recent raiders."
-            )
-        argument_parts.append(f"{recent_arg}: true")
-
-        arguments = ", ".join(argument_parts)
-        query = f"""
-        query GuildRecentPlayerRankings {{
-          guildData {{
-            guild(id: {guild_id}) {{
-              id
-              name
-              zoneRankings: zoneRanking({arguments}) {{
-                {selection}
-              }}
-            }}
-          }}
-        }}
-        """
-        data = await self.client.query(query)
-        guild = data.get("guildData", {}).get("guild")
-        if not isinstance(guild, dict):
-            raise WarcraftLogsRequestError(f"Warcraft Logs guild {guild_id} was not found.")
-        raw = guild.get("zoneRankings")
-        if raw is None:
-            raise WarcraftLogsRequestError(
-                f"Warcraft Logs returned no recent {metric.upper()} rankings."
-            )
-
-        if difficulty_arg is not None:
-            return str(guild.get("name") or ""), raw, True
-
-        filtered, found_marker = _extract_difficulty_payload(raw, difficulty)
-        return str(guild.get("name") or ""), filtered if found_marker else raw, found_marker
+def _filter_report_window(
+    reports: tuple[WarcraftLogsReport, ...],
+) -> tuple[WarcraftLogsReport, ...]:
+    if not reports:
+        return ()
+    newest_ms = max(report.start_time for report in reports)
+    cutoff_ms = newest_ms - REPORT_WINDOW_DAYS * 24 * 60 * 60 * 1000
+    return tuple(report for report in reports if report.start_time >= cutoff_ms)
 
 
-def _extract_difficulty_payload(value: Any, difficulty: int) -> tuple[Any, bool]:
-    """Return only matching difficulty branches when the JSON payload labels them."""
-
-    found_marker = False
-
-    def walk(node: Any) -> Any:
-        nonlocal found_marker
-        if isinstance(node, dict):
-            marker = _difficulty_value(node)
-            if marker is not None:
-                found_marker = True
-                if marker != difficulty:
-                    return None
-            output: dict[str, Any] = {}
-            for key, child in node.items():
-                filtered = walk(child)
-                if filtered is not None:
-                    output[key] = filtered
-            return output
-        if isinstance(node, list):
-            output = []
-            for child in node:
-                filtered = walk(child)
-                if filtered is not None:
-                    output.append(filtered)
-            return output
-        return node
-
-    return walk(value), found_marker
-
-
-def _difficulty_value(data: dict[str, Any]) -> int | None:
-    for key in _DIFFICULTY_KEYS:
-        value = data.get(key)
-        try:
-            parsed = int(value)
-        except (TypeError, ValueError):
-            continue
-        if parsed in (3, 4):
-            return parsed
-    return None
+def _difficulty_value(raw: object) -> int | None:
+    try:
+        return int(raw) if raw is not None else None
+    except (TypeError, ValueError):
+        return None
 
 
 def _average_sort_key(player: WarcraftLogsPlayerSummary) -> tuple[bool, float, str]:
@@ -247,7 +199,3 @@ def _average_sort_key(player: WarcraftLogsPlayerSummary) -> tuple[bool, float, s
         -(player.average_parse or 0),
         player.name.casefold(),
     )
-
-
-def _first_supported(supported: set[str], candidates: tuple[str, ...]) -> str | None:
-    return next((name for name in candidates if name in supported), None)
