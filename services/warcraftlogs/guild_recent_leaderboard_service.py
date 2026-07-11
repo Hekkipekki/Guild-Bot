@@ -67,7 +67,7 @@ class WarcraftLogsGuildRecentLeaderboardService:
         self.reports_service = reports_service
         self.summary_service = summary_service
         self.performance_service = performance_service
-        self._cache: dict[tuple[int, int, tuple[str, ...]], _CacheEntry] = {}
+        self._cache: dict[tuple[int, int, bool, tuple[str, ...]], _CacheEntry] = {}
 
     async def get_leaderboard(
         self,
@@ -84,12 +84,18 @@ class WarcraftLogsGuildRecentLeaderboardService:
         if clean_difficulty not in (3, 4):
             raise ValueError("Difficulty must be 3 (Normal) or 4 (Heroic).")
 
+        filter_enabled = allowed_character_names is not None
         allowed = frozenset(
             _normalize_character_name(value)
             for value in (allowed_character_names or ())
             if _normalize_character_name(value)
         )
-        cache_key = (clean_guild_id, clean_difficulty, tuple(sorted(allowed)))
+        cache_key = (
+            clean_guild_id,
+            clean_difficulty,
+            filter_enabled,
+            tuple(sorted(allowed)),
+        )
         now = time.monotonic()
         cached = self._cache.get(cache_key)
         if not force_refresh and cached and now < cached.expires_at:
@@ -130,7 +136,7 @@ class WarcraftLogsGuildRecentLeaderboardService:
             )
             matched_any = False
             for row in performance.players:
-                if allowed and _normalize_character_name(row.name) not in allowed:
+                if filter_enabled and _normalize_character_name(row.name) not in allowed:
                     continue
                 encounter = str(row.encounter_name or "").strip()
                 if not encounter or encounter.casefold() not in killed_encounters:
@@ -175,7 +181,7 @@ class WarcraftLogsGuildRecentLeaderboardService:
             latest_report_code=latest.code if latest else None,
             latest_report_title=latest.title if latest else None,
             fetched_at=time.time(),
-            raid_team_filtered=bool(allowed),
+            raid_team_filtered=filter_enabled,
         )
         self._cache[cache_key] = _CacheEntry(
             result=result,
