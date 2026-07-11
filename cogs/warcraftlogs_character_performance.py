@@ -35,7 +35,7 @@ class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
         self.character_service = WarcraftLogsCharacterPerformanceService(self.client)
         self.player_command = app_commands.Command(
             name="player",
-            description="Show a character's Normal/Heroic damage and healing top parses.",
+            description="Show a character's Heroic damage or healing top parses.",
             callback=self.player,
         )
         self.debug_character_command = app_commands.Command(
@@ -74,7 +74,7 @@ class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
             )
             return
 
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
         try:
             result = await self.character_service.get_character_performance(
                 character,
@@ -107,10 +107,16 @@ class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
             )
             return
 
-        view = WarcraftLogsCharacterView(result, owner_id=interaction.user.id)
+        emojis = tuple(guild.emojis)
+        view = WarcraftLogsCharacterView(
+            result,
+            owner_id=interaction.user.id,
+            guild_emojis=emojis,
+        )
         await interaction.followup.send(
-            embed=build_character_card_embed(result, "heroic", "damage"),
+            embed=build_character_card_embed(result, "heroic", "damage", emojis),
             view=view,
+            ephemeral=True,
         )
 
     async def debug_character(
@@ -173,13 +179,11 @@ class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
                 "server": server,
                 "region": settings.region,
                 "raid_size": 10,
-                "difficulties": [3, 4],
+                "difficulty": 4,
                 "metrics": ["dps", "hps"],
             },
             response={
-                "normal_damage": result.normal_damage,
                 "heroic_damage": result.heroic_damage,
-                "normal_healing": result.normal_healing,
                 "heroic_healing": result.heroic_healing,
                 "raw_character": result.raw_response,
             },
