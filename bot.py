@@ -35,6 +35,7 @@ EXTENSIONS = [
     "cogs.warcraftlogs",
     "cogs.warcraftlogs_report_summary",
     "cogs.warcraftlogs_player_performance",
+    "cogs.warcraftlogs_character_performance",
 ]
 
 

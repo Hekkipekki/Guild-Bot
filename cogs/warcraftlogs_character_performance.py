@@ -18,47 +18,44 @@ from services.warcraftlogs.character_performance_service import (
 )
 from services.warcraftlogs.credentials import get_warcraftlogs_credentials
 from services.warcraftlogs.debug_service import build_debug_json_bytes
-from services.warcraftlogs.player_performance_service import WarcraftLogsPlayerPerformanceService
-from services.warcraftlogs.reports_service import WarcraftLogsReportsService
 from services.warcraftlogs.settings_service import get_warcraftlogs_settings
-from views.warcraftlogs_player_view import (
-    WarcraftLogsPlayerView,
-    build_player_leaderboard_embed,
+from views.warcraftlogs_character_view import (
+    WarcraftLogsCharacterView,
+    build_character_card_embed,
 )
 
 
-class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
-    """Player-performance commands attached to the existing /logs group."""
+class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
+    """Historical character ranking cards attached to the existing /logs group."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         client_id, client_secret = get_warcraftlogs_credentials()
         self.client = WarcraftLogsClient(client_id, client_secret)
-        self.reports_service = WarcraftLogsReportsService(self.client)
-        self.performance_service = WarcraftLogsPlayerPerformanceService(self.client)
         self.character_service = WarcraftLogsCharacterPerformanceService(self.client)
-        self.players_command = app_commands.Command(
-            name="players",
-            description="Browse player performance from the latest or a selected report.",
-            callback=self.players,
+        self.player_command = app_commands.Command(
+            name="player",
+            description="Show a character's Normal/Heroic damage and healing top parses.",
+            callback=self.player,
         )
-        self.debug_performance_command = app_commands.Command(
-            name="debug-performance",
-            description="DEV only: export raw report player rankings.",
-            callback=self.debug_performance,
+        self.debug_character_command = app_commands.Command(
+            name="debug-character",
+            description="DEV only: export raw character ranking payloads.",
+            callback=self.debug_character,
         )
 
     async def cog_unload(self) -> None:
         logs_group = self.bot.tree.get_command("logs")
         if isinstance(logs_group, app_commands.Group):
-            logs_group.remove_command("players")
-            logs_group.remove_command("debug-performance")
+            logs_group.remove_command("player")
+            logs_group.remove_command("debug-character")
         await self.client.close()
 
-    async def players(
+    async def player(
         self,
         interaction: discord.Interaction,
-        code: str | None = None,
+        character: str,
+        server: str,
         refresh: bool = False,
     ) -> None:
         guild = interaction.guild
@@ -79,19 +76,10 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
 
         await interaction.response.defer(thinking=True)
         try:
-            selected_code = await self._resolve_report_code(
-                settings.guild_id,
-                code,
-                refresh=refresh,
-            )
-            if selected_code is None:
-                await interaction.followup.send(
-                    "⚠ Warcraft Logs returned no recent reports for this guild.",
-                    ephemeral=True,
-                )
-                return
-            result = await self.performance_service.get_report_player_performance(
-                selected_code,
+            result = await self.character_service.get_character_performance(
+                character,
+                server,
+                settings.region,
                 force_refresh=refresh,
             )
         except WarcraftLogsConfigurationError:
@@ -108,33 +96,28 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
             return
         except (WarcraftLogsRequestError, ValueError) as exc:
             await interaction.followup.send(
-                f"⚠ Warcraft Logs could not return player performance: `{exc}`",
+                f"⚠ Warcraft Logs could not return that character card: `{exc}`",
                 ephemeral=True,
             )
             return
         except Exception as exc:
             await interaction.followup.send(
-                f"⚠ Unexpected Warcraft Logs performance error: `{type(exc).__name__}: {exc}`",
+                f"⚠ Unexpected Warcraft Logs character error: `{type(exc).__name__}: {exc}`",
                 ephemeral=True,
             )
             return
 
-        view = WarcraftLogsPlayerView(
-            result,
-            owner_id=interaction.user.id,
-            character_service=self.character_service,
-            region=settings.region,
-            guild_emojis=tuple(guild.emojis),
-        )
+        view = WarcraftLogsCharacterView(result, owner_id=interaction.user.id)
         await interaction.followup.send(
-            embed=build_player_leaderboard_embed(result, guild_emojis=tuple(guild.emojis)),
+            embed=build_character_card_embed(result, "heroic", "damage"),
             view=view,
         )
 
-    async def debug_performance(
+    async def debug_character(
         self,
         interaction: discord.Interaction,
-        code: str | None = None,
+        character: str,
+        server: str,
     ) -> None:
         if not bool(config.DEV_MODE):
             await interaction.response.send_message(
@@ -142,7 +125,6 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
                 ephemeral=True,
             )
             return
-
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
@@ -165,19 +147,10 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
 
         await interaction.response.defer(thinking=True, ephemeral=True)
         try:
-            selected_code = await self._resolve_report_code(
-                settings.guild_id,
-                code,
-                refresh=True,
-            )
-            if selected_code is None:
-                await interaction.followup.send(
-                    "⚠ Warcraft Logs returned no recent reports for this guild.",
-                    ephemeral=True,
-                )
-                return
-            result = await self.performance_service.get_report_player_performance(
-                selected_code,
+            result = await self.character_service.get_character_performance(
+                character,
+                server,
+                settings.region,
                 force_refresh=True,
             )
         except (
@@ -187,68 +160,50 @@ class WarcraftLogsPlayerPerformanceCommands(commands.Cog):
             ValueError,
         ) as exc:
             await interaction.followup.send(
-                f"⚠ Warcraft Logs performance debug request failed: `{type(exc).__name__}: {exc}`",
-                ephemeral=True,
-            )
-            return
-        except Exception as exc:
-            await interaction.followup.send(
-                f"⚠ Unexpected Warcraft Logs performance debug error: `{type(exc).__name__}: {exc}`",
+                f"⚠ Warcraft Logs character debug request failed: `{type(exc).__name__}: {exc}`",
                 ephemeral=True,
             )
             return
 
         debug_bytes = build_debug_json_bytes(
-            operation="report_player_performance",
+            operation="character_top_parses",
             request={
                 "discord_guild_id": guild.id,
-                "warcraftlogs_guild_id": settings.guild_id,
-                "report_code": selected_code,
+                "character": character,
+                "server": server,
+                "region": settings.region,
+                "raid_size": 10,
+                "difficulties": [3, 4],
+                "metrics": ["dps", "hps"],
             },
             response={
-                "fetched_at": result.fetched_at,
-                "normalized_rows": result.players,
-                "player_summaries": result.player_summaries,
-                "raw_rankings": result.raw_rankings,
+                "normal_damage": result.normal_damage,
+                "heroic_damage": result.heroic_damage,
+                "normal_healing": result.normal_healing,
+                "heroic_healing": result.heroic_healing,
+                "raw_character": result.raw_response,
             },
         )
         file = discord.File(
             io.BytesIO(debug_bytes),
-            filename=f"warcraftlogs-performance-{selected_code}.json",
+            filename=f"warcraftlogs-character-{result.character_name.casefold()}.json",
         )
         await interaction.followup.send(
-            "🧪 DEV_MODE Warcraft Logs performance export. Credential-like fields were redacted.",
+            "🧪 DEV_MODE Warcraft Logs character export. Credential-like fields were redacted.",
             file=file,
             ephemeral=True,
         )
-
-    async def _resolve_report_code(
-        self,
-        guild_id: int,
-        code: str | None,
-        *,
-        refresh: bool,
-    ) -> str | None:
-        selected_code = str(code or "").strip()
-        if selected_code:
-            return selected_code
-        reports = await self.reports_service.get_recent_reports(
-            guild_id,
-            limit=1,
-            force_refresh=refresh,
-        )
-        return reports.reports[0].code if reports.reports else None
 
 
 async def setup(bot: commands.Bot) -> None:
     logs_group = bot.tree.get_command("logs")
     if not isinstance(logs_group, app_commands.Group):
         raise RuntimeError(
-            "The Warcraft Logs command group must be loaded before player performance."
+            "The Warcraft Logs command group must be loaded before character performance."
         )
 
-    cog = WarcraftLogsPlayerPerformanceCommands(bot)
+    cog = WarcraftLogsCharacterPerformanceCommands(bot)
     await bot.add_cog(cog)
-    logs_group.add_command(cog.players_command)
+    logs_group.add_command(cog.player_command)
     if bool(config.DEV_MODE):
-        logs_group.add_command(cog.debug_performance_command)
+        logs_group.add_command(cog.debug_character_command)
