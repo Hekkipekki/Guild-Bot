@@ -39,6 +39,32 @@ from views.warcraftlogs_guild_leaderboard_view import (
 )
 
 
+class _RaidTeamLeaderboardService:
+    """Bind one Discord guild's registered raid-team characters to the service."""
+
+    def __init__(
+        self,
+        service: WarcraftLogsGuildRecentLeaderboardService,
+        allowed_character_names: set[str] | None,
+    ) -> None:
+        self.service = service
+        self.allowed_character_names = allowed_character_names
+
+    async def get_leaderboard(
+        self,
+        guild_id: int,
+        *,
+        difficulty: int = 4,
+        force_refresh: bool = False,
+    ):
+        return await self.service.get_leaderboard(
+            guild_id,
+            difficulty=difficulty,
+            allowed_character_names=self.allowed_character_names,
+            force_refresh=force_refresh,
+        )
+
+
 class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
     """Interactive recent-report leaderboard under the existing /logs group."""
 
@@ -95,12 +121,15 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             return
 
         raid_team_characters = _registered_raid_team_characters(guild.id)
+        filtered_service = _RaidTeamLeaderboardService(
+            self.recent_service,
+            raid_team_characters,
+        )
         await interaction.response.defer(thinking=True, ephemeral=True)
         try:
-            leaderboard_result = await self.recent_service.get_leaderboard(
+            leaderboard_result = await filtered_service.get_leaderboard(
                 settings.guild_id,
                 difficulty=4,
-                allowed_character_names=raid_team_characters,
                 force_refresh=refresh,
             )
             if not leaderboard_result.latest_report_code:
@@ -135,12 +164,11 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             region=settings.region,
             latest_report=latest_report,
             leaderboard_result=leaderboard_result,
-            recent_service=self.recent_service,
+            recent_service=filtered_service,
             performance_service=self.performance_service,
             character_service=self.character_service,
             dtps_service=self.dtps_service,
             guild_emojis=tuple(guild.emojis),
-            allowed_character_names=raid_team_characters,
         )
         await interaction.followup.send(
             embed=build_guild_recent_embed(leaderboard_result),
@@ -224,9 +252,9 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
 def _registered_raid_team_characters(discord_guild_id: int) -> set[str] | None:
     """Return character names owned by configured raid-team Discord users.
 
-    `None` means no raid team has been configured, so the leaderboard remains
-    backwards-compatible and includes every logged player. An empty set means a
-    raid team exists but none of its members has registered a character yet.
+    `None` means no raid team is configured, so every logged player remains
+    visible. An empty set means a raid team exists but its members have not yet
+    registered any characters.
     """
 
     raid_team_user_ids = get_expected_players(discord_guild_id)
