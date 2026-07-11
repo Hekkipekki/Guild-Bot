@@ -42,6 +42,7 @@ from views.warcraftlogs_guild_leaderboard_view import (
 
 LEADERBOARD_LOAD_TIMEOUT_SECONDS = 150
 PROGRESS_EDIT_INTERVAL_SECONDS = 1.0
+FINAL_SEND_TIMEOUT_SECONDS = 20
 
 
 class _RaidTeamLeaderboardService:
@@ -222,23 +223,87 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             )
             return
 
-        view = WarcraftLogsGuildLeaderboardView(
-            owner_id=interaction.user.id,
-            guild_id=settings.guild_id,
-            region=settings.region,
-            latest_report=latest_report,
-            leaderboard_result=leaderboard_result,
-            recent_service=filtered_service,
-            performance_service=self.performance_service,
-            character_service=self.character_service,
-            dtps_service=self.dtps_service,
-            guild_emojis=tuple(guild.emojis),
-            allowed_character_names=raid_team_characters,
-        )
         await interaction.edit_original_response(
-            embed=build_guild_recent_embed(leaderboard_result),
-            view=view,
+            embed=_build_loading_embed(
+                "Finalizing interface",
+                "Building the player dropdown and interactive controls…",
+                refresh=refresh,
+            ),
+            view=None,
         )
+
+        try:
+            final_embed = build_guild_recent_embed(leaderboard_result)
+            view = WarcraftLogsGuildLeaderboardView(
+                owner_id=interaction.user.id,
+                guild_id=settings.guild_id,
+                region=settings.region,
+                latest_report=latest_report,
+                leaderboard_result=leaderboard_result,
+                recent_service=filtered_service,
+                performance_service=self.performance_service,
+                character_service=self.character_service,
+                dtps_service=self.dtps_service,
+                guild_emojis=tuple(guild.emojis),
+                allowed_character_names=raid_team_characters,
+            )
+        except Exception as exc:
+            await interaction.edit_original_response(
+                embed=discord.Embed(
+                    title="Could not build leaderboard controls",
+                    description=f"`{type(exc).__name__}: {exc}`",
+                    color=discord.Color.red(),
+                ),
+                view=None,
+            )
+            return
+
+        try:
+            await asyncio.wait_for(
+                interaction.followup.send(
+                    embed=final_embed,
+                    view=view,
+                    ephemeral=True,
+                    wait=True,
+                ),
+                timeout=FINAL_SEND_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            await interaction.edit_original_response(
+                embed=discord.Embed(
+                    title="Discord timed out while sending the leaderboard",
+                    description=(
+                        "Warcraft Logs data finished successfully, but Discord did not accept the "
+                        "interactive response within 20 seconds. Run `/logs leaderboard` again; "
+                        "the calculated data is now cached."
+                    ),
+                    color=discord.Color.red(),
+                ),
+                view=None,
+            )
+            return
+        except Exception as exc:
+            await interaction.edit_original_response(
+                embed=discord.Embed(
+                    title="Could not send leaderboard interface",
+                    description=f"`{type(exc).__name__}: {exc}`",
+                    color=discord.Color.red(),
+                ),
+                view=None,
+            )
+            return
+
+        try:
+            await interaction.delete_original_response()
+        except discord.HTTPException:
+            await interaction.edit_original_response(
+                embed=discord.Embed(
+                    title="Leaderboard ready",
+                    description="The interactive leaderboard was posted below.",
+                    color=discord.Color.green(),
+                ),
+                view=None,
+            )
 
     async def debug_guild_leaderboard(
         self,
