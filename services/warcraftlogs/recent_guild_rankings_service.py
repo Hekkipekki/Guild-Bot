@@ -11,6 +11,7 @@ from services.warcraftlogs.reports_service import WarcraftLogsReportsService
 
 
 RECENT_RANKINGS_CACHE_TTL_SECONDS = 600
+RECENT_RANKINGS_REPORT_WINDOW = 20
 
 
 @dataclass(frozen=True)
@@ -32,8 +33,13 @@ class RecentGuildRankingsResult:
     entries: tuple[RecentGuildRankingEntry, ...]
     latest_report_code: str | None
     latest_report_title: str | None
+    zone_name: str | None
     report_codes: tuple[str, ...]
     fetched_at: float
+
+    @property
+    def rankings_url(self) -> str:
+        return f"https://classic.warcraftlogs.com/guild/rankings/{self.guild_id}/latest?size=10"
 
 
 @dataclass
@@ -43,7 +49,7 @@ class _CacheEntry:
 
 
 class WarcraftLogsRecentGuildRankingsService:
-    """Aggregate best player parses across recent guild reports."""
+    """Aggregate best parses from the guild's latest-zone report window."""
 
     def __init__(
         self,
@@ -52,31 +58,34 @@ class WarcraftLogsRecentGuildRankingsService:
     ) -> None:
         self.reports_service = reports_service
         self.performance_service = performance_service
-        self._cache: dict[tuple[int, int], _CacheEntry] = {}
+        self._cache: dict[int, _CacheEntry] = {}
 
     async def get_recent_rankings(
         self,
         guild_id: int,
         *,
-        report_limit: int = 10,
         force_refresh: bool = False,
     ) -> RecentGuildRankingsResult:
         clean_guild_id = int(guild_id)
-        clean_limit = max(1, min(int(report_limit), 20))
-        cache_key = (clean_guild_id, clean_limit)
         now = time.monotonic()
-        cached = self._cache.get(cache_key)
+        cached = self._cache.get(clean_guild_id)
         if not force_refresh and cached and now < cached.expires_at:
             return cached.result
 
         reports_result = await self.reports_service.get_recent_reports(
             clean_guild_id,
-            limit=clean_limit,
+            limit=RECENT_RANKINGS_REPORT_WINDOW,
             force_refresh=force_refresh,
         )
-        reports = reports_result.reports
-        grouped: dict[tuple[str, str, str], dict[str, object]] = {}
+        all_reports = reports_result.reports
+        latest_zone = all_reports[0].zone_name if all_reports else None
+        reports = tuple(
+            report
+            for report in all_reports
+            if not latest_zone or report.zone_name == latest_zone
+        )
 
+        grouped: dict[tuple[str, str, str], dict[str, object]] = {}
         for report in reports:
             performance = await self.performance_service.get_report_player_performance(
                 report.code,
@@ -102,9 +111,9 @@ class WarcraftLogsRecentGuildRankingsService:
                 state["best_parse"] = _max_optional(state["best_parse"], summary.best_parse)
                 state["best_amount"] = _max_optional(state["best_amount"], summary.best_amount)
                 state["ranked_fights"] = int(state["ranked_fights"]) + summary.parse_count
-                cast_reports = state["reports"]
-                if isinstance(cast_reports, set):
-                    cast_reports.add(report.code)
+                reports_seen = state["reports"]
+                if isinstance(reports_seen, set):
+                    reports_seen.add(report.code)
 
         entries: list[RecentGuildRankingEntry] = []
         for state in grouped.values():
@@ -139,10 +148,11 @@ class WarcraftLogsRecentGuildRankingsService:
             entries=tuple(entries),
             latest_report_code=reports[0].code if reports else None,
             latest_report_title=reports[0].title if reports else None,
+            zone_name=latest_zone,
             report_codes=tuple(report.code for report in reports),
             fetched_at=time.time(),
         )
-        self._cache[cache_key] = _CacheEntry(
+        self._cache[clean_guild_id] = _CacheEntry(
             result=result,
             expires_at=now + RECENT_RANKINGS_CACHE_TTL_SECONDS,
         )
