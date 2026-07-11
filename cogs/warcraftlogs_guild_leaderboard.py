@@ -27,6 +27,7 @@ from services.warcraftlogs.player_performance_service import (
 from services.warcraftlogs.report_leaderboard_service import (
     WarcraftLogsReportLeaderboardService,
 )
+from services.warcraftlogs.report_summary_service import WarcraftLogsReportSummaryService
 from services.warcraftlogs.reports_service import WarcraftLogsReportsService
 from services.warcraftlogs.settings_service import get_warcraftlogs_settings
 from views.warcraftlogs_guild_leaderboard_view import (
@@ -36,25 +37,30 @@ from views.warcraftlogs_guild_leaderboard_view import (
 
 
 class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
-    """Interactive recent-raider leaderboard under the existing /logs group."""
+    """Interactive recent-report leaderboard under the existing /logs group."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         client_id, client_secret = get_warcraftlogs_credentials()
         self.client = WarcraftLogsClient(client_id, client_secret)
         self.reports_service = WarcraftLogsReportsService(self.client)
+        self.summary_service = WarcraftLogsReportSummaryService(self.client)
         self.performance_service = WarcraftLogsPlayerPerformanceService(self.client)
-        self.recent_service = WarcraftLogsGuildRecentLeaderboardService(self.client)
+        self.recent_service = WarcraftLogsGuildRecentLeaderboardService(
+            self.reports_service,
+            self.summary_service,
+            self.performance_service,
+        )
         self.character_service = WarcraftLogsCharacterPerformanceService(self.client)
         self.dtps_service = WarcraftLogsReportLeaderboardService(self.client)
         self.command = app_commands.Command(
             name="leaderboard",
-            description="Show recent-raider DPS/HPS rankings and avoidable DTPS.",
+            description="Show four-reset performance, reports, top parses and avoidable DTPS.",
             callback=self.leaderboard,
         )
         self.debug_command = app_commands.Command(
             name="debug-guild-leaderboard",
-            description="DEV only: export raw recent guild DPS/HPS rankings.",
+            description="DEV only: export aggregated recent-report rankings.",
             callback=self.debug_guild_leaderboard,
         )
 
@@ -92,15 +98,12 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
                 difficulty=4,
                 force_refresh=refresh,
             )
-            reports = await self.reports_service.get_recent_reports(
-                settings.guild_id,
-                limit=1,
-                force_refresh=refresh,
-            )
-            if not reports.reports:
-                raise WarcraftLogsRequestError("Warcraft Logs returned no recent guild reports.")
+            if not leaderboard_result.latest_report_code:
+                raise WarcraftLogsRequestError(
+                    "No Heroic 10-player kill reports were found in the latest four-reset window."
+                )
             latest_report = await self.performance_service.get_report_player_performance(
-                reports.reports[0].code,
+                leaderboard_result.latest_report_code,
                 force_refresh=refresh,
             )
         except (
@@ -128,6 +131,7 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             latest_report=latest_report,
             leaderboard_result=leaderboard_result,
             recent_service=self.recent_service,
+            performance_service=self.performance_service,
             character_service=self.character_service,
             dtps_service=self.dtps_service,
             guild_emojis=tuple(guild.emojis),
@@ -183,24 +187,22 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             return
 
         payload = build_debug_json_bytes(
-            operation="guild_recent_player_rankings",
+            operation="guild_recent_report_rankings",
             request={
                 "discord_guild_id": guild.id,
                 "warcraftlogs_guild_id": settings.guild_id,
                 "difficulty": difficulty,
-                "size": 10,
-                "recent": True,
-                "metrics": ["dps", "hps"],
+                "window_days": 28,
             },
             response={
                 "damage_players": result.damage_players,
                 "healing_players": result.healing_players,
-                "raw_damage": result.raw_damage,
-                "raw_healing": result.raw_healing,
+                "reports": result.reports,
+                "latest_report_code": result.latest_report_code,
             },
         )
         await interaction.followup.send(
-            "🧪 DEV_MODE recent guild leaderboard export.",
+            "🧪 DEV_MODE recent-report leaderboard export.",
             file=discord.File(
                 io.BytesIO(payload),
                 filename=f"warcraftlogs-guild-leaderboard-{settings.guild_id}-{difficulty}.json",
