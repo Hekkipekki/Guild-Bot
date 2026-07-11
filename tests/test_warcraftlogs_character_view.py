@@ -1,7 +1,11 @@
 import unittest
 
 from services.warcraftlogs.character_performance_service import CharacterParseEntry
-from views.warcraftlogs_character_view import _best_kill_per_boss
+from views.warcraftlogs_character_view import (
+    _best_kill_per_boss,
+    _boss_emoji,
+    _parse_marker,
+)
 
 
 class CharacterViewTests(unittest.TestCase):
@@ -36,6 +40,18 @@ class CharacterViewTests(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].spec_name, "Demonology")
         self.assertEqual(result[0].rank_percent, 88.4)
+
+    def test_uses_exact_configured_boss_emojis(self):
+        self.assertIn("<:immerseus:", _boss_emoji("Immerseus"))
+        self.assertIn("<:korkrondarkshamans:", _boss_emoji("Kor'kron Dark Shaman"))
+        self.assertIn("<:garrosh:", _boss_emoji("Garrosh Hellscream"))
+
+    def test_parse_markers_follow_warcraft_logs_bands(self):
+        self.assertEqual(_parse_marker(99.0), "🟠")
+        self.assertEqual(_parse_marker(80.0), "🟣")
+        self.assertEqual(_parse_marker(60.0), "🔵")
+        self.assertEqual(_parse_marker(30.0), "🟢")
+        self.assertEqual(_parse_marker(10.0), "⚪")
 
 
 if __name__ == "__main__":
