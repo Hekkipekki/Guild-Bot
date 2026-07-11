@@ -120,6 +120,7 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
                 ephemeral=True,
             )
             return
+
         settings = get_warcraftlogs_settings(guild.id)
         if not settings.is_configured:
             await interaction.response.send_message(
@@ -128,17 +129,21 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             )
             return
 
+        raid_team_user_ids = get_expected_players(guild.id)
         raid_team_characters = _registered_raid_team_characters(guild.id)
         filtered_service = _RaidTeamLeaderboardService(
             self.recent_service,
             raid_team_characters,
         )
-        loading_embed = _build_loading_embed(
-            "Starting",
-            "Reading the configured raid team and Warcraft Logs settings…",
-            refresh=refresh,
+
+        await interaction.response.send_message(
+            embed=_build_loading_embed(
+                "Starting",
+                "Reading the configured raid team and Warcraft Logs settings…",
+                refresh=refresh,
+            ),
+            ephemeral=True,
         )
-        await interaction.response.send_message(embed=loading_embed, ephemeral=True)
 
         progress_lock = asyncio.Lock()
         last_edit = 0.0
@@ -188,9 +193,8 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
                 embed=discord.Embed(
                     title="Warcraft Logs timed out",
                     description=(
-                        "The current Warcraft Logs request did not finish in time. The progress "
-                        "step above identifies which phase stalled. Try again without "
-                        "`refresh:true`; cached report data is much faster."
+                        "The current Warcraft Logs request did not finish in time. Try again "
+                        "without `refresh:true`; cached report data is much faster."
                     ),
                     color=discord.Color.red(),
                 ),
@@ -223,6 +227,29 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             )
             return
 
+        final_embed = build_guild_recent_embed(leaderboard_result)
+        selectable_players = (
+            *leaderboard_result.damage_players,
+            *leaderboard_result.healing_players,
+        )
+
+        # Discord rejects an empty select menu even when it is disabled. When the
+        # raid-team/profile join produces no eligible players, show the completed
+        # leaderboard without interactive controls and explain how to fix the roster.
+        if not selectable_players:
+            final_embed.add_field(
+                name="No selectable raid-team characters",
+                value=(
+                    f"Configured raid-team Discord users: **{len(raid_team_user_ids)}**\n"
+                    f"Registered character names found: **{len(raid_team_characters or ())}**\n\n"
+                    "Add or correct character names in the members' Discord profiles, or remove "
+                    "the raid-team filter in `/setup`. Names must match Warcraft Logs characters."
+                ),
+                inline=False,
+            )
+            await interaction.edit_original_response(embed=final_embed, view=None)
+            return
+
         await interaction.edit_original_response(
             embed=_build_loading_embed(
                 "Finalizing interface",
@@ -233,7 +260,6 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
         )
 
         try:
-            final_embed = build_guild_recent_embed(leaderboard_result)
             view = WarcraftLogsGuildLeaderboardView(
                 owner_id=interaction.user.id,
                 guild_id=settings.guild_id,
@@ -273,9 +299,9 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
                 embed=discord.Embed(
                     title="Discord timed out while sending the leaderboard",
                     description=(
-                        "Warcraft Logs data finished successfully, but Discord did not accept the "
-                        "interactive response within 20 seconds. Run `/logs leaderboard` again; "
-                        "the calculated data is now cached."
+                        "Warcraft Logs data finished successfully, but Discord did not accept "
+                        "the interactive response within 20 seconds. Run `/logs leaderboard` "
+                        "again; the calculated data is now cached."
                     ),
                     color=discord.Color.red(),
                 ),
@@ -385,7 +411,11 @@ def _build_loading_embed(title: str, detail: str, *, refresh: bool) -> discord.E
         color=discord.Color.orange(),
     )
     embed.set_footer(
-        text="Forced refresh: all report caches are bypassed." if refresh else "Cached data is used when available."
+        text=(
+            "Forced refresh: all report caches are bypassed."
+            if refresh
+            else "Cached data is used when available."
+        )
     )
     return embed
 
@@ -394,7 +424,12 @@ def _progress_text(stage: str, completed: int, total: int) -> tuple[str, str]:
     if stage == "cache":
         return "Cache hit", "Using the completed three-week leaderboard from cache."
     if stage == "reports":
-        return "Recent reports", "Loading the guild's recent report list…" if not completed else "Recent report list loaded."
+        return (
+            "Recent reports",
+            "Loading the guild's recent report list…"
+            if not completed
+            else "Recent report list loaded.",
+        )
     if stage == "summaries":
         return (
             "Checking raid reports",
@@ -408,7 +443,9 @@ def _progress_text(stage: str, completed: int, total: int) -> tuple[str, str]:
     if stage == "latest":
         return (
             "Preparing latest raid",
-            "Loading the latest matching report for player-card navigation…" if not completed else "Latest raid loaded.",
+            "Loading the latest matching report for player-card navigation…"
+            if not completed
+            else "Latest raid loaded.",
         )
     if stage == "done":
         return "Finalizing", "Sorting raid-team players and calculating their best-boss averages…"
