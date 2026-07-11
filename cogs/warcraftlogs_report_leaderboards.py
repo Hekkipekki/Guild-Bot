@@ -382,8 +382,9 @@ async def setup(bot: commands.Bot) -> None:
     existing = logs_group.get_command("rankings")
     if existing is None:
         raise RuntimeError("The existing guild rankings command was not found.")
-    guild_callback = existing.callback
     logs_group.remove_command("rankings")
+    existing.name = "guild"
+    existing.description = "Show guild world, region, and realm rankings."
 
     cog = WarcraftLogsReportLeaderboardCommands(bot)
     await bot.add_cog(cog)
@@ -392,13 +393,7 @@ async def setup(bot: commands.Bot) -> None:
         name="rankings",
         description="Guild, DPS/HPS, and avoidable-DTPS rankings.",
     )
-    rankings_group.add_command(
-        app_commands.Command(
-            name="guild",
-            description="Show guild world, region, and realm rankings.",
-            callback=guild_callback,
-        )
-    )
+    rankings_group.add_command(existing)
     rankings_group.add_command(
         app_commands.Command(
             name="dps",
