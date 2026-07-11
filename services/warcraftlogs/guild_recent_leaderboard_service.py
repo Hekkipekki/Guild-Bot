@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import time
 from dataclasses import dataclass
 
@@ -15,6 +16,7 @@ from services.warcraftlogs.reports_service import WarcraftLogsReport, WarcraftLo
 CACHE_TTL_SECONDS = 600
 REPORT_WINDOW_DAYS = 21
 REPORT_LIMIT = 20
+REPORT_CONCURRENCY = 3
 
 
 @dataclass(frozen=True)
@@ -86,9 +88,9 @@ class WarcraftLogsGuildRecentLeaderboardService:
 
         filter_enabled = allowed_character_names is not None
         allowed = frozenset(
-            _normalize_character_name(value)
+            normalized
             for value in (allowed_character_names or ())
-            if _normalize_character_name(value)
+            if (normalized := _normalize_character_name(value))
         )
         cache_key = (
             clean_guild_id,
@@ -112,37 +114,50 @@ class WarcraftLogsGuildRecentLeaderboardService:
             report for report in reports if not latest_zone or report.zone_name == latest_zone
         )
 
+        semaphore = asyncio.Semaphore(REPORT_CONCURRENCY)
+
+        async def process_report(
+            report: WarcraftLogsReport,
+        ) -> tuple[WarcraftLogsReport, tuple[WarcraftLogsPlayerPerformance, ...]] | None:
+            async with semaphore:
+                summary = await self.summary_service.get_report_summary(
+                    report.code,
+                    force_refresh=force_refresh,
+                )
+                killed_encounters = {
+                    fight.label.encounter_name.casefold()
+                    for fight in summary.boss_fights
+                    if fight.kill
+                    and _difficulty_value(fight.raw_difficulty) == clean_difficulty
+                    and fight.label.encounter_name
+                }
+                if not killed_encounters:
+                    return None
+
+                performance = await self.performance_service.get_report_player_performance(
+                    report.code,
+                    force_refresh=force_refresh,
+                )
+                matched_rows = tuple(
+                    row
+                    for row in performance.players
+                    if (not filter_enabled or _normalize_character_name(row.name) in allowed)
+                    and row.rank_percent is not None
+                    and str(row.encounter_name or "").strip().casefold() in killed_encounters
+                )
+                return report, matched_rows
+
+        processed = await asyncio.gather(*(process_report(report) for report in reports))
+
         best_rows: dict[tuple[str, str, str, str], WarcraftLogsPlayerPerformance] = {}
         included_reports: list[WarcraftLogsReport] = []
-
-        for report in reports:
-            summary = await self.summary_service.get_report_summary(
-                report.code,
-                force_refresh=force_refresh,
-            )
-            killed_encounters = {
-                fight.label.encounter_name.casefold()
-                for fight in summary.boss_fights
-                if fight.kill
-                and _difficulty_value(fight.raw_difficulty) == clean_difficulty
-                and fight.label.encounter_name
-            }
-            if not killed_encounters:
+        for item in processed:
+            if item is None:
                 continue
+            report, rows = item
             included_reports.append(report)
-
-            performance = await self.performance_service.get_report_player_performance(
-                report.code,
-                force_refresh=force_refresh,
-            )
-            for row in performance.players:
-                if filter_enabled and _normalize_character_name(row.name) not in allowed:
-                    continue
+            for row in rows:
                 encounter = str(row.encounter_name or "").strip()
-                if not encounter or encounter.casefold() not in killed_encounters:
-                    continue
-                if row.rank_percent is None:
-                    continue
                 key = (
                     row.name.casefold(),
                     (row.server or "").casefold(),
