@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 import discord
 
+from services.warcraftlogs.boss_emoji_config import BOSS_EMOJIS
 from services.warcraftlogs.character_performance_service import (
     CharacterParseEntry,
     CharacterPerformanceResult,
@@ -169,9 +170,8 @@ def _format_entry(
     guild_emojis: tuple[discord.Emoji, ...],
 ) -> str:
     percentile = f"{entry.rank_percent:.1f}" if entry.rank_percent is not None else "—"
-    boss_emoji = _find_emoji(entry.encounter_name, guild_emojis)
+    boss_icon = _boss_emoji(entry.encounter_name)
     spec_emoji = _find_emoji(entry.spec_name, guild_emojis)
-    boss_icon = f"{boss_emoji} " if boss_emoji else ""
     spec_icon = f"{spec_emoji} " if spec_emoji else ""
     spec = entry.spec_name or "Unknown spec"
     suffix: list[str] = []
@@ -180,10 +180,19 @@ def _format_entry(
     if entry.total_kills is not None:
         suffix.append(f"{entry.total_kills} kills")
     details = f" • {' • '.join(suffix)}" if suffix else ""
+    parse_marker = _parse_marker(entry.rank_percent)
     return (
-        f"{_parse_marker(entry.rank_percent)} {boss_icon}**{entry.encounter_name}** — "
-        f"**{percentile}**{details} • {spec_icon}{spec}"
+        f"{boss_icon} **{entry.encounter_name}** — {parse_marker} **{percentile}**"
+        f"{details} • {spec_icon}{spec}"
     )
+
+
+def _boss_emoji(value: str | None) -> str:
+    wanted = _normalize_name(value)
+    if not wanted:
+        return ""
+    emoji = BOSS_EMOJIS.get(wanted)
+    return f"{emoji} " if emoji else ""
 
 
 def _find_emoji(
@@ -207,14 +216,12 @@ def _normalize_name(value: str | None) -> str:
 def _parse_marker(value: float | None) -> str:
     if value is None:
         return "⚪"
-    if value >= 99:
-        return "🟨"
     if value >= 95:
-        return "🟧"
+        return "🟠"
     if value >= 75:
-        return "🟪"
+        return "🟣"
     if value >= 50:
-        return "🟦"
+        return "🔵"
     if value >= 25:
-        return "🟩"
-    return "⬜"
+        return "🟢"
+    return "⚪"
