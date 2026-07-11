@@ -21,4 +21,6 @@ BOSS_EMOJIS: dict[str, str] = {
     "siegecrafter": "<:siegecrafter:1525293853891100783>",
     "paragonsoftheklaxxi": "<:paragons:1525293852926148768>",
     "paragons": "<:paragons:1525293852926148768>",
+    "garroshhellscream": "<:garrosh:1525293851642826804>",
+    "garrosh": "<:garrosh:1525293851642826804>",
 }
