@@ -9,7 +9,6 @@ from services.warcraftlogs.api_client import WarcraftLogsClient, WarcraftLogsReq
 from services.warcraftlogs.avoidable_damage_registry import (
     is_avoidable_damage,
     mechanics_for_boss,
-    normalize_mechanic_name,
 )
 from services.warcraftlogs.player_performance_service import (
     WarcraftLogsPlayerPerformanceService,
@@ -54,6 +53,7 @@ class ReportLeaderboardResult:
     covered_duration_ms: float
     raw_event_pages: tuple[Any, ...]
     unmatched_abilities: tuple[str, ...]
+    resolved_abilities: tuple[tuple[int, str], ...]
     fetched_at: float
 
     @property
@@ -70,12 +70,13 @@ class _CacheEntry:
 class WarcraftLogsReportLeaderboardService:
     """Build report-level DPS and explicit avoidable-DTPS leaderboards."""
 
-    _ACTORS_QUERY = """
-    query ReportActors($code: String!) {
+    _MASTER_DATA_QUERY = """
+    query ReportMasterData($code: String!) {
       reportData {
         report(code: $code) {
           masterData {
             actors { id name type subType }
+            abilities { gameID name }
           }
         }
       }
@@ -155,6 +156,7 @@ class WarcraftLogsReportLeaderboardService:
             covered_duration_ms=0,
             raw_event_pages=(),
             unmatched_abilities=(),
+            resolved_abilities=(),
             fetched_at=time.time(),
         )
 
@@ -168,7 +170,7 @@ class WarcraftLogsReportLeaderboardService:
             code,
             force_refresh=force_refresh,
         )
-        actor_names, player_actor_ids = await self._get_actor_map(code)
+        actor_names, player_actor_ids, ability_names = await self._get_master_data(code)
 
         covered_fights: list[WarcraftLogsFight] = []
         excluded_bosses: list[str] = []
@@ -196,7 +198,7 @@ class WarcraftLogsReportLeaderboardService:
                 for event in events:
                     if not isinstance(event, dict):
                         continue
-                    ability_name = _event_ability_name(event)
+                    ability_name = _event_ability_name(event, ability_names)
                     if not is_avoidable_damage(boss_name, ability_name):
                         if ability_name:
                             unmatched_abilities.add(ability_name)
@@ -226,7 +228,10 @@ class WarcraftLogsReportLeaderboardService:
                         hit_count=int(hits_by_player[name]),
                         ability_damage=tuple(
                             sorted(
-                                ((ability, float(amount)) for ability, amount in abilities_by_player.get(name, {}).items()),
+                                (
+                                    (ability, float(amount))
+                                    for ability, amount in abilities_by_player.get(name, {}).items()
+                                ),
                                 key=lambda item: (-item[1], item[0].casefold()),
                             )
                         ),
@@ -254,29 +259,45 @@ class WarcraftLogsReportLeaderboardService:
             covered_duration_ms=covered_duration_ms,
             raw_event_pages=tuple(raw_pages),
             unmatched_abilities=tuple(sorted(unmatched_abilities, key=str.casefold)),
+            resolved_abilities=tuple(sorted(ability_names.items())),
             fetched_at=time.time(),
         )
 
-    async def _get_actor_map(self, code: str) -> tuple[dict[int, str], set[int]]:
-        data = await self.client.query(self._ACTORS_QUERY, {"code": code})
+    async def _get_master_data(
+        self,
+        code: str,
+    ) -> tuple[dict[int, str], set[int], dict[int, str]]:
+        data = await self.client.query(self._MASTER_DATA_QUERY, {"code": code})
         report = data.get("reportData", {}).get("report")
         master_data = report.get("masterData") if isinstance(report, dict) else None
         actors = master_data.get("actors", []) if isinstance(master_data, dict) else []
+        abilities = master_data.get("abilities", []) if isinstance(master_data, dict) else []
+
         names: dict[int, str] = {}
         player_ids: set[int] = set()
-        if not isinstance(actors, list):
-            return names, player_ids
-        for actor in actors:
-            if not isinstance(actor, dict):
-                continue
-            actor_id = _optional_int(actor.get("id"))
-            name = str(actor.get("name") or "").strip()
-            if actor_id is None or not name:
-                continue
-            names[actor_id] = name
-            if str(actor.get("type") or "").casefold() == "player":
-                player_ids.add(actor_id)
-        return names, player_ids
+        if isinstance(actors, list):
+            for actor in actors:
+                if not isinstance(actor, dict):
+                    continue
+                actor_id = _optional_int(actor.get("id"))
+                name = str(actor.get("name") or "").strip()
+                if actor_id is None or not name:
+                    continue
+                names[actor_id] = name
+                if str(actor.get("type") or "").casefold() == "player":
+                    player_ids.add(actor_id)
+
+        ability_names: dict[int, str] = {}
+        if isinstance(abilities, list):
+            for ability in abilities:
+                if not isinstance(ability, dict):
+                    continue
+                game_id = _optional_int(ability.get("gameID"))
+                name = str(ability.get("name") or "").strip()
+                if game_id is not None and name:
+                    ability_names[game_id] = name
+
+        return names, player_ids, ability_names
 
     async def _get_damage_taken_pages(
         self,
@@ -325,7 +346,10 @@ def _build_damage_taken_query(*, start_time: float, end_time: float) -> str:
     """
 
 
-def _event_ability_name(event: dict[str, Any]) -> str | None:
+def _event_ability_name(
+    event: dict[str, Any],
+    ability_names: dict[int, str] | None = None,
+) -> str | None:
     ability = event.get("ability")
     if isinstance(ability, dict):
         name = str(ability.get("name") or "").strip()
@@ -335,6 +359,9 @@ def _event_ability_name(event: dict[str, Any]) -> str | None:
         value = str(event.get(key) or "").strip()
         if value:
             return value
+    game_id = _optional_int(event.get("abilityGameID"))
+    if game_id is not None and ability_names:
+        return ability_names.get(game_id)
     return None
 
 
