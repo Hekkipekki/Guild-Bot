@@ -64,8 +64,12 @@ class WarcraftLogsRecentGuildRankingsService:
         self,
         guild_id: int,
         *,
+        report_limit: int | None = None,
         force_refresh: bool = False,
     ) -> RecentGuildRankingsResult:
+        # report_limit is retained for command/test compatibility. Guild recent
+        # rankings always inspect the full API-supported latest-zone window.
+        _ = report_limit
         clean_guild_id = int(guild_id)
         now = time.monotonic()
         cached = self._cache.get(clean_guild_id)
