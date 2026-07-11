@@ -1,7 +1,7 @@
 import unittest
 
 from services.warcraftlogs.character_performance_service import CharacterParseEntry
-from views.warcraftlogs_character_view import _best_heroic_kill_per_boss
+from views.warcraftlogs_character_view import _best_kill_per_boss
 
 
 class CharacterViewTests(unittest.TestCase):
@@ -15,12 +15,27 @@ class CharacterViewTests(unittest.TestCase):
             CharacterParseEntry("Malkorok", "Elemental", 80.0, 300000, 0),
         )
 
-        result = _best_heroic_kill_per_boss(entries)
+        result = _best_kill_per_boss(entries)
 
-        self.assertEqual([entry.encounter_name for entry in result], ["Norushen", "Iron Juggernaut"])
+        self.assertEqual(
+            [entry.encounter_name for entry in result],
+            ["Norushen", "Iron Juggernaut"],
+        )
         self.assertEqual(result[0].spec_name, "Elemental")
         self.assertEqual(result[0].rank_percent, 92.9)
         self.assertEqual(result[1].rank_percent, 75.6)
+
+    def test_helper_is_difficulty_agnostic(self):
+        entries = (
+            CharacterParseEntry("Immerseus", "Affliction", 81.2, 400000, 2),
+            CharacterParseEntry("Immerseus", "Demonology", 88.4, 420000, 1),
+        )
+
+        result = _best_kill_per_boss(entries)
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].spec_name, "Demonology")
+        self.assertEqual(result[0].rank_percent, 88.4)
 
 
 if __name__ == "__main__":
