@@ -19,15 +19,13 @@ class WarcraftLogsCharacterView(discord.ui.View):
         owner_id: int,
         difficulty: str = "heroic",
         metric: str = "damage",
-        guild_emojis: tuple[discord.Emoji, ...] = (),
         timeout: float = 300,
     ) -> None:
         super().__init__(timeout=timeout)
         self.result = result
         self.owner_id = int(owner_id)
-        self.difficulty = "heroic"
+        self.difficulty = difficulty
         self.metric = metric
-        self.guild_emojis = guild_emojis
         self._sync_button_styles()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -39,65 +37,53 @@ class WarcraftLogsCharacterView(discord.ui.View):
         )
         return False
 
-    @discord.ui.button(label="Normal 10", style=discord.ButtonStyle.secondary, disabled=True, row=0)
-    async def normal(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ) -> None:
-        await interaction.response.send_message(
-            "Top Parses currently shows Heroic 10-player kills only.", ephemeral=True
+    @discord.ui.button(label="Normal 10", style=discord.ButtonStyle.secondary, row=0)
+    async def normal(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        self.difficulty = "normal"
+        self._sync_button_styles()
+        await interaction.response.edit_message(
+            embed=build_character_card_embed(self.result, self.difficulty, self.metric),
+            view=self,
         )
 
     @discord.ui.button(label="Heroic 10", style=discord.ButtonStyle.primary, row=0)
-    async def heroic(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ) -> None:
+    async def heroic(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         self.difficulty = "heroic"
         self._sync_button_styles()
         await interaction.response.edit_message(
-            embed=build_character_card_embed(
-                self.result, self.difficulty, self.metric, self.guild_emojis
-            ),
+            embed=build_character_card_embed(self.result, self.difficulty, self.metric),
             view=self,
         )
 
     @discord.ui.button(label="Damage", style=discord.ButtonStyle.success, emoji="⚔️", row=1)
-    async def damage(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ) -> None:
+    async def damage(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         self.metric = "damage"
         self._sync_button_styles()
         await interaction.response.edit_message(
-            embed=build_character_card_embed(
-                self.result, self.difficulty, self.metric, self.guild_emojis
-            ),
+            embed=build_character_card_embed(self.result, self.difficulty, self.metric),
             view=self,
         )
 
     @discord.ui.button(label="Healing", style=discord.ButtonStyle.secondary, emoji="💚", row=1)
-    async def healing(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ) -> None:
+    async def healing(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         self.metric = "healing"
         self._sync_button_styles()
         await interaction.response.edit_message(
-            embed=build_character_card_embed(
-                self.result, self.difficulty, self.metric, self.guild_emojis
-            ),
+            embed=build_character_card_embed(self.result, self.difficulty, self.metric),
             view=self,
         )
 
     def _sync_button_styles(self) -> None:
-        self.normal.disabled = True
-        self.normal.style = discord.ButtonStyle.secondary
-        self.heroic.style = discord.ButtonStyle.primary
+        self.normal.style = (
+            discord.ButtonStyle.primary
+            if self.difficulty == "normal"
+            else discord.ButtonStyle.secondary
+        )
+        self.heroic.style = (
+            discord.ButtonStyle.primary
+            if self.difficulty == "heroic"
+            else discord.ButtonStyle.secondary
+        )
         self.damage.style = (
             discord.ButtonStyle.success
             if self.metric == "damage"
@@ -116,15 +102,17 @@ def build_character_card_embed(
     metric: str,
     guild_emojis: tuple[discord.Emoji, ...] = (),
 ) -> discord.Embed:
+    clean_difficulty = "normal" if difficulty.casefold() == "normal" else "heroic"
     metric_label = "Damage" if metric == "damage" else "Healing"
-    entries = _best_heroic_kill_per_boss(result.entries("heroic", metric))
+    difficulty_label = "Normal 10-player" if clean_difficulty == "normal" else "Heroic 10-player"
+    entries = _best_kill_per_boss(result.entries(clean_difficulty, metric))
 
     embed = discord.Embed(
         title=f"{result.character_name} — Top Parses"[:256],
         description=(
-            f"**Heroic 10-player • {metric_label} • Best result across all specs**\n"
+            f"**{difficulty_label} • {metric_label} • Best result across all specs**\n"
             f"[{result.server_slug.title()} • {result.region.upper()} • Open character page]"
-            f"({result.url('heroic', metric)})"
+            f"({result.url(clean_difficulty, metric)})"
         ),
         color=discord.Color.orange(),
     )
@@ -132,13 +120,13 @@ def build_character_card_embed(
     if not entries:
         embed.add_field(
             name="Personal bests",
-            value="No Heroic 10-player boss kills with a ranked parse were returned.",
+            value=f"No {difficulty_label} boss kills with a ranked parse were returned.",
             inline=False,
         )
     else:
         lines = [_format_entry(entry, guild_emojis) for entry in entries]
         embed.add_field(
-            name="Heroic personal bests",
+            name=f"{difficulty_label} personal bests",
             value="\n".join(lines)[:1024],
             inline=False,
         )
@@ -146,14 +134,14 @@ def build_character_card_embed(
     fetched = datetime.fromtimestamp(result.fetched_at, tz=timezone.utc)
     embed.set_footer(
         text=(
-            "One best parse per boss across all specs • Heroic kills only • "
+            "One best parse per boss across all specs • kills only • "
             f"Fetched {fetched.strftime('%Y-%m-%d %H:%M UTC')}"
         )
     )
     return embed
 
 
-def _best_heroic_kill_per_boss(
+def _best_kill_per_boss(
     entries: tuple[CharacterParseEntry, ...],
 ) -> tuple[CharacterParseEntry, ...]:
     best: dict[str, CharacterParseEntry] = {}
