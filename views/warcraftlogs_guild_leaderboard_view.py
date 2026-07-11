@@ -43,7 +43,10 @@ _SPEC_EMOJI_ALIASES = {
 class PlayerSelect(discord.ui.Select):
     def __init__(self, view: "WarcraftLogsGuildLeaderboardView") -> None:
         players = view.active_players()
-        options = []
+        if not players:
+            raise ValueError("Cannot create a player dropdown without players.")
+
+        options: list[discord.SelectOption] = []
         for index, player in enumerate(players[:25]):
             spec = player.primary_spec or player.class_name or "Unknown spec"
             average = "—" if player.average_parse is None else f"{player.average_parse:.1f}"
@@ -55,12 +58,12 @@ class PlayerSelect(discord.ui.Select):
                     emoji=_find_spec_emoji(player, view.guild_emojis),
                 )
             )
+
         super().__init__(
             placeholder="Select a player",
             min_values=1,
             max_values=1,
             options=options,
-            disabled=not options,
             row=2,
         )
 
@@ -68,14 +71,28 @@ class PlayerSelect(discord.ui.Select):
         view = self.view
         if not isinstance(view, WarcraftLogsGuildLeaderboardView):
             return
+
         players = view.active_players()
         if not players:
+            await interaction.response.send_message(
+                "No players are available in this view.",
+                ephemeral=True,
+            )
             return
-        selected = players[int(self.values[0])]
+
+        try:
+            selected = players[int(self.values[0])]
+        except (IndexError, TypeError, ValueError):
+            await interaction.response.send_message(
+                "That player is no longer available. Reopen the player list.",
+                ephemeral=True,
+            )
+            return
+
         view.selected_identity = _identity(selected)
         view.character_result = None
-
         report_player = view.report_player(selected)
+
         if report_player is None:
             embed = discord.Embed(
                 title=f"{selected.name} — Performance",
@@ -91,6 +108,7 @@ class PlayerSelect(discord.ui.Select):
                 report_player,
                 guild_emojis=view.guild_emojis,
             )
+
         view.mode = "player"
         view._sync_controls()
         await interaction.response.edit_message(embed=embed, view=view)
@@ -98,20 +116,23 @@ class PlayerSelect(discord.ui.Select):
 
 class ReportSelect(discord.ui.Select):
     def __init__(self, view: "WarcraftLogsGuildLeaderboardView") -> None:
+        reports = view.leaderboard_result.reports[:20]
+        if not reports:
+            raise ValueError("Cannot create a report dropdown without reports.")
+
         options = [
             discord.SelectOption(
                 label=report.title[:100],
                 value=report.code,
                 description=_report_description(report)[:100],
             )
-            for report in view.leaderboard_result.reports[:20]
+            for report in reports
         ]
         super().__init__(
             placeholder="Select a recent report",
             min_values=1,
             max_values=1,
             options=options,
-            disabled=not options,
             row=2,
         )
 
@@ -119,6 +140,7 @@ class ReportSelect(discord.ui.Select):
         view = self.view
         if not isinstance(view, WarcraftLogsGuildLeaderboardView):
             return
+
         await interaction.response.defer()
         code = self.values[0]
         try:
@@ -129,9 +151,11 @@ class ReportSelect(discord.ui.Select):
                 ephemeral=True,
             )
             return
+
         view.selected_identity = None
+        view.character_result = None
         view.mode = "report"
-        view._replace_select(PlayerSelect(view))
+        view._replace_select(view._make_player_select())
         view._sync_controls()
         await interaction.edit_original_response(
             embed=build_report_overview_embed(
@@ -176,14 +200,19 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
         self.allowed_character_names = (
             None
             if allowed_character_names is None
-            else {_normalize_name(name) for name in allowed_character_names if _normalize_name(name)}
+            else {
+                _normalize_name(name)
+                for name in allowed_character_names
+                if _normalize_name(name)
+            }
         )
         self.difficulty = leaderboard_result.difficulty
         self.metric = "dps"
         self.mode = "leaderboard"
+        self.mode_before_reports = "leaderboard"
         self.selected_identity: tuple[str, str] | None = None
         self.character_result: CharacterPerformanceResult | None = None
-        self.add_item(PlayerSelect(self))
+        self._replace_select(self._make_player_select())
         self._sync_controls()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -199,8 +228,9 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
         if self.mode in {"report", "player"}:
             players = self._filter_raid_team(self.current_report.player_summaries)
             if self.metric == "hps":
-                return tuple(p for p in players if p.role_category == "Healer")
-            return tuple(p for p in players if p.role_category != "Healer")
+                return tuple(player for player in players if player.role_category == "Healer")
+            return tuple(player for player in players if player.role_category != "Healer")
+
         if self.metric == "hps":
             return self.leaderboard_result.healing_players
         return self.leaderboard_result.damage_players
@@ -220,39 +250,46 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
     def selected_player(self) -> WarcraftLogsPlayerSummary | None:
         if self.selected_identity is None:
             return None
+
         for player in self.active_players():
             if _identity(player) == self.selected_identity:
                 return player
+
         for player in (
             *self.leaderboard_result.damage_players,
             *self.leaderboard_result.healing_players,
+            *self._filter_raid_team(self.current_report.player_summaries),
         ):
             if _identity(player) == self.selected_identity:
                 return player
         return None
 
     def report_player(self, selected: WarcraftLogsPlayerSummary) -> WarcraftLogsPlayerSummary | None:
-        exact = [
-            player
-            for player in self._filter_raid_team(self.current_report.player_summaries)
-            if _identity(player) == _identity(selected)
-        ]
+        eligible = self._filter_raid_team(self.current_report.player_summaries)
+        exact = [player for player in eligible if _identity(player) == _identity(selected)]
         if exact:
             return exact[0]
         return next(
             (
                 player
-                for player in self._filter_raid_team(self.current_report.player_summaries)
+                for player in eligible
                 if player.name.casefold() == selected.name.casefold()
             ),
             None,
         )
 
+    def _make_player_select(self) -> PlayerSelect | None:
+        return PlayerSelect(self) if self.active_players() else None
+
+    def _make_report_select(self) -> ReportSelect | None:
+        return ReportSelect(self) if self.leaderboard_result.reports else None
+
     @discord.ui.button(label="Leaderboard", style=discord.ButtonStyle.secondary, emoji="📊", row=0)
     async def leaderboard(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         self.mode = "leaderboard"
         self.selected_identity = None
-        self._replace_select(PlayerSelect(self))
+        self.character_result = None
+        self._replace_select(self._make_player_select())
         self._sync_controls()
         await interaction.response.edit_message(
             embed=build_guild_recent_embed(self.leaderboard_result, self.metric),
@@ -264,9 +301,11 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
         code = self.leaderboard_result.latest_report_code
         if not code:
             await interaction.response.send_message(
-                "No matching report exists for this difficulty.", ephemeral=True
+                "No matching report exists for this difficulty.",
+                ephemeral=True,
             )
             return
+
         await interaction.response.defer()
         try:
             self.current_report = await self.performance_service.get_report_player_performance(code)
@@ -276,9 +315,12 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
                 ephemeral=True,
             )
             return
+
         self.mode = "report"
+        self.mode_before_reports = "report"
         self.selected_identity = None
-        self._replace_select(PlayerSelect(self))
+        self.character_result = None
+        self._replace_select(self._make_player_select())
         self._sync_controls()
         await interaction.edit_original_response(
             embed=build_report_overview_embed(
@@ -292,9 +334,28 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
 
     @discord.ui.button(label="Recent Reports", style=discord.ButtonStyle.secondary, emoji="🗂️", row=0)
     async def recent_reports(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.mode == "reports":
+            self.mode = self.mode_before_reports
+            self._replace_select(self._make_player_select())
+            self._sync_controls()
+            embed = (
+                build_report_overview_embed(
+                    self.current_report,
+                    self.metric,
+                    self.guild_emojis,
+                    allowed_character_names=self.allowed_character_names,
+                )
+                if self.mode in {"report", "player"}
+                else build_guild_recent_embed(self.leaderboard_result, self.metric)
+            )
+            await interaction.response.edit_message(embed=embed, view=self)
+            return
+
+        self.mode_before_reports = (
+            "report" if self.mode in {"report", "player"} else "leaderboard"
+        )
         self.mode = "reports"
-        self.selected_identity = None
-        self._replace_select(ReportSelect(self))
+        self._replace_select(self._make_report_select())
         self._sync_controls()
         await interaction.response.edit_message(
             embed=build_recent_reports_embed(self.leaderboard_result),
@@ -305,14 +366,20 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
     async def top_parses(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         player = self.selected_player()
         if player is None:
-            await interaction.response.send_message("Select a player first.", ephemeral=True)
+            await interaction.response.send_message(
+                "Select a player first. Use **Players** if the report dropdown is open.",
+                ephemeral=True,
+            )
             return
+
         server = _normalize_realm_slug(player.server)
         if not server:
             await interaction.response.send_message(
-                "Warcraft Logs did not provide a realm for this player.", ephemeral=True
+                "Warcraft Logs did not provide a realm for this player.",
+                ephemeral=True,
             )
             return
+
         await interaction.response.defer()
         try:
             self.character_result = await self.character_service.get_character_performance(
@@ -326,6 +393,7 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
                 ephemeral=True,
             )
             return
+
         self.mode = "top"
         self._sync_controls()
         await interaction.edit_original_response(
@@ -385,6 +453,7 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
             )
             await interaction.edit_original_response(embed=error_embed, view=self)
             return
+
         button.disabled = False
         self.mode = "dtps"
         self._sync_controls()
@@ -408,6 +477,7 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
                 view=self,
             )
             return
+
         await interaction.response.defer()
         try:
             self.leaderboard_result = await self.recent_service.get_leaderboard(
@@ -420,14 +490,18 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
                 ephemeral=True,
             )
             return
+
         if self.leaderboard_result.latest_report_code:
             self.latest_report = await self.performance_service.get_report_player_performance(
                 self.leaderboard_result.latest_report_code
             )
             self.current_report = self.latest_report
+
         self.mode = "leaderboard"
+        self.mode_before_reports = "leaderboard"
         self.selected_identity = None
-        self._replace_select(PlayerSelect(self))
+        self.character_result = None
+        self._replace_select(self._make_player_select())
         self._sync_controls()
         await interaction.edit_original_response(
             embed=build_guild_recent_embed(self.leaderboard_result, self.metric),
@@ -435,7 +509,6 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
         )
 
     async def _refresh_metric_view(self, interaction: discord.Interaction) -> None:
-        self.selected_identity = None
         if self.mode == "top" and self.character_result is not None:
             self._sync_controls()
             await interaction.response.edit_message(
@@ -448,6 +521,9 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
                 view=self,
             )
             return
+
+        self.selected_identity = None
+        self.character_result = None
         if self.mode in {"report", "player"}:
             self.mode = "report"
             embed = build_report_overview_embed(
@@ -459,29 +535,41 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
         else:
             self.mode = "leaderboard"
             embed = build_guild_recent_embed(self.leaderboard_result, self.metric)
-        self._replace_select(PlayerSelect(self))
+
+        self._replace_select(self._make_player_select())
         self._sync_controls()
         await interaction.response.edit_message(embed=embed, view=self)
 
-    def _replace_select(self, item: discord.ui.Select) -> None:
+    def _replace_select(self, item: discord.ui.Select | None) -> None:
         for child in tuple(self.children):
             if isinstance(child, (PlayerSelect, ReportSelect)):
                 self.remove_item(child)
-        self.add_item(item)
+        if item is not None:
+            self.add_item(item)
 
     def _sync_controls(self) -> None:
         self.normal.style = (
-            discord.ButtonStyle.primary if self.difficulty == 3 else discord.ButtonStyle.secondary
+            discord.ButtonStyle.primary
+            if self.difficulty == 3
+            else discord.ButtonStyle.secondary
         )
         self.heroic.style = (
-            discord.ButtonStyle.primary if self.difficulty == 4 else discord.ButtonStyle.secondary
+            discord.ButtonStyle.primary
+            if self.difficulty == 4
+            else discord.ButtonStyle.secondary
         )
         self.damage.style = (
-            discord.ButtonStyle.success if self.metric == "dps" else discord.ButtonStyle.secondary
+            discord.ButtonStyle.success
+            if self.metric == "dps"
+            else discord.ButtonStyle.secondary
         )
         self.healing.style = (
-            discord.ButtonStyle.success if self.metric == "hps" else discord.ButtonStyle.secondary
+            discord.ButtonStyle.success
+            if self.metric == "hps"
+            else discord.ButtonStyle.secondary
         )
+        self.recent_reports.label = "Players" if self.mode == "reports" else "Recent Reports"
+        self.recent_reports.emoji = "👥" if self.mode == "reports" else "🗂️"
 
 
 def build_guild_recent_embed(
@@ -509,9 +597,10 @@ def build_guild_recent_embed(
         sections = (("💚 Healers — HPS", players),)
     else:
         sections = (
-            ("🛡 Tanks — DPS", tuple(p for p in players if p.role_category == "Tank")),
-            ("⚔ DPS — DPS", tuple(p for p in players if p.role_category == "DPS")),
+            ("🛡 Tanks — DPS", tuple(player for player in players if player.role_category == "Tank")),
+            ("⚔ DPS — DPS", tuple(player for player in players if player.role_category == "DPS")),
         )
+
     empty_text = (
         "No registered raid-team characters had matching kill parses."
         if result.raid_team_filtered
@@ -527,6 +616,7 @@ def build_guild_recent_embed(
             value="\n".join(lines)[:1024] if lines else empty_text,
             inline=False,
         )
+
     embed.set_footer(
         text=(
             f"{len(result.reports)} reports included • Latest: "
@@ -545,16 +635,16 @@ def build_report_overview_embed(
 ) -> discord.Embed:
     metric_label = "HPS" if metric == "hps" else "DPS"
     players = tuple(
-        p
-        for p in result.player_summaries
-        if (p.role_category == "Healer") == (metric == "hps")
+        player
+        for player in result.player_summaries
+        if (player.role_category == "Healer") == (metric == "hps")
         and (
             allowed_character_names is None
-            or _normalize_name(p.name) in allowed_character_names
+            or _normalize_name(player.name) in allowed_character_names
         )
     )
     players = tuple(
-        sorted(players, key=lambda p: (p.average_parse is None, -(p.average_parse or 0)))
+        sorted(players, key=lambda player: (player.average_parse is None, -(player.average_parse or 0)))
     )
     embed = discord.Embed(
         title=f"{result.report_title} — {metric_label} Rankings",
@@ -577,7 +667,10 @@ def build_report_overview_embed(
 def build_recent_reports_embed(result: GuildRecentLeaderboardResult) -> discord.Embed:
     embed = discord.Embed(
         title=f"Recent Reports — {result.difficulty_label}",
-        description="Choose a report from the dropdown to inspect its player rankings.",
+        description=(
+            "Choose a report from the dropdown to inspect its player rankings. "
+            "Press **Players** to return without changing report."
+        ),
         color=discord.Color.orange(),
     )
     lines = [
@@ -644,8 +737,6 @@ def _find_spec_emoji(
         if match is not None:
             return match
 
-    # Only use an exact class emoji as a fallback. Substring matching here can
-    # incorrectly turn Balance into RestorationDruid simply because both are druids.
     if class_name:
         return emoji_by_name.get(class_name)
     return None
