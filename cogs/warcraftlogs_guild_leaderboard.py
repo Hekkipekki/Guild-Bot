@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import io
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+import config
 from services.warcraftlogs.api_client import (
     WarcraftLogsAuthenticationError,
     WarcraftLogsClient,
@@ -14,6 +17,7 @@ from services.warcraftlogs.character_performance_service import (
     WarcraftLogsCharacterPerformanceService,
 )
 from services.warcraftlogs.credentials import get_warcraftlogs_credentials
+from services.warcraftlogs.debug_service import build_debug_json_bytes
 from services.warcraftlogs.guild_recent_leaderboard_service import (
     WarcraftLogsGuildRecentLeaderboardService,
 )
@@ -48,11 +52,17 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             description="Show recent-raider DPS/HPS rankings and avoidable DTPS.",
             callback=self.leaderboard,
         )
+        self.debug_command = app_commands.Command(
+            name="debug-guild-leaderboard",
+            description="DEV only: export raw recent guild DPS/HPS rankings.",
+            callback=self.debug_guild_leaderboard,
+        )
 
     async def cog_unload(self) -> None:
         logs_group = self.bot.tree.get_command("logs")
         if isinstance(logs_group, app_commands.Group):
             logs_group.remove_command("leaderboard")
+            logs_group.remove_command("debug-guild-leaderboard")
         await self.client.close()
 
     async def leaderboard(
@@ -128,6 +138,76 @@ class WarcraftLogsGuildLeaderboardCommands(commands.Cog):
             ephemeral=True,
         )
 
+    async def debug_guild_leaderboard(
+        self,
+        interaction: discord.Interaction,
+        difficulty: int = 4,
+    ) -> None:
+        if not bool(config.DEV_MODE):
+            await interaction.response.send_message(
+                "⛔ Guild leaderboard debug is disabled outside DEV_MODE.",
+                ephemeral=True,
+            )
+            return
+        guild = interaction.guild
+        if guild is None or not getattr(
+            interaction.user.guild_permissions,
+            "administrator",
+            False,
+        ):
+            await interaction.response.send_message(
+                "⛔ This DEV export requires a server administrator.",
+                ephemeral=True,
+            )
+            return
+        settings = get_warcraftlogs_settings(guild.id)
+        if not settings.is_configured:
+            await interaction.response.send_message(
+                "⚠ Warcraft Logs is not configured.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        try:
+            result = await self.recent_service.get_leaderboard(
+                settings.guild_id,
+                difficulty=difficulty,
+                force_refresh=True,
+            )
+        except Exception as exc:
+            await interaction.followup.send(
+                f"⚠ Guild leaderboard debug failed: `{type(exc).__name__}: {exc}`",
+                ephemeral=True,
+            )
+            return
+
+        payload = build_debug_json_bytes(
+            operation="guild_recent_player_rankings",
+            request={
+                "discord_guild_id": guild.id,
+                "warcraftlogs_guild_id": settings.guild_id,
+                "difficulty": difficulty,
+                "size": 10,
+                "recent": True,
+                "metrics": ["dps", "hps"],
+            },
+            response={
+                "damage_players": result.damage_players,
+                "healing_players": result.healing_players,
+                "raw_damage": result.raw_damage,
+                "raw_healing": result.raw_healing,
+            },
+        )
+        await interaction.followup.send(
+            "🧪 DEV_MODE recent guild leaderboard export.",
+            file=discord.File(
+                io.BytesIO(payload),
+                filename=f"warcraftlogs-guild-leaderboard-{settings.guild_id}-{difficulty}.json",
+            ),
+            ephemeral=True,
+        )
+
 
 async def setup(bot: commands.Bot) -> None:
     logs_group = bot.tree.get_command("logs")
@@ -136,3 +216,5 @@ async def setup(bot: commands.Bot) -> None:
     cog = WarcraftLogsGuildLeaderboardCommands(bot)
     await bot.add_cog(cog)
     logs_group.add_command(cog.command)
+    if bool(config.DEV_MODE):
+        logs_group.add_command(cog.debug_command)
