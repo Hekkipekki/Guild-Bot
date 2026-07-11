@@ -66,7 +66,6 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
     async def dps_rankings(
         self,
         interaction: discord.Interaction,
-        reports: int = 10,
         refresh: bool = False,
     ) -> None:
         guild = interaction.guild
@@ -83,11 +82,10 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
             )
             return
 
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
         try:
             result = await self.recent_rankings_service.get_recent_rankings(
                 settings.guild_id,
-                report_limit=max(1, min(reports, 20)),
                 force_refresh=refresh,
             )
             if not result.latest_report_code:
@@ -118,16 +116,19 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
             return
 
         emojis = tuple(guild.emojis)
+        leaderboard_embed = build_recent_rankings_embed(result, emojis)
         view = WarcraftLogsPlayerView(
             latest,
             owner_id=interaction.user.id,
             character_service=self.character_service,
             region=settings.region,
             guild_emojis=emojis,
+            leaderboard_embed=leaderboard_embed,
         )
         await interaction.followup.send(
-            embed=build_recent_rankings_embed(result, emojis),
+            embed=leaderboard_embed,
             view=view,
+            ephemeral=True,
         )
 
     async def dtps_rankings(
@@ -150,7 +151,7 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
             )
             return
 
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
         try:
             selected_code = await self._resolve_report_code(
                 settings.guild_id,
@@ -185,7 +186,7 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
             )
             return
 
-        await interaction.followup.send(embed=build_dtps_embed(result))
+        await interaction.followup.send(embed=build_dtps_embed(result), ephemeral=True)
 
     async def debug_leaderboard(
         self,
@@ -247,6 +248,7 @@ class WarcraftLogsReportLeaderboardCommands(commands.Cog):
                 "covered_duration_ms": result.covered_duration_ms,
                 "dtps_entries": result.dtps_entries,
                 "unmatched_abilities": result.unmatched_abilities,
+                "resolved_abilities": result.resolved_abilities,
                 "raw_event_pages": result.raw_event_pages,
             },
         )
@@ -282,10 +284,12 @@ def build_recent_rankings_embed(
     guild_emojis: tuple[discord.Emoji, ...],
 ) -> discord.Embed:
     embed = discord.Embed(
-        title="Recent Guild Rankings",
+        title=f"{result.zone_name or 'Latest zone'} — Recent Guild Rankings"[:256],
+        url=result.rankings_url,
         description=(
-            f"Best parse across the latest **{len(result.report_codes)}** guild reports.\n"
-            "Tanks and DPS use damage parses; healers use healing parses."
+            f"Best **raid average parse** across **{len(result.report_codes)}** recent "
+            "reports from the latest raid zone.\n"
+            "Tanks and DPS use damage rankings; healers use healing rankings."
         ),
         color=discord.Color.orange(),
     )
@@ -301,9 +305,13 @@ def build_recent_rankings_embed(
             emoji = _find_emoji(entry.spec_name, entry.class_name, guild_emojis)
             icon = f"{emoji} " if emoji else ""
             spec = f" ({entry.spec_name})" if entry.spec_name else ""
-            parse = "—" if entry.best_parse is None else f"{entry.best_parse:.1f}"
+            average = (
+                "—"
+                if entry.best_average_parse is None
+                else f"{entry.best_average_parse:.1f}"
+            )
             lines.append(
-                f"{medal} {icon}**{entry.name}**{spec} — Best **{parse}**"
+                f"{medal} {icon}**{entry.name}**{spec} — Best Avg **{average}**"
             )
         embed.add_field(
             name=label,
@@ -313,7 +321,7 @@ def build_recent_rankings_embed(
     fetched = datetime.fromtimestamp(result.fetched_at, tz=timezone.utc)
     embed.set_footer(
         text=(
-            f"Latest report: {result.latest_report_title or 'Unknown'} • "
+            f"Latest score sheet: {result.latest_report_title or 'Unknown'} • "
             f"Fetched {fetched.strftime('%Y-%m-%d %H:%M UTC')}"
         )
     )
@@ -397,7 +405,7 @@ async def setup(bot: commands.Bot) -> None:
     rankings_group.add_command(
         app_commands.Command(
             name="dps",
-            description="Show recent role-based player rankings.",
+            description="Show recent role-based player rankings by best average.",
             callback=cog.dps_rankings,
         )
     )
