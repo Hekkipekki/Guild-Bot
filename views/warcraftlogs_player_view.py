@@ -33,16 +33,16 @@ class WarcraftLogsPlayerSelect(discord.ui.Select):
         options: list[discord.SelectOption] = []
         for index, player in enumerate(summaries[:25]):
             spec = player.primary_spec or player.class_name or "Unknown spec"
-            best = (
-                f"Best {player.best_parse:.1f}"
-                if player.best_parse is not None
-                else "No ranked parse"
+            average = (
+                f"Avg {player.average_parse:.1f}"
+                if player.average_parse is not None
+                else "No ranked average"
             )
             options.append(
                 discord.SelectOption(
                     label=player.name[:100],
                     value=str(index),
-                    description=f"{spec} • {best}"[:100],
+                    description=f"{spec} • {average}"[:100],
                     emoji=_find_spec_emoji(player, guild_emojis),
                 )
             )
@@ -64,7 +64,11 @@ class WarcraftLogsPlayerSelect(discord.ui.Select):
         view.character_result = None
         view._sync_controls(top_parse_mode=False)
         await interaction.response.edit_message(
-            embed=build_player_detail_embed(view.result, view.selected_player),
+            embed=build_player_detail_embed(
+                view.result,
+                view.selected_player,
+                guild_emojis=view.guild_emojis,
+            ),
             view=view,
         )
 
@@ -78,6 +82,7 @@ class WarcraftLogsPlayerView(discord.ui.View):
         character_service: WarcraftLogsCharacterPerformanceService,
         region: str,
         guild_emojis: tuple[discord.Emoji, ...] = (),
+        leaderboard_embed: discord.Embed | None = None,
         timeout: float = 300,
     ) -> None:
         super().__init__(timeout=timeout)
@@ -86,6 +91,7 @@ class WarcraftLogsPlayerView(discord.ui.View):
         self.character_service = character_service
         self.region = region
         self.guild_emojis = guild_emojis
+        self.leaderboard_embed = leaderboard_embed
         self.selected_player: WarcraftLogsPlayerSummary | None = None
         self.character_result: CharacterPerformanceResult | None = None
         self.difficulty = "heroic"
@@ -109,13 +115,11 @@ class WarcraftLogsPlayerView(discord.ui.View):
         button: discord.ui.Button,
     ) -> None:
         self._sync_controls(top_parse_mode=False)
-        await interaction.response.edit_message(
-            embed=build_player_leaderboard_embed(
-                self.result,
-                guild_emojis=self.guild_emojis,
-            ),
-            view=self,
+        embed = self.leaderboard_embed or build_player_leaderboard_embed(
+            self.result,
+            guild_emojis=self.guild_emojis,
         )
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="Latest Raid", style=discord.ButtonStyle.primary, emoji="⚔️", row=0)
     async def latest_raid(
@@ -124,13 +128,15 @@ class WarcraftLogsPlayerView(discord.ui.View):
         button: discord.ui.Button,
     ) -> None:
         if self.selected_player is None:
-            await interaction.response.send_message(
-                "Select a player first.", ephemeral=True
-            )
+            await interaction.response.send_message("Select a player first.", ephemeral=True)
             return
         self._sync_controls(top_parse_mode=False)
         await interaction.response.edit_message(
-            embed=build_player_detail_embed(self.result, self.selected_player),
+            embed=build_player_detail_embed(
+                self.result,
+                self.selected_player,
+                guild_emojis=self.guild_emojis,
+            ),
             view=self,
         )
 
@@ -142,9 +148,7 @@ class WarcraftLogsPlayerView(discord.ui.View):
     ) -> None:
         player = self.selected_player
         if player is None:
-            await interaction.response.send_message(
-                "Select a player first.", ephemeral=True
-            )
+            await interaction.response.send_message("Select a player first.", ephemeral=True)
             return
         server = str(player.server or "").strip()
         if not server:
@@ -168,24 +172,27 @@ class WarcraftLogsPlayerView(discord.ui.View):
             )
             return
 
+        self.difficulty = "heroic"
         self._sync_controls(top_parse_mode=True)
         await interaction.edit_original_response(
             embed=build_character_card_embed(
                 self.character_result,
                 self.difficulty,
                 self.metric,
+                self.guild_emojis,
             ),
             view=self,
         )
 
-    @discord.ui.button(label="Normal 10", style=discord.ButtonStyle.secondary, row=1)
+    @discord.ui.button(label="Normal 10", style=discord.ButtonStyle.secondary, disabled=True, row=1)
     async def normal(
         self,
         interaction: discord.Interaction,
         button: discord.ui.Button,
     ) -> None:
-        self.difficulty = "normal"
-        await self._show_character_state(interaction)
+        await interaction.response.send_message(
+            "Top Parses currently shows Heroic 10-player kills only.", ephemeral=True
+        )
 
     @discord.ui.button(label="Heroic 10", style=discord.ButtonStyle.secondary, row=1)
     async def heroic(
@@ -216,35 +223,26 @@ class WarcraftLogsPlayerView(discord.ui.View):
 
     async def _show_character_state(self, interaction: discord.Interaction) -> None:
         if self.character_result is None:
-            await interaction.response.send_message(
-                "Open Top Parses first.", ephemeral=True
-            )
+            await interaction.response.send_message("Open Top Parses first.", ephemeral=True)
             return
         self._sync_controls(top_parse_mode=True)
         await interaction.response.edit_message(
             embed=build_character_card_embed(
                 self.character_result,
-                self.difficulty,
+                "heroic",
                 self.metric,
+                self.guild_emojis,
             ),
             view=self,
         )
 
     def _sync_controls(self, *, top_parse_mode: bool) -> None:
-        for control in (self.normal, self.heroic, self.damage, self.healing):
+        self.normal.disabled = True
+        for control in (self.heroic, self.damage, self.healing):
             control.disabled = not top_parse_mode
             control.style = discord.ButtonStyle.secondary
         if top_parse_mode:
-            self.normal.style = (
-                discord.ButtonStyle.primary
-                if self.difficulty == "normal"
-                else discord.ButtonStyle.secondary
-            )
-            self.heroic.style = (
-                discord.ButtonStyle.primary
-                if self.difficulty == "heroic"
-                else discord.ButtonStyle.secondary
-            )
+            self.heroic.style = discord.ButtonStyle.primary
             self.damage.style = (
                 discord.ButtonStyle.success
                 if self.metric == "damage"
@@ -266,13 +264,16 @@ def build_player_leaderboard_embed(
         title=f"{result.report_title} — Player Leaderboard"[:256],
         description=(
             f"[Open report]({result.url})\n"
-            "Grouped by role. Tanks and DPS show damage rankings; healers show healing rankings."
+            "Grouped by role and ranked by report average. Tanks and DPS use damage rankings; healers use healing rankings."
         ),
         color=discord.Color.orange(),
     )
 
     grouped = {
-        role: [p for p in result.player_summaries if p.role_category == role]
+        role: sorted(
+            (p for p in result.player_summaries if p.role_category == role),
+            key=lambda p: (p.average_parse is None, -(p.average_parse or 0), p.name.casefold()),
+        )
         for role in _ROLE_ORDER
     }
     for role in _ROLE_ORDER:
@@ -306,6 +307,8 @@ def build_player_leaderboard_embed(
 def build_player_detail_embed(
     result: WarcraftLogsPlayerPerformanceResult,
     player: WarcraftLogsPlayerSummary,
+    *,
+    guild_emojis: tuple[discord.Emoji, ...] = (),
 ) -> discord.Embed:
     identity = player.name
     if player.primary_spec:
@@ -329,7 +332,7 @@ def build_player_detail_embed(
     if player.parse_stddev is not None:
         overview.append(
             f"**Consistency:** {_consistency_stars(player.parse_stddev)} "
-            f"(σ {player.parse_stddev:.1f})"
+            f"(σ {player.parse_stddev:.1f}; lower spread is better)"
         )
     overview.append(f"**Ranked fights:** {player.encounter_count}")
     if player.average_item_level is not None:
@@ -344,7 +347,12 @@ def build_player_detail_embed(
         ),
     )
     lines = [
-        _format_boss_row(row.encounter_name, row.rank_percent, row.amount)
+        _format_boss_row(
+            row.encounter_name,
+            row.rank_percent,
+            row.amount,
+            guild_emojis,
+        )
         for row in boss_rows
     ]
     embed.add_field(
@@ -352,7 +360,12 @@ def build_player_detail_embed(
         value="\n".join(lines)[:1024] if lines else "No boss rows available.",
         inline=False,
     )
-    embed.set_footer(text=f"Report {result.report_code}")
+    embed.set_footer(
+        text=(
+            f"Report {result.report_code} • Consistency: 5★ ≤5σ, 4★ ≤10σ, "
+            "3★ ≤15σ, 2★ ≤20σ, 1★ >20σ"
+        )
+    )
     return embed
 
 
@@ -365,36 +378,52 @@ def _format_leaderboard_player(
     emoji = _find_spec_emoji(player, guild_emojis)
     icon = f"{emoji} " if emoji is not None else ""
     spec = f" ({player.primary_spec})" if player.primary_spec else ""
-    best = f"Best **{player.best_parse:.1f}**" if player.best_parse is not None else "Best —"
-    return f"{medal} {icon}**{player.name}**{spec} — {best}"
+    average = (
+        f"Avg **{player.average_parse:.1f}**"
+        if player.average_parse is not None
+        else "Avg —"
+    )
+    return f"{medal} {icon}**{player.name}**{spec} — {average}"
 
 
 def _format_boss_row(
     encounter_name: str | None,
     rank_percent: float | None,
     amount: float | None,
+    guild_emojis: tuple[discord.Emoji, ...],
 ) -> str:
     name = encounter_name or "Unknown encounter"
+    emoji = _find_named_emoji(name, guild_emojis)
+    icon = f"{emoji} " if emoji else ""
     details: list[str] = []
     if rank_percent is not None:
         details.append(f"**{rank_percent:.1f}**")
     if amount is not None:
         details.append(f"{amount:,.0f}")
-    return f"**{name}** — {' • '.join(details) if details else 'No metrics'}"
+    return f"{icon}**{name}** — {' • '.join(details) if details else 'No metrics'}"
 
 
 def _find_spec_emoji(
     player: WarcraftLogsPlayerSummary,
     emojis: tuple[discord.Emoji, ...],
 ) -> discord.Emoji | None:
-    candidates = [player.primary_spec, player.class_name]
-    normalized = {_normalize_emoji_name(value) for value in candidates if value}
-    normalized.discard("")
+    for candidate in (player.primary_spec, player.class_name):
+        found = _find_named_emoji(candidate, emojis)
+        if found is not None:
+            return found
+    return None
+
+
+def _find_named_emoji(
+    value: str | None,
+    emojis: tuple[discord.Emoji, ...],
+) -> discord.Emoji | None:
+    wanted = _normalize_emoji_name(value)
+    if not wanted:
+        return None
     for emoji in emojis:
         emoji_name = _normalize_emoji_name(emoji.name)
-        if emoji_name in normalized:
-            return emoji
-        if any(value and value in emoji_name for value in normalized):
+        if emoji_name == wanted or wanted in emoji_name or emoji_name in wanted:
             return emoji
     return None
 
