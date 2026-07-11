@@ -74,11 +74,11 @@ class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
             )
             return
 
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
         try:
             result = await self.character_service.get_character_performance(
                 character,
-                server,
+                _normalize_realm_input(server),
                 settings.region,
                 force_refresh=refresh,
             )
@@ -111,6 +111,7 @@ class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
         await interaction.followup.send(
             embed=build_character_card_embed(result, "heroic", "damage"),
             view=view,
+            ephemeral=True,
         )
 
     async def debug_character(
@@ -149,7 +150,7 @@ class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
         try:
             result = await self.character_service.get_character_performance(
                 character,
-                server,
+                _normalize_realm_input(server),
                 settings.region,
                 force_refresh=True,
             )
@@ -171,6 +172,7 @@ class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
                 "discord_guild_id": guild.id,
                 "character": character,
                 "server": server,
+                "normalized_server": _normalize_realm_input(server),
                 "region": settings.region,
                 "raid_size": 10,
                 "difficulties": [3, 4],
@@ -193,6 +195,11 @@ class WarcraftLogsCharacterPerformanceCommands(commands.Cog):
             file=file,
             ephemeral=True,
         )
+
+
+def _normalize_realm_input(value: str) -> str:
+    # Warcraft Logs realm slugs remove apostrophes: Shek'zeer -> shekzeer.
+    return str(value or "").strip().replace("'", "").replace("’", "")
 
 
 async def setup(bot: commands.Bot) -> None:
