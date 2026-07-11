@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
 
 from services.warcraftlogs.player_performance_service import (
     WarcraftLogsPlayerPerformance,
@@ -14,7 +13,7 @@ from services.warcraftlogs.report_summary_service import WarcraftLogsReportSumma
 from services.warcraftlogs.reports_service import WarcraftLogsReport, WarcraftLogsReportsService
 
 CACHE_TTL_SECONDS = 600
-REPORT_WINDOW_DAYS = 28
+REPORT_WINDOW_DAYS = 21
 REPORT_LIMIT = 20
 
 
@@ -29,6 +28,7 @@ class GuildRecentLeaderboardResult:
     latest_report_code: str | None
     latest_report_title: str | None
     fetched_at: float
+    raid_team_filtered: bool = False
 
     @property
     def difficulty_label(self) -> str:
@@ -50,13 +50,12 @@ class _CacheEntry:
 
 
 class WarcraftLogsGuildRecentLeaderboardService:
-    """Build a recent-raider leaderboard from public report data.
+    """Build a three-week leaderboard from public report data.
 
-    The Classic Guild.zoneRanking field does not expose the website's difficulty
-    or player-metric filters. This service therefore uses the latest four-reset
-    report window, keeps only boss kills for the selected difficulty and stores
-    each character's best parse per boss before calculating the leaderboard
-    average.
+    Only boss kills for the selected difficulty are included. Each character's
+    best parse per boss is retained before the final average is calculated.
+    When registered raid-team character names are supplied, all other log
+    characters are excluded.
     """
 
     def __init__(
@@ -68,13 +67,14 @@ class WarcraftLogsGuildRecentLeaderboardService:
         self.reports_service = reports_service
         self.summary_service = summary_service
         self.performance_service = performance_service
-        self._cache: dict[tuple[int, int], _CacheEntry] = {}
+        self._cache: dict[tuple[int, int, tuple[str, ...]], _CacheEntry] = {}
 
     async def get_leaderboard(
         self,
         guild_id: int,
         *,
         difficulty: int = 4,
+        allowed_character_names: set[str] | frozenset[str] | None = None,
         force_refresh: bool = False,
     ) -> GuildRecentLeaderboardResult:
         clean_guild_id = int(guild_id)
@@ -84,7 +84,12 @@ class WarcraftLogsGuildRecentLeaderboardService:
         if clean_difficulty not in (3, 4):
             raise ValueError("Difficulty must be 3 (Normal) or 4 (Heroic).")
 
-        cache_key = (clean_guild_id, clean_difficulty)
+        allowed = frozenset(
+            _normalize_character_name(value)
+            for value in (allowed_character_names or ())
+            if _normalize_character_name(value)
+        )
+        cache_key = (clean_guild_id, clean_difficulty, tuple(sorted(allowed)))
         now = time.monotonic()
         cached = self._cache.get(cache_key)
         if not force_refresh and cached and now < cached.expires_at:
@@ -125,6 +130,8 @@ class WarcraftLogsGuildRecentLeaderboardService:
             )
             matched_any = False
             for row in performance.players:
+                if allowed and _normalize_character_name(row.name) not in allowed:
+                    continue
                 encounter = str(row.encounter_name or "").strip()
                 if not encounter or encounter.casefold() not in killed_encounters:
                     continue
@@ -168,6 +175,7 @@ class WarcraftLogsGuildRecentLeaderboardService:
             latest_report_code=latest.code if latest else None,
             latest_report_title=latest.title if latest else None,
             fetched_at=time.time(),
+            raid_team_filtered=bool(allowed),
         )
         self._cache[cache_key] = _CacheEntry(
             result=result,
@@ -184,6 +192,10 @@ def _filter_report_window(
     newest_ms = max(report.start_time for report in reports)
     cutoff_ms = newest_ms - REPORT_WINDOW_DAYS * 24 * 60 * 60 * 1000
     return tuple(report for report in reports if report.start_time >= cutoff_ms)
+
+
+def _normalize_character_name(value: object) -> str:
+    return "".join(character for character in str(value or "").casefold() if character.isalnum())
 
 
 def _difficulty_value(raw: object) -> int | None:
