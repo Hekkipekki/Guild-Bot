@@ -27,6 +27,19 @@ from views.warcraftlogs_character_view import build_character_card_embed
 from views.warcraftlogs_player_view import build_player_detail_embed
 
 
+_SPEC_EMOJI_ALIASES = {
+    ("restoration", "druid"): ("restorationdruid",),
+    ("restoration", "shaman"): ("restorationshaman",),
+    ("holy", "priest"): ("holypriest",),
+    ("holy", "paladin"): ("holypaladin",),
+    ("protection", "warrior"): ("protectionwarrior",),
+    ("protection", "paladin"): ("protectionpaladin",),
+    ("frost", "deathknight"): ("frostdk",),
+    ("enhancement", "shaman"): ("enhancement", "enmhancement"),
+    ("subtlety", "rogue"): ("subtlety", "sublety"),
+}
+
+
 class PlayerSelect(discord.ui.Select):
     def __init__(self, view: "WarcraftLogsGuildLeaderboardView") -> None:
         players = view.active_players()
@@ -67,7 +80,7 @@ class PlayerSelect(discord.ui.Select):
             embed = discord.Embed(
                 title=f"{selected.name} — Performance",
                 description=(
-                    "This player is present in the four-reset leaderboard but has no matching "
+                    "This player is present in the three-week leaderboard but has no matching "
                     "rows in the currently selected report. Use **Top Parses** for historical data."
                 ),
                 color=discord.Color.orange(),
@@ -121,7 +134,12 @@ class ReportSelect(discord.ui.Select):
         view._replace_select(PlayerSelect(view))
         view._sync_controls()
         await interaction.edit_original_response(
-            embed=build_report_overview_embed(view.current_report, view.metric, view.guild_emojis),
+            embed=build_report_overview_embed(
+                view.current_report,
+                view.metric,
+                view.guild_emojis,
+                allowed_character_names=view.allowed_character_names,
+            ),
             view=view,
         )
 
@@ -140,6 +158,7 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
         character_service: WarcraftLogsCharacterPerformanceService,
         dtps_service: WarcraftLogsReportLeaderboardService,
         guild_emojis: tuple[discord.Emoji, ...] = (),
+        allowed_character_names: set[str] | None = None,
         timeout: float = 600,
     ) -> None:
         super().__init__(timeout=timeout)
@@ -154,6 +173,11 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
         self.character_service = character_service
         self.dtps_service = dtps_service
         self.guild_emojis = guild_emojis
+        self.allowed_character_names = (
+            None
+            if allowed_character_names is None
+            else {_normalize_name(name) for name in allowed_character_names if _normalize_name(name)}
+        )
         self.difficulty = leaderboard_result.difficulty
         self.metric = "dps"
         self.mode = "leaderboard"
@@ -173,13 +197,25 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
 
     def active_players(self) -> tuple[WarcraftLogsPlayerSummary, ...]:
         if self.mode in {"report", "player"}:
-            players = self.current_report.player_summaries
+            players = self._filter_raid_team(self.current_report.player_summaries)
             if self.metric == "hps":
                 return tuple(p for p in players if p.role_category == "Healer")
             return tuple(p for p in players if p.role_category != "Healer")
         if self.metric == "hps":
             return self.leaderboard_result.healing_players
         return self.leaderboard_result.damage_players
+
+    def _filter_raid_team(
+        self,
+        players: tuple[WarcraftLogsPlayerSummary, ...],
+    ) -> tuple[WarcraftLogsPlayerSummary, ...]:
+        if self.allowed_character_names is None:
+            return players
+        return tuple(
+            player
+            for player in players
+            if _normalize_name(player.name) in self.allowed_character_names
+        )
 
     def selected_player(self) -> WarcraftLogsPlayerSummary | None:
         if self.selected_identity is None:
@@ -198,7 +234,7 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
     def report_player(self, selected: WarcraftLogsPlayerSummary) -> WarcraftLogsPlayerSummary | None:
         exact = [
             player
-            for player in self.current_report.player_summaries
+            for player in self._filter_raid_team(self.current_report.player_summaries)
             if _identity(player) == _identity(selected)
         ]
         if exact:
@@ -206,7 +242,7 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
         return next(
             (
                 player
-                for player in self.current_report.player_summaries
+                for player in self._filter_raid_team(self.current_report.player_summaries)
                 if player.name.casefold() == selected.name.casefold()
             ),
             None,
@@ -245,7 +281,12 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
         self._replace_select(PlayerSelect(self))
         self._sync_controls()
         await interaction.edit_original_response(
-            embed=build_report_overview_embed(self.current_report, self.metric, self.guild_emojis),
+            embed=build_report_overview_embed(
+                self.current_report,
+                self.metric,
+                self.guild_emojis,
+                allowed_character_names=self.allowed_character_names,
+            ),
             view=self,
         )
 
@@ -317,18 +358,34 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
 
     @discord.ui.button(label="DTPS", style=discord.ButtonStyle.danger, emoji="🩸", row=1)
     async def dtps(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.defer()
+        previous_mode = self.mode
+        button.disabled = True
+        loading_embed = discord.Embed(
+            title="Calculating Avoidable DTPS…",
+            description=(
+                "Fetching and filtering damage-taken events for the selected report. "
+                "The first request can take a little while."
+            ),
+            color=discord.Color.orange(),
+        )
+        await interaction.response.edit_message(embed=loading_embed, view=self)
         try:
             result = await self.dtps_service.get_leaderboard(
                 self.current_report.report_code,
                 "dtps",
             )
         except Exception as exc:
-            await interaction.followup.send(
-                f"⚠ Could not load avoidable DTPS: `{type(exc).__name__}: {exc}`",
-                ephemeral=True,
+            button.disabled = False
+            self.mode = previous_mode
+            self._sync_controls()
+            error_embed = discord.Embed(
+                title="Avoidable DTPS could not be loaded",
+                description=f"`{type(exc).__name__}: {exc}`",
+                color=discord.Color.red(),
             )
+            await interaction.edit_original_response(embed=error_embed, view=self)
             return
+        button.disabled = False
         self.mode = "dtps"
         self._sync_controls()
         await interaction.edit_original_response(embed=build_dtps_embed(result), view=self)
@@ -393,7 +450,12 @@ class WarcraftLogsGuildLeaderboardView(discord.ui.View):
             return
         if self.mode in {"report", "player"}:
             self.mode = "report"
-            embed = build_report_overview_embed(self.current_report, self.metric, self.guild_emojis)
+            embed = build_report_overview_embed(
+                self.current_report,
+                self.metric,
+                self.guild_emojis,
+                allowed_character_names=self.allowed_character_names,
+            )
         else:
             self.mode = "leaderboard"
             embed = build_guild_recent_embed(self.leaderboard_result, self.metric)
@@ -427,12 +489,18 @@ def build_guild_recent_embed(
     metric: str = "dps",
 ) -> discord.Embed:
     metric_label = "HPS" if metric == "hps" else "DPS"
+    filter_note = (
+        "\nFiltered to characters registered by configured raid-team members."
+        if result.raid_team_filtered
+        else ""
+    )
     embed = discord.Embed(
         title=f"Recent Performance — {result.difficulty_label} {metric_label}",
         url=result.url,
         description=(
-            "Four-reset window (28 days). For every player and boss, the best kill parse "
+            "Three-week window (21 days). For every player and boss, the best kill parse "
             "is retained; the displayed average is calculated from those best boss parses."
+            f"{filter_note}"
         ),
         color=discord.Color.orange(),
     )
@@ -444,6 +512,11 @@ def build_guild_recent_embed(
             ("🛡 Tanks — DPS", tuple(p for p in players if p.role_category == "Tank")),
             ("⚔ DPS — DPS", tuple(p for p in players if p.role_category == "DPS")),
         )
+    empty_text = (
+        "No registered raid-team characters had matching kill parses."
+        if result.raid_team_filtered
+        else "No matching kill parses."
+    )
     for label, section in sections:
         lines = [
             _format_player(position, player)
@@ -451,7 +524,7 @@ def build_guild_recent_embed(
         ]
         embed.add_field(
             name=label,
-            value="\n".join(lines)[:1024] if lines else "No matching kill parses.",
+            value="\n".join(lines)[:1024] if lines else empty_text,
             inline=False,
         )
     embed.set_footer(
@@ -467,12 +540,18 @@ def build_report_overview_embed(
     result: WarcraftLogsPlayerPerformanceResult,
     metric: str,
     guild_emojis: tuple[discord.Emoji, ...],
+    *,
+    allowed_character_names: set[str] | None = None,
 ) -> discord.Embed:
     metric_label = "HPS" if metric == "hps" else "DPS"
     players = tuple(
         p
         for p in result.player_summaries
         if (p.role_category == "Healer") == (metric == "hps")
+        and (
+            allowed_character_names is None
+            or _normalize_name(p.name) in allowed_character_names
+        )
     )
     players = tuple(
         sorted(players, key=lambda p: (p.average_parse is None, -(p.average_parse or 0)))
@@ -489,7 +568,7 @@ def build_report_overview_embed(
     ]
     embed.add_field(
         name="Players",
-        value="\n".join(lines)[:1024] if lines else "No matching ranked players.",
+        value="\n".join(lines)[:1024] if lines else "No matching ranked raid-team players.",
         inline=False,
     )
     return embed
@@ -506,7 +585,7 @@ def build_recent_reports_embed(result: GuildRecentLeaderboardResult) -> discord.
         for report in result.reports[:20]
     ]
     embed.add_field(
-        name="Included four-reset reports",
+        name="Included three-week reports",
         value="\n".join(lines)[:1024] if lines else "No matching reports.",
         inline=False,
     )
@@ -553,15 +632,22 @@ def _find_spec_emoji(
     player: WarcraftLogsPlayerSummary,
     emojis: tuple[discord.Emoji, ...],
 ) -> discord.Emoji | None:
-    wanted = {
-        _normalize_name(player.primary_spec),
-        _normalize_name(player.class_name),
-    }
-    wanted.discard("")
-    for emoji in emojis:
-        name = _normalize_name(emoji.name)
-        if name in wanted or any(value and value in name for value in wanted):
-            return emoji
+    emoji_by_name = {_normalize_name(emoji.name): emoji for emoji in emojis}
+    spec = _normalize_name(player.primary_spec)
+    class_name = _normalize_name(player.class_name)
+
+    aliases = list(_SPEC_EMOJI_ALIASES.get((spec, class_name), ()))
+    if spec:
+        aliases.append(spec)
+    for alias in aliases:
+        match = emoji_by_name.get(alias)
+        if match is not None:
+            return match
+
+    # Only use an exact class emoji as a fallback. Substring matching here can
+    # incorrectly turn Balance into RestorationDruid simply because both are druids.
+    if class_name:
+        return emoji_by_name.get(class_name)
     return None
 
 
