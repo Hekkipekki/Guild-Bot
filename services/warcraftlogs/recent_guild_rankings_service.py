@@ -21,7 +21,7 @@ class RecentGuildRankingEntry:
     class_name: str | None
     spec_name: str | None
     role_category: str
-    best_parse: float | None
+    best_average_parse: float | None
     best_amount: float | None
     ranked_fights: int
     report_count: int
@@ -49,7 +49,7 @@ class _CacheEntry:
 
 
 class WarcraftLogsRecentGuildRankingsService:
-    """Aggregate best parses from the guild's latest-zone report window."""
+    """Aggregate the best report-wide average parse from the guild's latest-zone window."""
 
     def __init__(
         self,
@@ -64,12 +64,8 @@ class WarcraftLogsRecentGuildRankingsService:
         self,
         guild_id: int,
         *,
-        report_limit: int | None = None,
         force_refresh: bool = False,
     ) -> RecentGuildRankingsResult:
-        # report_limit is retained for command/test compatibility. Guild recent
-        # rankings always inspect the full API-supported latest-zone window.
-        _ = report_limit
         clean_guild_id = int(guild_id)
         now = time.monotonic()
         cached = self._cache.get(clean_guild_id)
@@ -105,14 +101,16 @@ class WarcraftLogsRecentGuildRankingsService:
                     key,
                     {
                         "summary": summary,
-                        "best_parse": None,
+                        "best_average_parse": None,
                         "best_amount": None,
                         "ranked_fights": 0,
                         "reports": set(),
                     },
                 )
                 state["summary"] = _prefer_identity(state["summary"], summary)
-                state["best_parse"] = _max_optional(state["best_parse"], summary.best_parse)
+                state["best_average_parse"] = _max_optional(
+                    state["best_average_parse"], summary.average_parse
+                )
                 state["best_amount"] = _max_optional(state["best_amount"], summary.best_amount)
                 state["ranked_fights"] = int(state["ranked_fights"]) + summary.parse_count
                 reports_seen = state["reports"]
@@ -132,7 +130,7 @@ class WarcraftLogsRecentGuildRankingsService:
                     class_name=summary.class_name,
                     spec_name=summary.primary_spec,
                     role_category=summary.role_category,
-                    best_parse=_as_float(state["best_parse"]),
+                    best_average_parse=_as_float(state["best_average_parse"]),
                     best_amount=_as_float(state["best_amount"]),
                     ranked_fights=int(state["ranked_fights"]),
                     report_count=len(reports_seen),
@@ -142,8 +140,8 @@ class WarcraftLogsRecentGuildRankingsService:
         entries.sort(
             key=lambda entry: (
                 {"Tank": 0, "Healer": 1, "DPS": 2}.get(entry.role_category, 3),
-                entry.best_parse is None,
-                -(entry.best_parse or 0),
+                entry.best_average_parse is None,
+                -(entry.best_average_parse or 0),
                 entry.name.casefold(),
             )
         )
