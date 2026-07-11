@@ -129,12 +129,12 @@ class WarcraftLogsGuildRecentLeaderboardService:
             }
             if not killed_encounters:
                 continue
+            included_reports.append(report)
 
             performance = await self.performance_service.get_report_player_performance(
                 report.code,
                 force_refresh=force_refresh,
             )
-            matched_any = False
             for row in performance.players:
                 if filter_enabled and _normalize_character_name(row.name) not in allowed:
                     continue
@@ -143,7 +143,6 @@ class WarcraftLogsGuildRecentLeaderboardService:
                     continue
                 if row.rank_percent is None:
                     continue
-                matched_any = True
                 key = (
                     row.name.casefold(),
                     (row.server or "").casefold(),
@@ -153,8 +152,6 @@ class WarcraftLogsGuildRecentLeaderboardService:
                 current = best_rows.get(key)
                 if current is None or (row.rank_percent or 0) > (current.rank_percent or 0):
                     best_rows[key] = row
-            if matched_any:
-                included_reports.append(report)
 
         summaries = aggregate_player_performance(best_rows.values())
         damage_players = tuple(
