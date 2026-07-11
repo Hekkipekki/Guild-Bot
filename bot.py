@@ -37,6 +37,7 @@ EXTENSIONS = [
     "cogs.warcraftlogs_player_performance",
     "cogs.warcraftlogs_character_performance",
     "cogs.warcraftlogs_report_leaderboards",
+    "cogs.warcraftlogs_guild_leaderboard",
 ]
 
 
@@ -54,7 +55,7 @@ def _register_persistent_views() -> None:
         try:
             bot.add_view(SignupView(str(message_id)))
         except Exception as e:
-            print(f"Failed to register SignupView for message {message_id}: {e}")
+            print(f"Failed to register SignupView for {message_id}: {e}")
 
     for raid_id, signup in signups.items():
         if not signup.get("comp_message_id"):
@@ -128,7 +129,6 @@ async def on_guild_join(guild: discord.Guild):
         sync_guild_identity(guild.id, guild.name)
     except Exception as e:
         print(f"[Guild Join] Failed to store guild name for {guild.id}: {e}")
-
     embed = discord.Embed(
         title=f"Thanks for adding Guild Raid Bot to {guild.name}!",
         description=(
