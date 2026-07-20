@@ -7,6 +7,9 @@ from services.guild.guild_settings_service import (
     get_default_leader,
     get_default_description,
 )
+from services.scheduling.scheduling_signup_sync_service import (
+    apply_scheduled_absences_to_signup,
+)
 from services.signup.signup_preset_service import build_signup_payload
 
 
@@ -104,5 +107,9 @@ def build_signup_from_raid_data(
     signup["is_recurring"] = bool(raid_data.get("is_recurring", False))
     signup["recurring_interval_days"] = raid_data.get("recurring_interval_days")
     signup["recurring_created_next"] = False
+
+    # Scheduling absences are date-based and must be applied to every newly
+    # posted raid, not only to raids created later by the recurring lifecycle.
+    apply_scheduled_absences_to_signup(signup)
 
     return True, signup, None
