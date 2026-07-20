@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import discord
 
+from services.scheduling.scheduling_absence_service import remove_user_absences
 from services.scheduling.scheduling_service import (
     build_absence_options,
     add_absence,
@@ -97,6 +98,97 @@ class AbsenceDateSelect(discord.ui.Select):
         )
 
 
+class ConfirmRemoveAllAbsencesView(discord.ui.View):
+    def __init__(
+        self,
+        panel_id: str,
+        *,
+        guild_id: int | str,
+        owner_id: int | str,
+    ):
+        super().__init__(timeout=120)
+        self.panel_id = str(panel_id)
+        self.guild_id = int(guild_id)
+        self.owner_id = int(owner_id)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id == self.owner_id:
+            return True
+        await interaction.response.send_message(
+            "Only the person who opened this panel can use these controls.",
+            ephemeral=True,
+        )
+        return False
+
+    @discord.ui.button(label="Confirm removal", style=discord.ButtonStyle.danger)
+    async def confirm_removal(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        removed = remove_user_absences(
+            self.guild_id,
+            self.panel_id,
+            user_id=self.owner_id,
+        )
+
+        await refresh_scheduling_message(
+            interaction.client,
+            self.guild_id,
+            self.panel_id,
+        )
+
+        text = (
+            f"Removed {removed} future absence sign(s)."
+            if removed
+            else "You had no future absence signs to remove."
+        )
+        await interaction.response.edit_message(content=text, view=None)
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    async def cancel(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        await interaction.response.edit_message(
+            content="Select the raid days you will miss.",
+            view=AbsenceView(
+                self.panel_id,
+                guild_id=self.guild_id,
+                user_id=self.owner_id,
+            ),
+        )
+
+
+class RemoveAllAbsencesButton(discord.ui.Button):
+    def __init__(
+        self,
+        panel_id: str,
+        *,
+        guild_id: int | str,
+        user_id: int | str,
+    ):
+        super().__init__(
+            label="Remove all absences",
+            style=discord.ButtonStyle.danger,
+            row=1,
+        )
+        self.panel_id = str(panel_id)
+        self.guild_id = int(guild_id)
+        self.user_id = int(user_id)
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.edit_message(
+            content="Remove all of your future absence signs?",
+            view=ConfirmRemoveAllAbsencesView(
+                self.panel_id,
+                guild_id=self.guild_id,
+                owner_id=self.user_id,
+            ),
+        )
+
+
 class AbsenceView(discord.ui.View):
     def __init__(
         self,
@@ -109,6 +201,13 @@ class AbsenceView(discord.ui.View):
 
         self.add_item(
             AbsenceDateSelect(
+                panel_id,
+                guild_id=guild_id,
+                user_id=user_id,
+            )
+        )
+        self.add_item(
+            RemoveAllAbsencesButton(
                 panel_id,
                 guild_id=guild_id,
                 user_id=user_id,
