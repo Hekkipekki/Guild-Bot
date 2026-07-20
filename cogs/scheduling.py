@@ -17,7 +17,9 @@ from views.scheduling.scheduling_message_view import SchedulingMessageView
 
 
 SWEDEN_TZ = ZoneInfo("Europe/Stockholm")
-SCHEDULING_REFRESH_TIME = time(hour=0, minute=5, tzinfo=SWEDEN_TZ)
+# Run after both Swedish and UTC midnight so date.today()-based scheduling data
+# has rolled over on PebbleHost regardless of daylight-saving time.
+SCHEDULING_REFRESH_TIME = time(hour=3, minute=5, tzinfo=SWEDEN_TZ)
 
 
 class SchedulingCommands(commands.Cog):
