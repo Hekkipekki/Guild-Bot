@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-import discord
-from discord.ext import commands
+from datetime import time
+from zoneinfo import ZoneInfo
 
+import discord
+from discord.ext import commands, tasks
+
+from services.scheduling.scheduling_panel_service import ensure_scheduling_panel_for_guild
 from services.scheduling.scheduling_service import (
     create_scheduling_panel,
     set_panel_message_id,
@@ -12,9 +16,17 @@ from services.scheduling.scheduling_service import (
 from views.scheduling.scheduling_message_view import SchedulingMessageView
 
 
+SWEDEN_TZ = ZoneInfo("Europe/Stockholm")
+SCHEDULING_REFRESH_TIME = time(hour=0, minute=5, tzinfo=SWEDEN_TZ)
+
+
 class SchedulingCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.daily_scheduling_refresh.start()
+
+    def cog_unload(self):
+        self.daily_scheduling_refresh.cancel()
 
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -38,6 +50,22 @@ class SchedulingCommands(commands.Cog):
         )
 
         set_panel_message_id(ctx.guild.id, panel_id, msg.id)
+
+    @tasks.loop(time=SCHEDULING_REFRESH_TIME)
+    async def daily_scheduling_refresh(self):
+        for guild in self.bot.guilds:
+            try:
+                ok, message = await ensure_scheduling_panel_for_guild(self.bot, guild)
+                if ok:
+                    print(f"[Scheduling] {guild.name}: daily rollover refresh complete.")
+                elif message != "No Scheduling channel configured.":
+                    print(f"[Scheduling] {guild.name}: daily rollover refresh skipped - {message}")
+            except Exception as exc:
+                print(f"[Scheduling] {guild.name}: daily rollover refresh failed - {exc}")
+
+    @daily_scheduling_refresh.before_loop
+    async def before_daily_scheduling_refresh(self):
+        await self.bot.wait_until_ready()
 
 
 async def setup(bot):
