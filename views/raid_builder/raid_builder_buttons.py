@@ -77,7 +77,8 @@ class EditLeaderButton(discord.ui.Button):
 class EditDateButton(discord.ui.Button):
     def __init__(self, raid_data: dict):
         super().__init__(
-            label="Edit Date",
+            label="Pick Date",
+            emoji="📅",
             style=discord.ButtonStyle.secondary,
             row=1,
         )
@@ -85,10 +86,16 @@ class EditDateButton(discord.ui.Button):
         self.raid_data = dict(raid_data)
 
     async def callback(self, interaction: discord.Interaction):
-        from views.raid_builder.raid_builder_modals import RaidDateModal
+        from views.raid_builder.raid_date_picker import (
+            RaidDatePickerView,
+            build_raid_date_picker_content,
+        )
 
-        await interaction.response.send_modal(
-            RaidDateModal(self.raid_data)
+        await safe_panel_edit(
+            interaction,
+            content=build_raid_date_picker_content(),
+            embed=None,
+            view=RaidDatePickerView(self.raid_data),
         )
 
 
@@ -488,19 +495,12 @@ class DeleteTemplateButton(discord.ui.Button):
 
         await safe_panel_edit(
             interaction,
-            content="Select a template to delete:",
+            content="Select a template to delete.",
             embed=None,
             view=DeleteTemplateView(
                 self.guild_id,
                 self.channel_id,
             ),
-        )
-
-        asyncio.create_task(
-            delete_interaction_after(
-                interaction,
-                RAID_CONTROL_AUTO_DELETE_SECONDS,
-            )
         )
 
 
@@ -510,13 +510,13 @@ class CancelRaidStartButton(discord.ui.Button):
             label="Cancel",
             emoji=parse_button_emoji("cancel_raid"),
             style=discord.ButtonStyle.secondary,
-            row=0,
+            row=1,
         )
 
     async def callback(self, interaction: discord.Interaction):
         await safe_panel_edit(
             interaction,
-            content="Raid setup cancelled.",
+            content="Raid creation cancelled.",
             embed=None,
             view=None,
         )
@@ -551,11 +551,4 @@ class BackFromTemplateButton(discord.ui.Button):
                 self.guild_id,
                 self.channel_id,
             ),
-        )
-
-        asyncio.create_task(
-            delete_interaction_after(
-                interaction,
-                RAID_CONTROL_AUTO_DELETE_SECONDS,
-            )
         )

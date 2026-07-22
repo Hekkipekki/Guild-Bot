@@ -1,6 +1,7 @@
 # Secrets
 secrets_local.py
 .env
+*.env
 
 # Logs
 bot_log.txt
@@ -9,6 +10,7 @@ bot_log.txt
 # Python cache
 __pycache__/
 *.py[cod]
+.pytest_cache/
 
 # Virtual environments
 .venv/
@@ -17,7 +19,7 @@ venv/
 # Runtime guild data
 data/guilds/
 
-# Development data
+# Keep data folder but ignore runtime json
 data/*_dev.json
 
 # Local helper scripts
@@ -30,3 +32,8 @@ split.py
 # OS files
 .DS_Store
 Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.tmp
