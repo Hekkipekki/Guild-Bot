@@ -26,6 +26,7 @@ async def cancel_signup_raid_with_guard(
     bot,
     raid_id: int | str,
     cancel_message: str,
+    plan_next_occurrence: bool = False,
 ) -> tuple[bool, str]:
     _disable_cancelled_raid_reminders(raid_id)
 
@@ -33,4 +34,5 @@ async def cancel_signup_raid_with_guard(
         bot=bot,
         raid_id=raid_id,
         cancel_message=cancel_message,
+        plan_next_occurrence=plan_next_occurrence,
     )
