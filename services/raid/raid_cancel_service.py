@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import discord
 
 from data.attendance_store import load_attendance, save_attendance
@@ -7,10 +9,26 @@ from data.signup_store import (
     find_message_signup,
     load_signups,
     remove_signup_by_message_id,
+    save_signups,
 )
+from services.raid.raid_lifecycle_service import (
+    build_next_recurring_signup,
+    is_recurring_signup,
+)
+from services.scheduling.scheduling_signup_sync_service import apply_scheduled_absences_to_signup
+from services.signup.signup_message_service import send_signup_message
 
 
 NOTIFY_STATUSES = {"sign", "bench", "late", "tentative"}
+
+
+class _ChannelCtx:
+    def __init__(self, guild, channel):
+        self.guild = guild
+        self.channel = channel
+
+    async def send(self, *args, **kwargs):
+        return await self.channel.send(*args, **kwargs)
 
 
 def _get_notify_user_ids(signup: dict) -> list[str]:
@@ -23,12 +41,12 @@ def _get_notify_user_ids(signup: dict) -> list[str]:
     ]
 
 
-async def _fetch_signup_channel(bot, signup: dict):
+async def _fetch_signup_guild_and_channel(bot, signup: dict):
     guild_id = signup.get("guild_id")
     channel_id = signup.get("channel_id")
 
     if not guild_id or not channel_id:
-        return None
+        return None, None
 
     try:
         guild = bot.get_guild(int(guild_id))
@@ -39,10 +57,10 @@ async def _fetch_signup_channel(bot, signup: dict):
         if channel is None:
             channel = await guild.fetch_channel(int(channel_id))
 
-        return channel
+        return guild, channel
 
     except Exception:
-        return None
+        return None, None
 
 
 async def _delete_message_if_exists(channel, message_id: int | str | None) -> bool:
@@ -79,6 +97,7 @@ async def cancel_signup_raid(
     bot,
     raid_id: int | str,
     cancel_message: str,
+    plan_next_occurrence: bool = False,
 ) -> tuple[bool, str]:
     raid_key = str(raid_id)
 
@@ -88,21 +107,44 @@ async def cancel_signup_raid(
     if not signup:
         return False, "Raid signup not found."
 
-    channel = await _fetch_signup_channel(bot, signup)
-    if channel is None:
+    guild, channel = await _fetch_signup_guild_and_channel(bot, signup)
+    if guild is None or channel is None:
         return False, "Could not find the signup channel."
+
+    if plan_next_occurrence and not is_recurring_signup(signup):
+        return False, "This raid is not recurring, so there is no next occurrence to plan."
+
+    next_message_id = None
+    if plan_next_occurrence:
+        next_signup = build_next_recurring_signup(signup, int(time.time()))
+        apply_scheduled_absences_to_signup(next_signup)
+
+        next_message_id = await send_signup_message(
+            _ChannelCtx(guild, channel),
+            next_signup,
+        )
+        if not next_message_id:
+            return False, "Could not create the next recurring raid. The current raid was not cancelled."
+
+        data[str(next_message_id)] = next_signup
+        save_signups(data)
 
     title = signup.get("title") or "Raid"
     user_ids = _get_notify_user_ids(signup)
     mentions = " ".join(f"<@{user_id}>" for user_id in user_ids)
 
     cancel_text = cancel_message.strip() or "Raid has been cancelled."
+    next_raid_text = (
+        "\n\n✅ The next recurring raid has been planned."
+        if next_message_id
+        else ""
+    )
 
     await channel.send(
         (
             f"## ❌ Raid Cancelled — {title}\n"
             f"{mentions}\n\n"
-            f"{cancel_text}"
+            f"{cancel_text}{next_raid_text}"
         ).strip(),
         allowed_mentions=discord.AllowedMentions(
             users=True,
@@ -121,5 +163,8 @@ async def cancel_signup_raid(
         return False, "Discord messages were handled, but the JSON signup entry could not be removed."
 
     _remove_attendance_record(raid_key)
+
+    if next_message_id:
+        return True, "Raid cancelled and next recurring raid planned."
 
     return True, "Raid cancelled and removed."
