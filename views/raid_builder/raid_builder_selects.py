@@ -4,6 +4,7 @@ import discord
 from services.raid.raid_template_service import (
     list_templates,
     delete_template,
+    build_raid_data_from_template,
 )
 
 from utils.discord_utils import delete_interaction_after
@@ -97,8 +98,9 @@ class RaidTemplateSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        from views.raid_builder.raid_builder_modals import (
-            TemplateDateModal,
+        from views.raid_builder.raid_date_picker import (
+            RaidDatePickerView,
+            build_raid_date_picker_content,
         )
 
         selected_name = self.values[0]
@@ -118,12 +120,33 @@ class RaidTemplateSelect(discord.ui.Select):
 
             return
 
-        await interaction.response.send_modal(
-            TemplateDateModal(
-                self.guild_id,
-                self.channel_id,
-                selected_name,
+        raid_data = build_raid_data_from_template(
+            self.guild_id,
+            self.channel_id,
+            selected_name,
+            "",
+        )
+
+        if not raid_data:
+            await interaction.response.send_message(
+                "⚠ Could not load that template.",
+                ephemeral=True,
             )
+
+            asyncio.create_task(
+                delete_interaction_after(
+                    interaction,
+                    ERROR_MESSAGE_AUTO_DELETE_SECONDS,
+                )
+            )
+
+            return
+
+        await safe_panel_edit(
+            interaction,
+            content=build_raid_date_picker_content(),
+            embed=None,
+            view=RaidDatePickerView(raid_data),
         )
 
 
