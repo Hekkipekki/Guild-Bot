@@ -16,7 +16,6 @@ from services.raid.raid_lifecycle_service import (
     is_recurring_signup,
 )
 from services.scheduling.scheduling_signup_sync_service import apply_scheduled_absences_to_signup
-from services.signup.signup_message_service import send_signup_message
 
 
 NOTIFY_STATUSES = {"sign", "bench", "late", "tentative"}
@@ -52,7 +51,6 @@ async def _fetch_signup_guild_and_channel(bot, signup: dict):
         guild = bot.get_guild(int(guild_id))
         if guild is None:
             guild = await bot.fetch_guild(int(guild_id))
-
         channel = guild.get_channel(int(channel_id))
         if channel is None:
             channel = await guild.fetch_channel(int(channel_id))
@@ -116,6 +114,10 @@ async def cancel_signup_raid(
 
     next_message_id = None
     if plan_next_occurrence:
+        # Import lazily to avoid this startup cycle:
+        # SignupView -> raid control -> cancellation service -> signup message service -> SignupView.
+        from services.signup.signup_message_service import send_signup_message
+
         next_signup = build_next_recurring_signup(signup, int(time.time()))
         apply_scheduled_absences_to_signup(next_signup)
 
