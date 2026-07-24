@@ -29,7 +29,6 @@ WA_SECTIONS = [
     },
     {
         "heading": "### Raidleader Only",
-        "prefix": ["## Raid WeakAuras", "Use the buttons below to download the raid packs.", ""],
         "items": [
             ("raidleader.fojji_soo", "- <:fojji:1482050733258838087> [Fojji SoO Raid Leader](https://wago.io/Fojji-SoO-RL) > `cucumber123`"),
         ],
