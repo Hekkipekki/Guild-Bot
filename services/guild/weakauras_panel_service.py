@@ -1,5 +1,6 @@
 import discord
 
+from data.guild_settings_store import ensure_guild_settings, update_guild_settings
 from services.guild.guild_settings_service import (
     get_hidden_weakaura_items,
     get_weakauras_channel_id,
@@ -100,6 +101,17 @@ def build_weakauras_panel_text(guild_id: int) -> str:
     return "\n".join(lines).strip()
 
 
+def _weakauras_preferences_saved(guild_id: int) -> bool:
+    settings = ensure_guild_settings(guild_id)
+    return bool(settings.get("weakauras_preferences_saved", False))
+
+
+def _get_configured_weakauras_channel_id(guild_id: int) -> int | None:
+    if not _weakauras_preferences_saved(guild_id):
+        return None
+    return get_weakauras_channel_id(guild_id)
+
+
 def _get_weakauras_message_ids(guild_id: int):
     return (get_weakauras_message_id(guild_id),)
 
@@ -114,7 +126,7 @@ def _build_weakauras_payload(guild: discord.Guild) -> dict:
 WEAKAURAS_PANEL = PermanentPanelDefinition(
     key="weakauras",
     label="WeakAuras",
-    get_channel_id=get_weakauras_channel_id,
+    get_channel_id=_get_configured_weakauras_channel_id,
     get_message_ids=_get_weakauras_message_ids,
     set_message_id=set_weakauras_message_id,
     build_payload=_build_weakauras_payload,
@@ -126,4 +138,5 @@ async def ensure_weakauras_panel_for_guild(
     bot: discord.Client,
     guild: discord.Guild,
 ) -> tuple[bool, str]:
+    update_guild_settings(guild.id, {"weakauras_preferences_saved": True})
     return await ensure_permanent_panel(bot, guild, WEAKAURAS_PANEL)
