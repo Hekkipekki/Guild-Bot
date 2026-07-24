@@ -15,6 +15,7 @@ WA_SECTIONS = [
         "items": [
             ("required.method_raid_tools", "- [Method Raid Tools](https://www.curseforge.com/wow/addons/method-raid-tools)"),
             ("required.rc_loot_council", "- [RC Loot Council](https://www.curseforge.com/wow/addons/rclootcouncil-classic)"),
+            ("required.gargul", "- [Gargul](https://www.curseforge.com/wow/addons/gargul)"),
             ("required.fojjicore", "- <:fojji:1482050733258838087> [Fojjicore](https://www.curseforge.com/wow/addons/fojjicore)"),
             ("required.raid_assignments_user", "- <:fojji:1482050733258838087> [Raid Assignments User](https://wago.io/FojjiRaidAssignsUserMoP) > `turmeric123`"),
             ("required.raid_anchors", "- <:fojji:1482050733258838087> [Raid Anchors WA](https://wago.io/FojjiRaidAnchors-MoP)"),
@@ -53,6 +54,7 @@ WA_SECTIONS = [
 WA_ITEM_LABELS = {
     "required.method_raid_tools": "Method Raid Tools",
     "required.rc_loot_council": "RC Loot Council",
+    "required.gargul": "Gargul",
     "required.fojjicore": "Fojjicore",
     "required.raid_assignments_user": "Raid Assignments User",
     "required.raid_anchors": "Raid Anchors WA",
