@@ -125,6 +125,7 @@ class RaidLifecycleCog(commands.Cog):
 
         changed = False
         raid_ids_to_remove: list[str] = []
+        guild_ids_to_sync: set[str] = set()
 
         for raid_id, signup in list(data.items()):
             raid_id = str(raid_id)
@@ -177,6 +178,10 @@ class RaidLifecycleCog(commands.Cog):
             await _delete_old_raid_messages(self.bot, raid_id, signup)
             raid_ids_to_remove.append(raid_id)
 
+            guild_id = signup.get("guild_id")
+            if guild_id not in (None, "", 0):
+                guild_ids_to_sync.add(str(guild_id))
+
         for raid_id in raid_ids_to_remove:
             if raid_id in data:
                 del data[raid_id]
@@ -184,7 +189,7 @@ class RaidLifecycleCog(commands.Cog):
                 print(f"[Lifecycle] Removed old signup entry {raid_id} from signups.json")
 
         if changed:
-            save_signups(data)
+            save_signups(data, sync_guild_ids=guild_ids_to_sync)
 
     @lifecycle_loop.before_loop
     async def before_lifecycle_loop(self):

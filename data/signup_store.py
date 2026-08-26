@@ -77,6 +77,8 @@ def load_signups(guild_id: int | str | None = None) -> dict[str, dict[str, Any]]
 def save_signups(
     data: dict[str, dict[str, Any]],
     guild_id: int | str | None = None,
+    *,
+    sync_guild_ids: set[int | str] | None = None,
 ) -> None:
     """
     Preferred:
@@ -109,9 +111,12 @@ def save_signups(
 
         grouped.setdefault(signup_guild_id, {})[str(message_id)] = signup
 
-    for signup_guild_id, guild_signups in grouped.items():
+    guild_ids_to_write = set(grouped)
+    guild_ids_to_write.update(str(value) for value in (sync_guild_ids or set()))
+
+    for signup_guild_id in guild_ids_to_write:
         path = _get_signups_file(signup_guild_id)
-        write_json(path, guild_signups, indent=2)
+        write_json(path, grouped.get(signup_guild_id, {}), indent=2)
 
 
 def signup_exists(data: dict[str, dict[str, Any]], message_id: int | str) -> bool:
@@ -199,7 +204,10 @@ def remove_message_signup(
 
     if save:
         if removed_guild_id is not None:
-            save_signups(data, removed_guild_id)
+            if guild_id is not None:
+                save_signups(data, removed_guild_id)
+            else:
+                save_signups(data, sync_guild_ids={removed_guild_id})
         else:
             save_signups(data)
 
@@ -211,6 +219,10 @@ def remove_signup_by_message_id(
     guild_id: int | str | None = None,
 ) -> bool:
     data = load_signups(guild_id)
+    signup = find_message_signup(data, message_id)
+    removed_guild_id = guild_id or (
+        _get_signup_guild_id(signup) if signup is not None else None
+    )
     removed = remove_message_signup(
         data,
         message_id,
@@ -219,7 +231,12 @@ def remove_signup_by_message_id(
     )
 
     if removed:
-        save_signups(data, guild_id)
+        if guild_id is not None:
+            save_signups(data, guild_id)
+        elif removed_guild_id is not None:
+            save_signups(data, sync_guild_ids={removed_guild_id})
+        else:
+            save_signups(data)
 
     return removed
 
